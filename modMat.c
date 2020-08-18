@@ -103,7 +103,7 @@ void multSubgroupMatrix(modMat B, Subgroup g, double *u, double *res){
 	size_t *j, *i, t, *tempg=g;
 
 	resAu=(double*)malloc(B->n*sizeof(double));
-	B->A->mult(B->A,u,g,resAu);
+	B->A->mult(B->A,u,g,resAu); /* spmat's mult must be modified to support multiplying B[g] */
 
 	resKu=(double*)malloc(B->n*sizeof(double));
 	for (j=B->K; j<B->K+B->n; j++)
@@ -111,15 +111,18 @@ void multSubgroupMatrix(modMat B, Subgroup g, double *u, double *res){
 			sumK += (*j);
 			tempg++;
 		}
+	/* For original B of the whole network, sumK == B->M */
+
 	tempg=g;
 	for (i=B->K; i<B->K+B->n; i++)
 		if (*tempg==i-B->K && *tempg<B->n){
-			*resKu = ((double)((*i)*sumK) / B->M)*(*u++);
+			*resKu++ = ((double)((*i)*sumK) / B->M)*(*u++);
 			tempg++;
 		}
+	resKu-=B->n;
 
 	for (t=0; t<B->n; t++)
-		*res=*resAu-*resKu;
+		*res++=(*resAu++)-(*resKu++);
 	free(resAu);
 	free(resKu);
 }
