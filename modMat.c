@@ -15,11 +15,11 @@ typedef size_t* Subgroup;
  * A suggestion for Modularity Matrix B struct.
  */
 typedef struct _modmat {
-	size_t n; /* n=|V| of network */
-	spmat A; /*Network adjacency matrix in form of spmat */
-	size_t *K; /*compact representation of degrees-product matrix (k_i * k_j / M) */
-	Subgroup g; /*array of relevant indices of submatrix */
-	size_t M; /*sum of degrees*/
+	size_t n;	 	/* n=|V| of network */
+	spmat A; 		/* Network adjacency matrix in form of spmat */
+	size_t *K; 		/* Compact representation of degrees-product matrix (k_i * k_j / M) */
+	size_t M; 		/* Total sum of degrees in the network*/
+	Subgroup g; 	/* Array of relevant indices of submatrix */
 
 	void (*free)(struct _modmat B, Subgroup g); /*free all resources used by ModMat instance */
 
@@ -70,7 +70,7 @@ void readFromFile(int *dest,unsigned int num,unsigned int size,FILE* file){
 		exit(FILE_READ_ERROR);
 }
 
-/*load an open input file into previously allocated ModMat B*/
+/* Load an open input file into previously allocated ModMat B*/
 
 void loadModMatrix(FILE *input, modMat *B){
 	unsigned int n, i, currDeg;
@@ -79,6 +79,7 @@ void loadModMatrix(FILE *input, modMat *B){
 	B=allocateModMat(n);
 	k=B->K;
 	g=B->g;
+	/* Populate B with A, K matrices, and compute M */
 	for (i=0; i<n; i++){
 		readFromFile(currDeg,sizeof(size_t),1,input);
 		*k++=currDeg;
@@ -87,14 +88,16 @@ void loadModMatrix(FILE *input, modMat *B){
 		if (neighbours==NULL)
 			exit(MEM_ALLOC_ERROR);
 		readFromFile(neighbours,sizeof(size_t),currDeg,input);
-		B->A->add_row(B->A,neighbours,i);
+		B->A->add_row(B->A,neighbours,i); /*spmat's add_row must be modified to translate indices of V into 0/1 values in A */
 		*g++=1;
 		free(neighbours);
 	}
 	rewind(input);
 }
 
-/*Multiply submatrix B[g] with vector u; can implement mult method in ModMat type struct */
+/* Multiply submatrix B[g] with vector u;
+ * This is an implementation for mult method in ModMat type struct.
+ */
 void multSubgroupMatrix(modMat B, Subgroup g, double *u, double *res){
 	double *resAu, *resKu, sumK=0;
 	size_t *j, *i, t, *tempg=g;
