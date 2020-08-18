@@ -15,7 +15,7 @@ typedef size_t* Subgroup;
  * A suggestion for Modularity Matrix B struct.
  */
 typedef struct _modmat {
-	size_t n;	 	/* n=|V| of network */
+	size_t n;	 	/* n=|V| of network. Should be named gsize? */
 	spmat A; 		/* Network adjacency matrix in form of spmat */
 	size_t *K; 		/* Compact representation of degrees-product matrix (k_i * k_j / M) */
 	size_t M; 		/* Total sum of degrees in the network*/
@@ -70,11 +70,25 @@ void readFromFile(int *dest,unsigned int num,unsigned int size,FILE* file){
 		exit(FILE_READ_ERROR);
 }
 
-/* Load an open input file into previously allocated ModMat B*/
 
+/*Convert node indices (as in input file) to a {0,1} vector of length n
+ * that can be added to spmat via add_row. */
+void convertAdjList(size_t k, size_t n, size_t *adj, size_t *res){
+	int *i, temp;
+	for (i=adj; i<adj+k; i++){
+		temp=*i;
+		while (temp-->0)
+			*res++=0;
+		*res++=1;
+	}
+	for(temp=n-*i; temp>0; temp--)
+		*res++=0;
+}
+
+/* Load an open input file into previously allocated ModMat B*/
 void loadModMatrix(FILE *input, modMat *B){
 	unsigned int n, i, currDeg;
-	size_t *neighbours, *k, *g;
+	size_t *matLine, *inputNeighbours, *k, *g;
 	readFromFile(n,sizeof(size_t),1,input); /* read n=|V| of network */
 	B=allocateModMat(n);
 	k=B->K;
@@ -84,13 +98,16 @@ void loadModMatrix(FILE *input, modMat *B){
 		readFromFile(currDeg,sizeof(size_t),1,input);
 		*k++=currDeg;
 		B->M+=currDeg;
-		neighbours=(size_t*)malloc(currDeg*sizeof(size_t));
-		if (neighbours==NULL)
+		inputNeighbours=(size_t*)malloc(currDeg*sizeof(size_t));
+		matLine=(size_t*)malloc(B->n*sizeof(size_t));
+		if (inputNeighbours==NULL)
 			exit(MEM_ALLOC_ERROR);
-		readFromFile(neighbours,sizeof(size_t),currDeg,input);
-		B->A->add_row(B->A,neighbours,i); /*spmat's add_row must be modified to translate indices of V into 0/1 values in A */
+		readFromFile(inputNeighbours,sizeof(size_t),currDeg,input);
+		convertAdjList(currDeg, B->n, inputNeighbours, matLine);
+		B->A->add_row(B->A,matLine,i);
 		*g++=1;
-		free(neighbours);
+		free(matLine);
+		free(inputNeighbours);
 	}
 	rewind(input);
 }
