@@ -12,6 +12,7 @@
 #include <stddef.h>
 #include <time.h>
 #include <math.h>
+#include "io_mem_errors.h"
 
 int parseInt(char* str){
 	int res=0;
@@ -39,7 +40,7 @@ void writeRandomAdjList(int curr, int k, int n, FILE *file){
 	int v=n+1, *adj,*p, *hash;
 	adj=(int*)malloc(k*sizeof(int));
 	if (adj==NULL)
-		exit(1);
+		exit(MEM_ALLOC_ERROR);
 	for (p=adj; p<adj+k; p++){
 		v=randInRangeExcluded(n,curr);
 		*p=v;
