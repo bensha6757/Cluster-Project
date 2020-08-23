@@ -8,7 +8,6 @@
 #include "modMat.h"
 
 
-
 void fileToMatrix(char* filename, modMat *mat){
 	size_t N;
 	fopen(filename,"r");
