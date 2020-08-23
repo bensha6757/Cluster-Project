@@ -37,14 +37,6 @@ double norm(vector v, size_t d){
 
 
 
-void powerIteration(modMat *B, modMat *Bg, vector v, vector result){
-	vector p;
-	double nrm;
-	Bg->mult(B, Bg,v,result);
-	nrm=norm(result,Bg->gSize);
-	for (p=result; p<result+Bg->gSize; p++)
-		*p/=nrm;
-}
 
 void setRandVector(vector v, size_t n){
 	unsigned int i;
@@ -67,7 +59,9 @@ boolean isWithin(vector a, vector b, size_t d){
 	return 1;
 }
 
-
+/*
+ * Compute leading eigen pair of modularity Matrix B_hat[g]
+ */
 void leadingEigenPair(modMat *B, modMat *Bg, vector leadEigenVec, double* leadEigenVal){
 	size_t iter=0;
 	vector bprev=(vector)malloc(Bg->gSize*sizeof(double));
@@ -93,6 +87,19 @@ void leadingEigenPair(modMat *B, modMat *Bg, vector leadEigenVec, double* leadEi
 	*leadEigenVal = approxDomEigenVal(Bg, bnext) - getOneNorm(Bg);
 	free(bnext);
 	free(bprev);
+}
+
+/*
+ * Apply a single iteration to a matrix B and a vector v according to the power method.
+ * Store result in result vector.
+ */
+void powerIteration(modMat *B, modMat *Bg, vector v, vector result){
+	vector p;
+	double nrm;
+	Bg->mult(B, Bg,v,result);
+	nrm=norm(result,Bg->gSize);
+	for (p=result; p<result+Bg->gSize; p++)
+		*p/=nrm;
 }
 
 /*Compute Modularity of B[g]_hat: 0.5 * s^T * B[g]_hat * s */
@@ -160,6 +167,11 @@ void optimizeDivision(modMat *B, s_vector s){
 	}
 }
 
+
+/*
+ * Map a double's vector to a {-1,1} vector with size_t elements.
+ * consider s vector to be a double as well if upcasting fails when applying mult.
+ */
 void eigenToS(modMat *B, vector u, s_vector s){
 	while(u<u+B->gSize)
 		*s++ = IS_POSITIVE(*u++) ? 1 : -1;
