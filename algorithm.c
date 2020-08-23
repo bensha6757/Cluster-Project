@@ -136,23 +136,28 @@ void mapSToGroups(modMat *B, size_t *s, size_t *g1, size_t *g2,  size_t *sizeG1,
 
 /*Optimize a division encoded by {-1,1} vector s by moving a vertex to other group and ascending modularity Q */
 void optimizeDivision(modMat *B, s_vector s){
-	s_vector entry=s;
-	size_t *max_v=0, *indices;
-	double Qmax, Qtmp deltaQ=1;
+	s_vector p;
+	size_t max_v=*s;/* impInd=0;*/
+	double Q_0, Qmax, Qtmp, deltaQ=1,improveTmp=0, improveMax=0;
 	while (deltaQ>0.0){
-		for (;entry<s+B->gSize ; entry++){
-				(*entry)*=-1; /*Temporarely move vertex s[i] to the other group */
-				Qnext=getModularity(B,B->g,s);
-				if (Qnext>=Qprev){
-					Qprev=Qnext;
-					max_v=*entry;
+		Q_0=getModularity(B,B->g,s);
+		for (p=s; p<s+B->gSize ; p++){
+				(*p)*=-1; /*Temporarily move vertex s[i] to the other group */
+				Qtmp=getModularity(B,B->g,s)-Q_0;
+				if (Qtmp>Qmax){
+					Qmax=Qtmp;
+					improveTmp+=Qmax;
+					max_v=*p;
 				}
-				(*entry)*=-1;
-			}
-			*max_v*=-1;
+				if (improveTmp>improveMax){
+					improveMax=improveTmp;
+					/*impInd=p-s;*/
+				}
+				(*p)*=-1;
+		}
+		*max_v*=-1;
+		deltaQ=improveMax;
 	}
-	Qprev=getModularity(B,B->g,s);
-
 }
 
 void eigenToS(modMat *B, vector u, s_vector s){
