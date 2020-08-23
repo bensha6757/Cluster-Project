@@ -51,8 +51,6 @@ modMat *allocateModMat(int n){
 }
 
 
-
-
 void getAdjRow(modMat *B, size_t i, double *row){
 	B->A->get_row(B->A, row, i);
 }
@@ -119,9 +117,9 @@ double getOneNorm(modMat *B){
 	return max;
 }
 
-/****************************
+/*********************************
  * INPUT FILE TO MEMORY FUNCTIONS*
- ****************************/
+ *********************************/
 
 /*read bytes from file or exit if failed. used to replace assert functionality*/
 void readFromFile(int *dest,unsigned int num,unsigned int size,FILE* file){

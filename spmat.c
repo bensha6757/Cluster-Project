@@ -9,7 +9,6 @@ typedef double DATA;
 typedef double scalar;
 typedef int boolean;
 
-
 typedef struct linked_list {
 	DATA val;
 	int col;
