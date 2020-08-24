@@ -63,7 +63,7 @@ void getKRow(modMat *B, size_t i, double *row){
 		*row++=(k_i)*((double)((*p)/B->M));
 }
 
-getBhatRow(modMat *B, size_t i, double *row){
+void getBhatRow(modMat *B, size_t i, double *row){
 	double *A_i, *K_i;
 	double f_i=0;
 	size_t j;

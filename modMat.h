@@ -20,11 +20,11 @@ typedef vector Subgroup;
  * A struct representing Modularity Matrix B[g].
  */
 typedef struct _modmat {
-	size_t gSize;	 	/* size of subgroup g  */
 	spmat *A; 			/* Network adjacency matrix in form of spmat */
 	vector spmatSize; 	/* a vector of the spmat rows sizes for internal use */
 	vector K; 			/* Compact representation of degrees-product matrix (k_i * k_j / M) */
 	size_t M; 			/* Total sum of degrees in the network*/
+	size_t gSize;	 	/* Size of subgroup g  */
 	Subgroup g; 		/* Array of relevant indices of submatrix */
 
 
@@ -39,6 +39,9 @@ typedef struct _modmat {
 
 
 modMat *allocateModMat(int n);
+
+/*Copy row i of B_hat matrix of size B->gSize to row vector */
+void getBhatRow(modMat *B, size_t i, double *row);
 
 /* Get a symmetric B_hat instance's 1-norm, i.e. ||B_hat||_1 = max_j(sum_i(|B_hat_ij|)).
  */
