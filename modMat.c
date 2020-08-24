@@ -47,6 +47,8 @@ modMat *allocateModMat(int n){
 
 	rep->mult=multB_hat_g;
 
+	rep->get_row=getBhatRow;
+
 	return rep;
 }
 
@@ -196,7 +198,7 @@ size_t genM(vector K, size_t sizeG){
 
 /* constructor, creating a new sub matrix B_hat[g] */
 modMat* create_Sub_Matrix(modMat *B, Subgroup g, size_t sizeG){
-    modMat* Bg = (modMat*)malloc(sizeof(modMat));
+    modMat* Bg = allocateModMat(sizeG);
     verify(Bg != NULL);
     Bg->A = create_sub_sparse_matrix_linked(B->A, g, sizeG, Bg->spmatSize);
     Bg->g = g;

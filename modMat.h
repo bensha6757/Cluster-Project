@@ -27,8 +27,11 @@ typedef struct _modmat {
 	size_t gSize;	 	/* Size of subgroup g  */
 	Subgroup g; 		/* Array of relevant indices of submatrix */
 
+	/*free all resources used by ModMat instance */
+	void (*free)(struct _modmat *B, Subgroup g);
 
-	void (*free)(struct _modmat *B, Subgroup g); /*free all resources used by ModMat instance */
+	/*Get row i of B*/
+	void (*get_row)(modMat *B, size_t i, double *row);
 
 	void (*mult)(const struct _modmat *B, const struct _modmat *Bg, const double *v, double *result);
 	/*multiply ModMat with vector v and store result.
