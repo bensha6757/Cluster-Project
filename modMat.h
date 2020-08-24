@@ -1,8 +1,8 @@
 /*
  * modMat.h
  *
- *  Created on: 22 áàåâ× 2020
- *      Author: âì
+ *  Created on: 22 ï¿½ï¿½ï¿½ï¿½ï¿½ 2020
+ *      Author: ï¿½ï¿½
  */
 
 #ifndef MODMAT_H_
@@ -40,20 +40,17 @@ typedef struct _modmat {
 
 } modMat;
 
-
-modMat *allocateModMat(int n);
-
-/*Copy row i of B_hat matrix of size B->gSize to row vector */
-void getBhatRow(modMat *B, size_t i, double *row);
+/* Allocate a new, empty instance of Modularity Matrix */
+modMat *allocate_mod_mat(int n);
 
 /* Get a symmetric B_hat instance's 1-norm, i.e. ||B_hat||_1 = max_j(sum_i(|B_hat_ij|)).
  */
-double getOneNorm(modMat *B);
+double get_1_norm(modMat *B);
 
 /* Read the number n=|V| of network from open file to memory*/
-void readVnumFromFile(FILE *input, size_t *n);
+void read_totalV_from_file(FILE *input, size_t *n);
 
 /* Load an open input file into previously allocated ModMat B*/
-void loadModMatrixFromFile(FILE *input, modMat *B);
+void load_mod_matrix_from_file(FILE *input, modMat *B);
 
 #endif /* MODMAT_H_ */
