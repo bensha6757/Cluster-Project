@@ -105,18 +105,33 @@ void powerIteration(modMat *B, modMat *Bg, vector v, vector result){
 }
 
 /*Compute Modularity of B[g]_hat: 0.5 * s^T * B[g]_hat * s */
-double getModularity(modMat *B, s_vector s){
-	double Q;
-	double *Bs=(double*)malloc(B->gSize*sizeof(double));
-	B->mult(B, B->g, s, Bs);
-	Q = 0.5 * dotProd(Bs,s,B->gSize);
-	free(Bs);
+double getModularity(modMat *B, s_vector s, double *Bs, int movedVertex){
+	double Q, *p;
+	int sgn=0;
+	if (movedVertex==-1){
+		B->mult(B, B->g, s, Bs);
+		Q = 0.5 * dotProd(Bs,s,B->gSize);
+	}
+	else {
+		double *tmp=(double*)malloc(B->gSize*sizeof(double));
+		if (tmp==NULL)
+			exit(MEM_ALLOC_ERROR);
+		B->get_row(B,movedVertex,tmp);
+		*(s+movedVertex)*=-1;
+		sgn=*(s+movedVertex);
+		for (p=Bs; p<Bs+B->gSize; p++)
+			p=sgn*2*tmp++;
+		Q = 0.5 * dotProd(Bs,s,B->gSize);
+		/* Restore s, Bs to initial state */
+		*(s+movedVertex)*=-1;
+		tmp-=B->gSize;
+		for (p=Bs; p<Bs+B->gSize; p++)
+			p+=sgn*2*tmp++;
+		free(tmp);
+	}
 	return Q;
 }
 
-double changeModularityByVertex(modMat *B, s_vector s){
-	s_vector p=s;
-}
 
 void mapSToGroups(modMat *B, size_t *s, size_t *g1, size_t *g2,  size_t *sizeG1, size_t *sizeG2){
 	size_t *i;
@@ -150,13 +165,15 @@ void mapSToGroups(modMat *B, size_t *s, size_t *g1, size_t *g2,  size_t *sizeG1,
 /*Optimize a division encoded by {-1,1} vector s by moving a vertex to other group and ascending modularity Q */
 void optimizeDivision(modMat *B, s_vector s){
 	s_vector p;
-	size_t max_v=*s;/* impInd=0;*/
+	size_t i, max_v=*s;/* impInd=0;*/
 	double Q_0, Qmax, Qtmp, deltaQ=1,improveTmp=0, improveMax=0;
+	double *Bs=(double*)malloc(B->gSize*sizeof(double));
+	if (Bs==NULL)
+		exit(MEM_ALLOC_ERROR);
 	while (deltaQ>0.0){
-		Q_0=getModularity(B ,s);
-		for (p=s; p<s+B->gSize ; p++){
-				(*p)*=-1; /*Temporarily move vertex s[i] to the other group */
-				Qtmp=getModularity(B,B->g,s)-Q_0;
+		Q_0=getModularity(B ,s, Bs, -1);
+		for (i=0; i<B->gSize ; i++){
+				Qtmp=getModularity(B,s,Bs,i)-Q_0;
 				if (Qtmp>Qmax){
 					Qmax=Qtmp;
 					improveTmp+=Qmax;
@@ -171,6 +188,7 @@ void optimizeDivision(modMat *B, s_vector s){
 		*max_v*=-1;
 		deltaQ=improveMax;
 	}
+	free(Bs);
 }
 
 
