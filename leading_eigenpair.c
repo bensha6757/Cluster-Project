@@ -1,15 +1,15 @@
 /*
  * leading_eigenpair.c
  *
- *  Created on: 24 баевЧ 2020
- *      Author: вм
+ *  Created on: 24 пїЅпїЅпїЅпїЅпїЅ 2020
+ *      Author: пїЅпїЅ
  */
 
 /*
  * algorithm.c
  *
- *  Created on: 14 баевЧ 2020
- *      Author: вм
+ *  Created on: 14 пїЅпїЅпїЅпїЅпїЅ 2020
+ *      Author: пїЅпїЅ
  */
 
 #include "io_mem_errors.h"
@@ -18,7 +18,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-double dotProd(vector v, vector u, size_t d){
+double dot_prod(vector v, vector u, size_t d){
 	unsigned int i;
 	double acc=0;
 	for (i=0; i<d; i++, v++, u++){
@@ -31,7 +31,7 @@ double norm(vector v, size_t d){
 	return sqrt(dotProd(v,v,d));
 }
 
-void setRandVector(vector v, size_t n){
+void set_rand_vector(vector v, size_t n){
 	unsigned int i;
 	for (i=0; i<n; i++, v++)
 		*v = (double)rand();
@@ -39,12 +39,12 @@ void setRandVector(vector v, size_t n){
 
 /*	Approximate dominant eigen value of matrix B
  *  with last vector v returned from power iterations.*/
-double approxDomEigenVal(modMat B, vector bprev, vector bnext){
-	return dotProd(bnext,bprev,B->gSize) / dotProd(bprev,bprev,B->gSize);
+double approx_dom_eigen_val(modMat *B, vector bprev, vector bnext){
+	return dot_prod(bnext,bprev,B->gSize) / dot_prod(bprev,bprev,B->gSize);
 }
 
-boolean isWithin(vector a, vector b, size_t d){
-	unsigned int i;
+boolean is_within(vector a, vector b, size_t d){
+	size_t i;
 	for (i=0; i<d; i++, a++, b++){
 		if (IS_POSITIVE(fabs(*a - *b)))
 			return 0;
@@ -56,10 +56,10 @@ boolean isWithin(vector a, vector b, size_t d){
  * Apply a single iteration to a matrix B and a vector v according to the power method.
  * Store result in result vector.
  */
-void powerIteration(modMat *B, modMat *Bg, vector v, vector result){
+void power_iteration(modMat *B, modMat *Bg, vector v, vector result){
 	vector p;
 	double nrm;
-	Bg->mult(B, Bg,v,result);
+	Bg->mult(B, Bg, v, result);
 	nrm=norm(result,Bg->gSize);
 	for (p=result; p<result+Bg->gSize; p++)
 		*p/=nrm;
@@ -68,7 +68,7 @@ void powerIteration(modMat *B, modMat *Bg, vector v, vector result){
 /*
  * Compute leading eigen pair of modularity Matrix B_hat[g]
  */
-void leadingEigenPair(modMat *B, modMat *Bg, vector leadEigenVec, double* leadEigenVal){
+void leading_eigenpair(modMat *B, modMat *Bg, vector leadEigenVec, double* leadEigenVal){
 	size_t iter=0;
 	vector bprev=(vector)malloc(Bg->gSize*sizeof(double));
 	if (bprev==NULL)
@@ -78,12 +78,12 @@ void leadingEigenPair(modMat *B, modMat *Bg, vector leadEigenVec, double* leadEi
 		free(bprev);
 		exit(MEM_ALLOC_ERROR);
 	}
-	setRandVector(bprev, Bg->gSize);
-	powerIteration(B,Bg,bprev,bnext);
+	set_rand_vector(bprev, Bg->gSize);
+	power_iteration(B,Bg,bprev,bnext);
 	iter++;
-	while (!isWithin(bprev,bnext,Bg->gSize)){
+	while (!is_within(bprev,bnext,Bg->gSize)){
 		memcpy(bprev,bnext,Bg->gSize*sizeof(double*));
-		powerIteration(B,Bg,bprev,bnext);
+		power_iteration(B,Bg,bprev,bnext);
 		iter++;
 		if (iter>1000*Bg->gSize)
 			exit(INFINITE_LOOP_ERROR);
@@ -92,7 +92,7 @@ void leadingEigenPair(modMat *B, modMat *Bg, vector leadEigenVec, double* leadEi
 		printf("# of power iterations: %d\n", (int)iter);
 	#endif
 	leadEigenVec=bnext;
-	*leadEigenVal = approxDomEigenVal(Bg,bprev,bnext) - getOneNorm(Bg);
+	*leadEigenVal = approx_dom_eigen_val(Bg,bprev,bnext) - get_one_norm(Bg);
 	free(bnext);
 	free(bprev);
 }
