@@ -37,7 +37,7 @@ void getSpMatRow(struct _spmat *A, const double *row, int i){
 }
 
 /* adding a row to the sub sparse matrix */
-size_t add_row_to_sub(int *col, int row, int *g, int i, Node *AHead, Node *subTail, int n){
+size_t add_row_to_sub_linked(int *col, int row, int *g, int i, Node *AHead, Node *subTail, int n){
 	size_t rowSize = 0;
 	while (col-g < n && AHead != NULL){
 		if (row == *col || AHead->col > *col){
@@ -67,7 +67,7 @@ spmat* create_sub_sparse_matrix_linked(spmat *A, int *g, int n , size_t *spmatSi
 	for (int *row = g ; row-g < n ; row++){
 		subHead = (Node*)malloc(sizeof(Node));
 		AHead = Asparse[*row];
-		*spmatSize = add_row_to_sub(g, *row, g, 0, AHead, subHead, n);
+		*spmatSize = add_row_to_sub_linked(g, *row, g, 0, AHead, subHead, n);
 		tmp = subHead;
 		subHead = subHead->next;
 		free(tmp);

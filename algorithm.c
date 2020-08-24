@@ -79,6 +79,8 @@ void leadingEigenPair(modMat *B, modMat *Bg, vector leadEigenVec, double* leadEi
 		memcpy(bprev,bnext,Bg->gSize*sizeof(double*));
 		powerIteration(B,Bg,bprev,bnext);
 		iter++;
+		if (iter>1000*Bg->gSize)
+			exit(INFINITE_LOOP_ERROR);
 	}
 	#ifdef PERFORMANCE_ITER
 		printf("# of power iterations: %d\n", (int)iter);
@@ -103,13 +105,17 @@ void powerIteration(modMat *B, modMat *Bg, vector v, vector result){
 }
 
 /*Compute Modularity of B[g]_hat: 0.5 * s^T * B[g]_hat * s */
-double getModularity(modMat *B, Subgroup g, s_vector s){
+double getModularity(modMat *B, s_vector s){
 	double Q;
 	double *Bs=(double*)malloc(B->gSize*sizeof(double));
 	B->mult(B, B->g, s, Bs);
 	Q = 0.5 * dotProd(Bs,s,B->gSize);
 	free(Bs);
 	return Q;
+}
+
+double changeModularityByVertex(modMat *B, s_vector s){
+	s_vector p=s;
 }
 
 void mapSToGroups(modMat *B, size_t *s, size_t *g1, size_t *g2,  size_t *sizeG1, size_t *sizeG2){
@@ -147,7 +153,7 @@ void optimizeDivision(modMat *B, s_vector s){
 	size_t max_v=*s;/* impInd=0;*/
 	double Q_0, Qmax, Qtmp, deltaQ=1,improveTmp=0, improveMax=0;
 	while (deltaQ>0.0){
-		Q_0=getModularity(B,B->g,s);
+		Q_0=getModularity(B ,s);
 		for (p=s; p<s+B->gSize ; p++){
 				(*p)*=-1; /*Temporarily move vertex s[i] to the other group */
 				Qtmp=getModularity(B,B->g,s)-Q_0;
