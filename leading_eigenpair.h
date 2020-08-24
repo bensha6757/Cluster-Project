@@ -1,8 +1,8 @@
 /*
  * leading_eigenpair.h
  *
- *  Created on: 24 баевЧ 2020
- *      Author: вм
+ *  Created on: 24 пїЅпїЅпїЅпїЅпїЅ 2020
+ *      Author: пїЅпїЅ
  */
 
 #ifndef LEADING_EIGENPAIR_H_
@@ -28,7 +28,7 @@ typedef unsigned int boolean;
 /*
  * Compute leading eigen pair of modularity Matrix B_hat[g]
  */
-void leadingEigenPair(modMat *B, modMat *Bg, vector leadEigenVec, double* leadEigenVal);
+void leading_eigenpair(modMat *B, modMat *Bg, vector leadEigenVec, double* leadEigenVal);
 
 
 #endif /* LEADING_EIGENPAIR_H_ */
