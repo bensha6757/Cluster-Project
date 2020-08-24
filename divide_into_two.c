@@ -1,8 +1,8 @@
 /*
  * divide_into_two.c
  *
- *  Created on: 24 áàåâ× 2020
- *      Author: âì
+ *  Created on: 24 ï¿½ï¿½ï¿½ï¿½ï¿½ 2020
+ *      Author: ï¿½ï¿½
  */
 
 
@@ -74,19 +74,19 @@ void map_s_to_groups(modMat *B, vector s, size_t *g1, size_t *g2,  size_t *sizeG
 /*Optimize a division encoded by {-1,1} vector s by moving a vertex to other group and ascending modularity Q */
 void optimize_division_modified(modMat *B, vector s){
 	vector p;
-	size_t i, max_v=*s;/* impInd=0;*/
+	size_t i, *max_v=s;/* impInd=0;*/
 	double Q_0, Qmax, Qtmp, deltaQ=1,improveTmp=0, improveMax=0;
 	double *Bs=(double*)malloc(B->gSize*sizeof(double));
 	if (Bs==NULL)
 		exit(MEM_ALLOC_ERROR);
 	while (deltaQ>0.0){
-		Q_0=getModularity(B ,s, Bs, -1);
+		Q_0=getModularity(B ,s, Bs, INITIAL_Q);
 		for (i=0; i<B->gSize ; i++){
 				Qtmp=getModularity(B,s,Bs,i)-Q_0;
 				if (Qtmp>Qmax){
 					Qmax=Qtmp;
 					improveTmp+=Qmax;
-					max_v=*p;
+					max_v=s+i;
 				}
 				if (improveTmp>improveMax){
 					improveMax=improveTmp;
@@ -120,10 +120,10 @@ void optimize_division_original(modMat *B, vector s){
 			exit(MEM_ALLOC_ERROR);
 		}
 		for (i=0; i<B->gSize ; i++){
-			Q_0=getModularity(B ,s, Bs, INITIAL_Q);
+			Q_0=get_modularity(B ,s, Bs, INITIAL_Q);
 			for (p=moved; p<moved+B->gSize; p++){
 				if (!p)
-					*score++=getModularity(B,s,Bs,i)-Q_0;
+					*score++=get_modularity(B,s,Bs,i)-Q_0;
 			}
 			score-=B->gSize;
 			for (p=score; p<score+B->gSize; p++){
@@ -141,7 +141,7 @@ void optimize_division_original(modMat *B, vector s){
 		for (p=improve; p<improve+B->gSize; p++){
 			if (*p>improveMax){
 				improveMax=*p;
-				impInd=B->gSize-p;
+				impInd=improve-p;
 			}
 		}
 		for (i=B->gSize-1; i>impInd; i--)
@@ -165,15 +165,18 @@ void eigen_to_s(modMat *B, vector u, vector s){
 
 int div_into_two(modMat *B,Subgroup g, size_t sizeG, Subgroup **g1, Subgroup **g2, size_t *sizeG1, size_t *sizeG2){
 	double beta;
-	vector u,s;
-	leadingEigenPair(B,g,u,&beta);
+	vector u,s,tmp;
+	leading_eigenpair(B,g,u,&beta);
 	if (beta<=0.0)
 		return GROUP_INDIVISIBLE;
 	s=(vector)malloc(B->gSize*sizeof(size_t));
 	if (s==NULL)
 		exit(MEM_ALLOC_ERROR);
-	eigenToS(B,u,s);
-	if (getModularity(B,g,s)<=0.0)
+	eigen_to_s(B,u,s);
+	tmp=(vector)malloc(B->gSize*sizeof(size_t));
+	if (tmp==NULL)
+		exit(MEM_ALLOC_ERROR);
+	if (get_modularity(B,s,tmp,INITIAL_Q)<=0.0)
 		return GROUP_INDIVISIBLE;
 	else {
 		optimize_division_original(B, s);
