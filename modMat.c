@@ -11,48 +11,11 @@ typedef size_t* vector;
 typedef vector Subgroup;
 
 
-void freeModMat(modMat *B){
+void free_mod_mat(modMat *B){
 	B->A->free(B->A);
 	free(B->K);
 	free(B->g);
 	free(B);
-}
-
-/*allocate new ModMat of size n*/
-modMat *allocateModMat(int n){
-	char z='z';
-	modMat *rep=(modMat*)malloc(sizeof(modMat));
-	if (rep==NULL)
-		exit(MEM_ALLOC_ERROR);
-
-	rep->gSize=n;
-
-	if (USE_LINKED)
-		rep->A = spmat_allocate_list(n);
-	if (rep->A==NULL)
-		z='a';
-
-	rep->K=(double*)malloc(n*sizeof(double));
-	if (rep->K==NULL)
-		z='b';
-
-	rep->g=(Subgroup)malloc(n*sizeof(size_t));
-	if (rep->g==NULL)
-		z='c';
-
-	switch(z){
-	case 'c':	free(rep->K);
-	case 'b':	rep->A->free(rep->A);
-	case 'a':	free(rep);
-	default : 	exit(MEM_ALLOC_ERROR);
-	}
-	rep->free=freeModMat;
-
-	rep->mult=mult_B_hat_g;
-
-	rep->get_row=get_B_hat_row;
-
-	return rep;
 }
 
 
@@ -69,7 +32,7 @@ void get_K_row(modMat *B, size_t i, double *row){
 }
 
 /* Copy row i of B_hat matrix of size B->gSize to row vector */
-void get_B_hat_row(modMat *B, size_t i, double *row){
+void get_B_hat_row(const struct _modmat *B, size_t i, double *row){
 	double *A_i, *K_i;
 	double f_i=0;
 	size_t j;
@@ -203,7 +166,7 @@ size_t genM(vector K, size_t sizeG){
 
 /* constructor, creating a new sub matrix B_hat[g] */
 modMat *create_Sub_Matrix(modMat *B, Subgroup g, size_t sizeG){
-    modMat *Bg = allocateModMat(sizeG);
+    modMat *Bg = allocate_mo_mat(sizeG);
     if (Bg==NULL)
 		exit(MEM_ALLOC_ERROR);
     Bg->A = create_sub_sparse_matrix_linked(B->A, g, sizeG, Bg->spmatSize);
@@ -278,6 +241,43 @@ void mult_B_hat_g(modMat *B, modMat *Bg, const double *v, double *result){
 	free(tmp3);
 	free(tmp2);
 	free(tmp1);
+}
+
+/*allocate new ModMat of size n*/
+modMat *allocate_mod_mat(int n){
+	char z='z';
+	modMat *rep=(modMat*)malloc(sizeof(modMat));
+	if (rep==NULL)
+		exit(MEM_ALLOC_ERROR);
+
+	rep->gSize=n;
+
+	if (USE_LINKED)
+		rep->A = spmat_allocate_list(n);
+	if (rep->A==NULL)
+		z='a';
+
+	rep->K=(vector)malloc(n*sizeof(double));
+	if (rep->K==NULL)
+		z='b';
+
+	rep->g=(Subgroup)malloc(n*sizeof(size_t));
+	if (rep->g==NULL)
+		z='c';
+
+	switch(z){
+	case 'c':	free(rep->K);
+	case 'b':	rep->A->free(rep->A);
+	case 'a':	free(rep);
+	default : 	exit(MEM_ALLOC_ERROR);
+	}
+	rep->free=free_mod_mat;
+
+	rep->mult=mult_B_hat_g;
+
+	rep->get_row=get_B_hat_row;
+
+	return rep;
 }
 
 

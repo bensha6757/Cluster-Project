@@ -31,7 +31,7 @@ typedef struct _modmat {
 	void (*free)(struct _modmat *B, Subgroup g);
 
 	/*Get row i of B*/
-	void (*get_row)(modMat *B, size_t i, double *row);
+	void (*get_row)(const struct _modmat *B, size_t i, double *row);
 
 	void (*mult)(const struct _modmat *B, const struct _modmat *Bg, const double *v, double *result);
 	/*multiply ModMat with vector v and store result.
