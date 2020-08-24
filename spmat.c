@@ -13,7 +13,7 @@ typedef struct linked_list {
 	DATA val;
 	int col;
 	struct linked_list *next;
-}linked_list;
+} linked_list;
 
 typedef  struct  linked_list Node;
 
@@ -23,17 +23,6 @@ void add_after(Node *head, int i){
 	verify(head->next != NULL);
 	head->next->col = i;
 	head->next->val = 1;
-}
-
-void getSpMatRow(struct _spmat *A, const double *row, int i){
-	double *basis;
-	basis=(double*)calloc(A->n,sizeof(double));
-	if (basis==NULL){
-		exit(1);
-	}
-	*(basis+i)=1;
-	A->mult(A,basis,row);
-	free(basis);
 }
 
 /* adding a row to the sub sparse matrix */
@@ -276,6 +265,31 @@ spmat* spmat_allocate_array(int n, int nnz)
 	ret->mult=mult_arrays;
 	ret->private=imp; /* pointer assignment */
 	return ret;
+}
+
+
+size_t get_sub_matrix_nnz_arrays(spmat *A, int *g, int n){
+
+}
+
+/* creating a sub sparse matrix for Algorithm 2 */
+spmat* create_sub_sparse_matrix_arrays(spmat *A, int *g, int n , size_t *spmatSize){
+	spmat *sub = spmat_allocate_arrays(n,get_sub_matrix_nnz_arrays(A, g,n));
+
+	return sub;
+}
+
+
+/**** GET_ROW FUNCTION FOR SPMAT, INDEPENDENT FROM IMPL ****/
+void getSpMatRow(struct _spmat *A, const double *row, int i){
+	double *basis;
+	basis=(double*)calloc(A->n,sizeof(double));
+	if (basis==NULL){
+		exit(1);
+	}
+	*(basis+i)=1;
+	A->mult(A,basis,row);
+	free(basis);
 }
 
 /**** TEST SUBMATRIX IMPLEMENTATION ****/

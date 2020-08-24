@@ -10,7 +10,9 @@ typedef struct _spmat {
 	 * exactly n times in order (i = 0 to n-1) */
 	void (*add_row)(struct _spmat *A, const double *row, int i);
 
+	/*Gets row i from the matrix */
 	void (*get_row)(struct _spmat *A, const double *row, int i);
+
 	/* Frees all resources used by A */
 	void (*free)(struct _spmat *A);
 
