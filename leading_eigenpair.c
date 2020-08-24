@@ -92,7 +92,7 @@ void leading_eigenpair(modMat *B, modMat *Bg, vector leadEigenVec, double* leadE
 		printf("# of power iterations: %d\n", (int)iter);
 	#endif
 	leadEigenVec=bnext;
-	*leadEigenVal = approx_dom_eigen_val(Bg,bprev,bnext) - get_one_norm(Bg);
+	*leadEigenVal = approx_dom_eigen_val(Bg,bprev,bnext) - get_1_norm(Bg);
 	free(bnext);
 	free(bprev);
 }

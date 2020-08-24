@@ -5,6 +5,8 @@
 #include <stdlib.h>
 #include <stddef.h>
 
+#define USE_LINKED 1
+
 typedef size_t* vector;
 typedef vector Subgroup;
 
@@ -25,7 +27,8 @@ modMat *allocateModMat(int n){
 
 	rep->gSize=n;
 
-	rep->A = spmat_allocate_list(n);
+	if (USE_LINKED)
+		rep->A = spmat_allocate_list(n);
 	if (rep->A==NULL)
 		z='a';
 
@@ -57,7 +60,7 @@ void get_adj_row(modMat *B, size_t i, double *row){
 	B->A->get_row(B->A, row, i);
 }
 
-void get_k_row(modMat *B, size_t i, double *row){
+void get_K_row(modMat *B, size_t i, double *row){
 	vector p;
 	size_t k_i;
 	k_i=*(B->K+i);
@@ -130,9 +133,9 @@ void read_num_from_file(int *dest,unsigned int num,unsigned int size,FILE* file)
 		exit(FILE_READ_ERROR);
 }
 
-/*	Convert node indices (like input file format) to a {0,1} vector of length n
+/*	Convert node indices (like input file format) to a pre-allocated result {0,1} vector of length n
  * 	that can be added to a spmat via add_row. */
-void convert_adj_list(size_t k, size_t n, vector adj, vector res){
+void convert_adj_list(size_t k, size_t n, vector adj, double *res){
 	int *i, temp;
 	for (i=adj; i<adj+k; i++){
 		temp=*i;
@@ -152,17 +155,18 @@ void read_totalV_from_file(FILE *input, size_t *n){
 
 void load_mod_matrix_from_file(FILE *input, modMat *B){
 	size_t i, currDeg;
-	vector matLine, *inputNeighbours, *k, *g;
+	vector *inputNeighbours, *k, *g;
+	double *matLine;
 	read_num_from_file(i,sizeof(size_t),1,input); /*Assuming file rewinded, skip |V| */
 	k=B->K;
 	g=B->g;
 	/* Populate B with A, K matrices, and compute M */
 	for (i=0; i<B->gSize; i++){
-		read_num_from_file(currDeg,sizeof(size_t),1,input);
+		read_num_from_file(&currDeg,sizeof(size_t),1,input);
 		*k++=currDeg;
 		B->M+=currDeg;
 		inputNeighbours=(vector)malloc(currDeg*sizeof(size_t));
-		matLine=(vector)malloc(B->gSize*sizeof(size_t));
+		matLine=(double*)malloc(B->gSize*sizeof(size_t));
 		if (inputNeighbours==NULL)
 			exit(MEM_ALLOC_ERROR);
 		read_num_from_file(inputNeighbours,sizeof(size_t),currDeg,input);
@@ -237,7 +241,7 @@ void mult_F_and_C(modMat *B, modMat *Bg, double *v, bool shift, double *res){
     size_t M = Bg->M, origM = B->M ,sizeG = Bg->gSize;
     double fi, shiftNorm;
     if (!shift)
-      shiftNorm = getOneNorm(Bg);
+      shiftNorm = get_1_norm(Bg);
     for (size_t *ki = K ; ki-K < sizeG ; ki++){
       fi = (*spmatSize) - (((*ki) * M) / origM);
       *res = (fi - shiftNorm)  * (*v) ;
