@@ -15,11 +15,11 @@ void free_mod_mat(modMat *B){
 }
 
 
-void get_adj_row(modMat *B, size_t i, double *row){
+void get_adj_row(const modMat *B, size_t i, double *row){
 	B->A->get_row(B->A, row, i);
 }
 
-void get_K_row(modMat *B, size_t i, double *row){
+void get_K_row(const modMat *B, size_t i, double *row){
 	int_vector p;
 	size_t k_i;
 	k_i=*(B->K+i);
@@ -76,7 +76,6 @@ void set_1_norm(modMat *B){
 	B->one_norm=max;
 }
 
-
 /* helping function, populate resK and resM with sub-vector K and M aligned with the subgroup g*/
 void genKandM(int_vector K, Subgroup g, size_t gSize, modMat *Bg){
     int_vector Kg = (int_vector)malloc(sizeof(size_t) * gSize);
@@ -111,7 +110,7 @@ modMat *create_Sub_Matrix(modMat *B, Subgroup g, size_t sizeG, int impl_flag){
 	if (impl_flag)
     	Bg->A = create_sub_sparse_matrix_linked(B->A, g, sizeG, Bg->spmatSize);
 	else
-		Bg->A = create_sub_sparse_matrix_arrays(B->A, g, sizeG, Bg->spmatSize);
+		Bg->A = create_sub_sparse_matrix_array(B->A, g, sizeG, Bg->spmatSize);
     Bg->g = g;
     genKandM(B->K, g, sizeG, Bg);
 	set_1_norm(Bg);
