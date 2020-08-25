@@ -159,7 +159,7 @@ spmat* spmat_allocate_list(int n){
 	A->add_row = add_row_linked;
 	A->free = free_linked;
 	A->mult = mult_linked;
-	A->get_row = getSpMatRow;
+	/*A->get_row = get_spmat_row_linked;*/
 	A->private =  (Node**) malloc (sizeof(Node*) * (A->n));
 	VERIFY(A->private != NULL,MEM_ALLOC_ERROR)
 	return A;
@@ -253,20 +253,64 @@ spmat* spmat_allocate_array(int n, int nnz)
 	return ret;
 }
 
-
-size_t get_sub_matrix_nnz_arrays(spmat *A, int *g, int n){
-
+size_t get_sub_matrix_nnz_arrays(spmat *A, int *g, int sizeG){
+	arraymat *imp=((arraymat*)(A->private));
+	int *cols=imp->colind, *t, *p;
+	size_t cnt=0;
+	for (p=g; p<g+sizeG; p++){
+		for (t=cols; t<cols+A->n; t++)
+			cnt += *p==*t ? 1 : 0;
+	}
+	return cnt;
 }
 
-/* creating a sub sparse matrix for Algorithm 2 */
-spmat* create_sub_sparse_matrix_arrays(spmat *A, int *g, int n , size_t *spmatSize){
-	spmat *sub = spmat_allocate_arrays(n,get_sub_matrix_nnz_arrays(A, g,n));
-
+/**
+ * Can be used as a generic interface function of spmat module (for both impl.)
+ */
+void get_sub_row_arrays(spmat *A, int i, double *dest, int *g, size_t sizeG, size_t *spmatSize){
+	double *p, sub_ij;
+	int *q;
+	p=(double*)malloc(A->n*sizeof(double));
+	if (p==NULL)
+		exit(MEM_ALLOC_ERROR);
+	A->get_row(A,p,i);
+	for (q=g; q<g+sizeG; q++){
+		sub_ij=*(p+*q);
+		*(dest++)=sub_ij;
+		*(spmatSize+i)+=(size_t)sub_ij;
+	}
+	free(p);
+}
+/* Creating a sub sparse matrix for Algorithm 2.
+ * Can be used as a generic interface function of spmat module (for both impl.)
+ * 
+ * If impl_flag==1, uses linked-list implementation. Otherwise, use arrays impl.
+ */
+spmat* create_sub_sparse_matrix_arrays(spmat *A, int *g, int sizeG , size_t *spmatSize /*, int impl_flag*/){
+	spmat *sub;
+	double *sub_row;
+	int *p;
+	/*if (impl_flag)
+		sub = spmat_allocate_linked(sizeG);
+	else */
+		sub = spmat_allocate_arrays(sizeG,get_sub_matrix_nnz_arrays(A, g, sizeG));
+	sub_row=(double*)malloc(sizeG*sizeof(double));
+	if (sub_row==NULL)
+		exit(MEM_ALLOC_ERROR);
+	for (p=g; p<g+sizeG; p++){
+		get_sub_row_arrays(A,*p,sub_row,g,sizeG,spmatSize);
+		sub->add_row(sub,sub_row,p-g);
+	}
+	free(sub_row);
 	return sub;
 }
 
 
-/**** GET_ROW FUNCTION FOR SPMAT, INDEPENDENT FROM IMPL ****/
+/** DEPRECATED
+ * 	Generic get_row for spmat, independently of implementation (lists or arrays).
+ * 	Utilizes A->mult with a standard vector (v[j]==1 if i=j, else v[j]==0).	
+ *  ****/
+/*
 void getSpMatRow(struct _spmat *A, const double *row, int i){
 	double *basis;
 	basis=(double*)calloc(A->n,sizeof(double));
@@ -275,6 +319,7 @@ void getSpMatRow(struct _spmat *A, const double *row, int i){
 	A->mult(A,basis,row);
 	free(basis);
 }
+*/
 
 /**** TEST SUBMATRIX IMPLEMENTATION ****/
 
