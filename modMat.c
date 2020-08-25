@@ -276,8 +276,6 @@ modMat* allocate_mod_mat(int n){
 	}
 	rep->free=free_mod_mat;
 
-	rep->mult=mult_B_hat_g;
-
 	rep->get_row=get_B_hat_row;
 
 	return rep;
