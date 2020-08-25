@@ -31,4 +31,8 @@ spmat* spmat_allocate_list(int n);
 /* Allocates a new arrays sparse matrix of size n with nnz non-zero elements */
 spmat* spmat_allocate_array(int n, int nnz);
 
+spmat* create_sub_sparse_matrix_linked(spmat *A, int *g, int n , size_t *spmatSize);
+
+spmat* create_sub_sparse_matrix_array(spmat *A, int *g, int sizeG , size_t *spmatSize /*, int impl_flag*/);
+
 #endif

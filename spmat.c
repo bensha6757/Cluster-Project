@@ -286,7 +286,7 @@ void get_sub_row_arrays(spmat *A, int i, double *dest, int *g, size_t sizeG, siz
  * 
  * If impl_flag==1, uses linked-list implementation. Otherwise, use arrays impl.
  */
-spmat* create_sub_sparse_matrix_arrays(spmat *A, int *g, int sizeG , size_t *spmatSize /*, int impl_flag*/){
+spmat* create_sub_sparse_matrix_array(spmat *A, int *g, int sizeG , size_t *spmatSize /*, int impl_flag*/){
 	spmat *sub;
 	double *sub_row;
 	int *p;
