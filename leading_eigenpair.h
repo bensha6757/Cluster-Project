@@ -20,10 +20,14 @@ typedef double* vector;
 typedef unsigned int boolean;
 
 
-/*
+/**
  * Compute leading eigen pair of modularity Matrix B_hat[g]
  */
 void leading_eigenpair(modMat *B, modMat *Bg, vector leadEigenVec, double* leadEigenVal);
 
+/**
+ * Compute dot product of two vectors of length d
+ */
+double dot_prod(vector v, vector u, size_t d);
 
 #endif /* LEADING_EIGENPAIR_H_ */
