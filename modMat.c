@@ -164,7 +164,7 @@ size_t genM(int_vector K, size_t sizeG){
 
 /* constructor, creating a new sub matrix B_hat[g] */
 modMat *create_Sub_Matrix(modMat *B, Subgroup g, size_t sizeG){
-    modMat *Bg = allocate_mo_mat(sizeG);
+    modMat *Bg = allocate_mod_mat(sizeG);
     if (Bg==NULL)
 		exit(MEM_ALLOC_ERROR);
     Bg->A = create_sub_sparse_matrix_linked(B->A, g, sizeG, Bg->spmatSize);
@@ -264,10 +264,10 @@ modMat *allocate_mod_mat(int n){
 		z='c';
 
 	switch(z){
-	case 'c':	free(rep->K);
-	case 'b':	rep->A->free(rep->A);
-	case 'a':	free(rep);
-	default : 	exit(MEM_ALLOC_ERROR);
+		case 'c':	free(rep->K);
+		case 'b':	rep->A->free(rep->A);
+		case 'a':	free(rep);
+		default : 	return NULL;
 	}
 	rep->free=free_mod_mat;
 
