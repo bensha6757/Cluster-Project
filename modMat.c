@@ -4,12 +4,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stddef.h>
+#include <math.h>
 
 #define USE_LINKED 1
-
-typedef size_t* vector;
-typedef vector Subgroup;
-
 
 void free_mod_mat(modMat *B){
 	B->A->free(B->A);
@@ -24,7 +21,7 @@ void get_adj_row(modMat *B, size_t i, double *row){
 }
 
 void get_K_row(modMat *B, size_t i, double *row){
-	vector p;
+	int_vector p;
 	size_t k_i;
 	k_i=*(B->K+i);
 	for (p=B->K; p<B->K+B->gSize; p++)
@@ -40,7 +37,7 @@ void get_B_hat_row(const struct _modmat *B, size_t i, double *row){
 	A_i=(double*)malloc(B->gSize*sizeof(double));
 	if (A_i==NULL)
 		exit(MEM_ALLOC_ERROR);
-	K_i=(vector)malloc(B->gSize*sizeof(size_t));
+	K_i=(int_vector)malloc(B->gSize*sizeof(size_t));
 	if (A_i==NULL){
 		free(A_i);
 		exit(MEM_ALLOC_ERROR);
@@ -63,7 +60,6 @@ double sum_of_abs(double *row, size_t n){
 		res+=fabs(*p);
 	return res;
 }
-
 
 
 double get_1_norm(modMat *B){
@@ -98,8 +94,8 @@ void read_num_from_file(int *dest,unsigned int num,unsigned int size,FILE* file)
 
 /*	Convert node indices (like input file format) to a pre-allocated result {0,1} vector of length n
  * 	that can be added to a spmat via add_row. */
-void convert_adj_list(size_t k, size_t n, vector adj, double *res){
-	int *i, temp;
+void convert_adj_list(size_t k, size_t n, size_t *adj, double *res){
+	size_t *i, temp;
 	for (i=adj; i<adj+k; i++){
 		temp=*i;
 		while (temp-->0)
@@ -111,14 +107,16 @@ void convert_adj_list(size_t k, size_t n, vector adj, double *res){
 }
 
 
-void read_totalV_from_file(FILE *input, size_t *n){
-	read_num_from_file(n,sizeof(size_t),1,input);
+size_t read_totalV_from_file(FILE *input){
+	int n;
+	read_num_from_file(&n,sizeof(size_t),1,input);
 	rewind(input);
+	return n;
 }
 
 void load_mod_matrix_from_file(FILE *input, modMat *B){
 	size_t i, currDeg;
-	vector *inputNeighbours, *k, *g;
+	int_vector inputNeighbours, k, g;
 	double *matLine;
 	read_num_from_file(i,sizeof(size_t),1,input); /*Assuming file rewinded, skip |V| */
 	k=B->K;
@@ -126,9 +124,9 @@ void load_mod_matrix_from_file(FILE *input, modMat *B){
 	/* Populate B with A, K matrices, and compute M */
 	for (i=0; i<B->gSize; i++){
 		read_num_from_file(&currDeg,sizeof(size_t),1,input);
-		*k++=currDeg;
+		*(k++)=currDeg;
 		B->M+=currDeg;
-		inputNeighbours=(vector)malloc(currDeg*sizeof(size_t));
+		inputNeighbours=(int*)malloc(currDeg*sizeof(int));
 		matLine=(double*)malloc(B->gSize*sizeof(size_t));
 		if (inputNeighbours==NULL)
 			exit(MEM_ALLOC_ERROR);
@@ -143,10 +141,10 @@ void load_mod_matrix_from_file(FILE *input, modMat *B){
 }
 
 /* helping function, populate resK and resM with sub-vector K and M aligned with the subgroup g*/
-void genKandM(vector K, Subgroup g, size_t gSize, modMat *Bg){
-    vector Kg = (vector)malloc(sizeof(size_t) * gSize);
+void genKandM(int_vector K, Subgroup g, size_t gSize, modMat *Bg){
+    int_vector Kg = (int_vector)malloc(sizeof(size_t) * gSize);
     size_t Mg = 0;
-    for (vector p = Kg ; p-Kg < gSize ; p++){
+    for (int_vector p = Kg ; p-Kg < gSize ; p++){
         *p = K[*g];
         Mg += *p;
         g++;
@@ -156,7 +154,7 @@ void genKandM(vector K, Subgroup g, size_t gSize, modMat *Bg){
 }
 
 /* helping function, generates M, which is the sum of all degrees in K*/
-size_t genM(vector K, size_t sizeG){
+size_t genM(int_vector K, size_t sizeG){
     size_t M = 0;
     for (size_t *p = K ; p-K < sizeG ; p++){
       M += *p;
@@ -186,7 +184,7 @@ double dot_product(size_t *K, double *v, size_t sizeG){
 
 /* part of the modularity matrix multiplication for power iteration, multiplying the degrees matrix (k_i * k_j / M) */
 void mult_K(modMat *B, modMat *Bg, double *v, double *res){
-    vector K = Bg->K;
+    int_vector K = Bg->K;
     size_t origM = B->M, sizeG = Bg->gSize;
     double dot = dot_product(K,v,sizeG);
     verify(res != NULL, NULL_POINTER_ERROR);
@@ -199,8 +197,8 @@ void mult_K(modMat *B, modMat *Bg, double *v, double *res){
 
 /* part of the modularity matrix multiplication for power iteration, multiplying the 2 matrices (f_i - ||C||) * I */
 void mult_F_and_C(modMat *B, modMat *Bg, double *v, bool shift, double *res){
-    vector K = Bg->K;
-    vector spmatSize = Bg->spmatSize;
+    int_vector K = Bg->K;
+    int_vector spmatSize = Bg->spmatSize;
     size_t M = Bg->M, origM = B->M ,sizeG = Bg->gSize;
     double fi, shiftNorm;
     if (!shift)
@@ -218,7 +216,7 @@ void mult_F_and_C(modMat *B, modMat *Bg, double *v, bool shift, double *res){
 /* Implements multiplication of B_hat[g] with a vector by
  * using several mult. functions and adding results together */
 void mult_B_hat_g(modMat *B, modMat *Bg, const double *v, double *result){
-	double *tmp1, *tmp2, *tmp3, shiftNorm, *p;
+	double *tmp1, *tmp2, *tmp3, *p;
 	tmp1=(double*)malloc(sizeof(double)*B->gSize);
 	if (tmp1==NULL)
 		exit(MEM_ALLOC_ERROR);
@@ -257,7 +255,7 @@ modMat *allocate_mod_mat(int n){
 	if (rep->A==NULL)
 		z='a';
 
-	rep->K=(vector)malloc(n*sizeof(double));
+	rep->K=(int_vector)malloc(n*sizeof(double));
 	if (rep->K==NULL)
 		z='b';
 
@@ -281,17 +279,22 @@ modMat *allocate_mod_mat(int n){
 }
 
 
-/* DEPRECATED
+/* 	DEPRECATED
  *
- * Multiply submatrix B[g] with vector u;
-   This is an implementation for mult method in ModMat type struct.
+ *	Multiply submatrix B[g] with vector u;
+ *  This is an implementation for mult method in ModMat type struct.
+ *	For original B of the whole network, sumK == B->M 
+ *  
+ *  spmat's mult must be modified to support multiplying B[g]
+ */
 
+/*
 void multSubgroupMatrix(modMat *Bg, Subgroup g, double *u, double *res){
 	double *resAu, *resKu, sumK=0;
 	vector j, *i, t, *tempg=g;
 
 	resAu=(double*)malloc(Bg->n*sizeof(double));
-	Bg->A->mult(Bg->A,u,resAu); /* spmat's mult must be modified to support multiplying B[g]
+	Bg->A->mult(Bg->A,u,resAu); 
 
 	resKu=(double*)malloc(Bg->n*sizeof(double));
 	for (j=Bg->K; j<Bg->K+Bg->n; j++)
@@ -299,7 +302,7 @@ void multSubgroupMatrix(modMat *Bg, Subgroup g, double *u, double *res){
 			sumK += (*j);
 			tempg++;
 		}
-	/* For original B of the whole network, sumK == B->M
+	
 
 	tempg=g;
 	for (i=Bg->K; i<Bg->K+Bg->n; i++)

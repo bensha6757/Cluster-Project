@@ -17,6 +17,8 @@
 #include "leading_eigenpair.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
+#include <string.h>
 
 double dot_prod(vector v, vector u, size_t d){
 	unsigned int i;
@@ -28,7 +30,7 @@ double dot_prod(vector v, vector u, size_t d){
 }
 
 double norm(vector v, size_t d){
-	return sqrt(dotProd(v,v,d));
+	return sqrt(dot_prod(v,v,d));
 }
 
 void set_rand_vector(vector v, size_t n){
@@ -68,7 +70,7 @@ void power_iteration(modMat *B, modMat *Bg, vector v, vector result){
 /*
  * Compute leading eigen pair of modularity Matrix B_hat[g]
  */
-void leading_eigenpair(modMat *B, modMat *Bg, vector leadEigenVec, double* leadEigenVal){
+void leading_eigenpair(modMat *B, modMat *Bg, vector leadEigenVec, double *leadEigenVal){
 	size_t iter=0;
 	vector bprev=(vector)malloc(Bg->gSize*sizeof(double));
 	if (bprev==NULL)
@@ -82,7 +84,7 @@ void leading_eigenpair(modMat *B, modMat *Bg, vector leadEigenVec, double* leadE
 	power_iteration(B,Bg,bprev,bnext);
 	iter++;
 	while (!is_within(bprev,bnext,Bg->gSize)){
-		memcpy(bprev,bnext,Bg->gSize*sizeof(double*));
+		memcpy(bprev,bnext,Bg->gSize*sizeof(double));
 		power_iteration(B,Bg,bprev,bnext);
 		iter++;
 		if (iter>1000*Bg->gSize)
