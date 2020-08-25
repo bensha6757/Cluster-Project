@@ -1,8 +1,8 @@
 /*
  * divide_into_two.h
  *
- *  Created on: 24 баевЧ 2020
- *      Author: вм
+ *  Created on: 24 пїЅпїЅпїЅпїЅпїЅ 2020
+ *      Author: пїЅпїЅ
  */
 
 #ifndef DIVIDE_INTO_TWO_H_
@@ -15,11 +15,11 @@
 
 #define INITIAL_Q -1
 
-typedef enum message_t {
+typedef enum divres_t {
 	GROUP_INDIVISIBLE,
 	GROUP_DIVIDED
-} MESSAGE;
+} DIV_RESULT;
 
-int div_into_two(modMat *B,Subgroup g, size_t sizeG, Subgroup **g1, Subgroup **g2, size_t *sizeG1, size_t *sizeG2);
+DIV_RESULT div_into_two(modMat *B,Subgroup g, size_t sizeG, Subgroup **g1, Subgroup **g2, size_t *sizeG1, size_t *sizeG2);
 
 #endif /* DIV_INTO_TWO_H_ */
