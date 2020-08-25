@@ -1,10 +1,3 @@
-/*
- * divide_into_two.c
- *
- *  Created on: 24 ����� 2020
- *      Author: ��
- */
-
 
 #include "io_mem_errors.h"
 #include "modMat.h"
@@ -26,8 +19,7 @@ double get_modularity(modMat *B, vector s, vector Bs, int movedVertex){
 	}
 	else {
 		double *tmp=(double*)malloc(B->gSize*sizeof(double));
-		if (tmp==NULL)
-			exit(MEM_ALLOC_ERROR);
+		VERIFY(tmp!=NULL,MEM_ALLOC_ERROR)
 		B->get_row(B,movedVertex,tmp);
 		*(s+movedVertex)*=-1;
 		sgn=*(s+movedVertex);
@@ -51,8 +43,7 @@ void optimize_division_modified(modMat *B, vector s){
 	vector max_v=s;/* impInd=0;*/
 	double Q_0, Qmax, Qtmp, deltaQ=1,improveTmp=0, improveMax=0;
 	double *Bs=(double*)malloc(B->gSize*sizeof(double));
-	if (Bs==NULL)
-		exit(MEM_ALLOC_ERROR);
+	VERIFY(Bs!=NULL,MEM_ALLOC_ERROR)
 	while (deltaQ>0.0){
 		Q_0=get_modularity(B ,s, Bs, INITIAL_Q);
 		for (i=0; i<B->gSize ; i++){
@@ -79,20 +70,12 @@ void optimize_division_original(modMat *B, vector s){
 	size_t i, *indices, maxi, *moved, impInd=0;
 	double Q_0, *score, maxScore=0, deltaQ=1,*improve, improveMax=0;
 	double *Bs=(double*)malloc(B->gSize*sizeof(double));
-	if (Bs==NULL)
-		exit(MEM_ALLOC_ERROR);
+	VERIFY (Bs!=NULL,MEM_ALLOC_ERROR)
 	score=(double*)malloc(B->gSize*sizeof(double));
-	if (score==NULL){
-		free(Bs);
-		exit(MEM_ALLOC_ERROR);
-	}
+	VERIFY(score!=NULL,MEM_ALLOC_ERROR)
 	while (deltaQ>0.0){
 		moved=(size_t*)calloc(B->gSize,sizeof(size_t));
-		if (moved==NULL){
-			free(score);
-			free(Bs);
-			exit(MEM_ALLOC_ERROR);
-		}
+		VERIFY(moved!=NULL,MEM_ALLOC_ERROR)
 		for (i=0; i<B->gSize ; i++){
 			Q_0=get_modularity(B ,s, Bs, INITIAL_Q);
 			for (p=moved; p<moved+B->gSize; p++){
@@ -151,13 +134,9 @@ void map_s_to_groups(modMat *B, vector s, size_t *g1, size_t *g2,  size_t *sizeG
 	*sizeG1 = v;
 	*sizeG2 = B->gSize - *sizeG1;
 	g1=(size_t*)malloc(*sizeG1*sizeof(size_t));
-	if (g1==NULL)
-		exit(MEM_ALLOC_ERROR);
+	VERIFY(g1!=NULL,MEM_ALLOC_ERROR)
 	g2=(size_t*)malloc(*sizeG2*sizeof(size_t));
-	if (g2==NULL){
-		free(g1);
-		exit(MEM_ALLOC_ERROR);
-	}
+	VERIFY(g2!=NULL,MEM_ALLOC_ERROR)
 	for (i=s; i<s+B->gSize; i++){
 		v=i-s;
 		if (IS_POSITIVE(*i))
@@ -172,16 +151,14 @@ DIV_RESULT div_into_two(modMat *B,Subgroup g, size_t sizeG, Subgroup **g1, Subgr
 	vector u,s;
 	modMat *Bg;
 	DIV_RESULT ret;
-	Bg=create_Sub_Matrix(B,g, sizeG, USE_LINKED);
+	Bg=create_Sub_Matrix(B, g, sizeG, USE_LINKED);
 	u=(vector)malloc(Bg->gSize*sizeof(double));
-	if (u==NULL)
-		exit(MEM_ALLOC_ERROR);
+	VERIFY(u!=NULL,MEM_ALLOC_ERROR)
 	leading_eigenpair(B,Bg,u,&beta);
 	if (beta<=0.0)
 		ret=GROUP_INDIVISIBLE;
 	s=(vector)malloc(B->gSize*sizeof(size_t));
-	if (s==NULL)
-		exit(MEM_ALLOC_ERROR);
+	VERIFY(s!=NULL,MEM_ALLOC_ERROR)
 	eigen_to_s(B,u,s);
 	if (get_modularity(B,s,u,INITIAL_Q)<=0.0)
 		ret=GROUP_INDIVISIBLE;
@@ -190,8 +167,8 @@ DIV_RESULT div_into_two(modMat *B,Subgroup g, size_t sizeG, Subgroup **g1, Subgr
 		map_s_to_groups(B,s, *g1, *g2, sizeG1, sizeG2);
 		ret=GROUP_DIVIDED;
 	}
+	Bg->free(Bg);
 	free(u);
 	free(s);
 	return ret;
 }
-

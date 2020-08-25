@@ -1,9 +1,3 @@
-/*
- * leading_eigenpair.h
- *
- *  Created on: 24 ����� 2020
- *      Author: ��
- */
 
 #ifndef LEADING_EIGENPAIR_H_
 #define LEADING_EIGENPAIR_H_

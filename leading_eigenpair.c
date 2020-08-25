@@ -1,16 +1,3 @@
-/*
- * leading_eigenpair.c
- *
- *  Created on: 24 ����� 2020
- *      Author: ��
- */
-
-/*
- * algorithm.c
- *
- *  Created on: 14 ����� 2020
- *      Author: ��
- */
 
 #include "io_mem_errors.h"
 #include "modMat.h"
@@ -73,13 +60,9 @@ void power_iteration(modMat *B, modMat *Bg, vector v, vector result){
 void leading_eigenpair(modMat *B, modMat *Bg, vector leadEigenVec, double *leadEigenVal){
 	size_t iter=0;
 	vector bprev=(vector)malloc(Bg->gSize*sizeof(double));
-	if (bprev==NULL)
-		exit(MEM_ALLOC_ERROR);
+	VERIFY(bprev!=NULL,MEM_ALLOC_ERROR)
 	vector bnext=(vector)malloc(Bg->gSize*sizeof(double));
-	if (bnext==NULL){
-		free(bprev);
-		exit(MEM_ALLOC_ERROR);
-	}
+	VERIFY(bnext!=NULL,MEM_ALLOC_ERROR)
 	set_rand_vector(bprev, Bg->gSize);
 	power_iteration(B,Bg,bprev,bnext);
 	iter++;
@@ -87,8 +70,7 @@ void leading_eigenpair(modMat *B, modMat *Bg, vector leadEigenVec, double *leadE
 		memcpy(bprev,bnext,Bg->gSize*sizeof(double));
 		power_iteration(B,Bg,bprev,bnext);
 		iter++;
-		if (iter>1000*Bg->gSize)
-			exit(INFINITE_LOOP_ERROR);
+		VERIFY (iter>1000*Bg->gSize,INFINITE_LOOP_ERROR)
 	}
 	#ifdef PERFORMANCE_ITER
 		printf("# of power iterations: %d\n", (int)iter);

@@ -1,9 +1,3 @@
-/*
- * modMat.h
- *
- *  Created on: 22 ����� 2020
- *      Author: ��
- */
 
 #ifndef MODMAT_H_
 #define MODMAT_H_
@@ -17,6 +11,7 @@
 
 typedef size_t* int_vector;
 typedef int_vector Subgroup;
+typedef int boolean;
 
 /*
  * A struct representing Modularity Matrix B[g].
@@ -31,7 +26,7 @@ typedef struct _modmat {
 	double one_norm;		/* The 1-norm of the matrix, i.e. max_i(sum_j(|B_ij|)) */ 
 
 	/*free all resources used by ModMat instance */
-	void (*free)(struct _modmat *B, Subgroup g);
+	void (*free)(struct _modmat *B);
 
 	/*Get row i of B*/
 	void (*get_row)(const struct _modmat *B, size_t i, double *row);
@@ -46,12 +41,6 @@ typedef struct _modmat {
 
 /* Allocate a new, empty instance of Modularity Matrix */
 modMat *allocate_mod_mat(int n);
-
-/* Read the number n=|V| of network from open file to memory*/
-size_t read_totalV_from_file(FILE *input);
-
-/* Load an open input file into previously allocated ModMat B*/
-void load_mod_matrix_from_file(FILE *input, modMat *B);
 
 /* constructor, creating a new sub matrix B_hat[g]. 
  * 

@@ -1,10 +1,3 @@
-/*
- * divide_into_two.h
- *
- *  Created on: 24 ����� 2020
- *      Author: ��
- */
-
 #ifndef DIVIDE_INTO_TWO_H_
 #define DIVIDE_INTO_TWO_H_
 

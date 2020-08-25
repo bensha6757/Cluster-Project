@@ -1,6 +1,7 @@
 #ifndef _SPMAT_H
 #define _SPMAT_H
 
+#include "io_mem_errors.h"
 
 typedef struct _spmat {
 	/* Matrix size (n*n) */

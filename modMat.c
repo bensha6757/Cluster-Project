@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <stddef.h>
 #include <math.h>
+#define USE_LINKED 1
 
 void free_mod_mat(modMat *B){
 	B->A->free(B->A);
@@ -31,15 +32,11 @@ void get_B_hat_row(const struct _modmat *B, size_t i, double *row){
 	double *A_i, *K_i;
 	double f_i=0;
 	size_t j;
-	verify(i<B->gSize,OUT_OF_BOUNDS_ERROR);
+	VERIFY(i<B->gSize,OUT_OF_BOUNDS_ERROR)
 	A_i=(double*)malloc(B->gSize*sizeof(double));
-	if (A_i==NULL)
-		exit(MEM_ALLOC_ERROR);
-	K_i=(int_vector)malloc(B->gSize*sizeof(size_t));
-	if (A_i==NULL){
-		free(A_i);
-		exit(MEM_ALLOC_ERROR);
-	}
+	VERIFY(A_i!=NULL,MEM_ALLOC_ERROR)
+	K_i=(double*)malloc(B->gSize*sizeof(double));
+	VERIFY (A_i!=NULL,MEM_ALLOC_ERROR)
 	get_adj_row(B,i,A_i);
 	get_K_row(B,i,K_i);
 	/*Compute f_i*/
@@ -68,8 +65,7 @@ void set_1_norm(modMat *B){
 	size_t i;
 	double tmp=0, max=0;
 	double *B_i=(double*)malloc(B->gSize*sizeof(double));
-	if (B_i==NULL)
-		exit(MEM_ALLOC_ERROR);
+	VERIFY(B_i!=NULL,MEM_ALLOC_ERROR)
 	for (i=0; i<B->gSize; i++){
 		B->get_row(B,i,B_i);
 		tmp=sum_of_abs(B_i, B->gSize);
@@ -80,66 +76,12 @@ void set_1_norm(modMat *B){
 	B->one_norm=max;
 }
 
-/*********************************
- * INPUT FILE TO MEMORY FUNCTIONS*
- *********************************/
-
-/*  Read bytes from file or exit if failed. used to replace assert functionality */
-void read_num_from_file(int *dest,unsigned int num,unsigned int size,FILE* file){
-	if (fread(dest,num,size,file)!=size)
-		exit(FILE_READ_ERROR);
-}
-
-/*	Convert node indices (like input file format) to a pre-allocated result {0,1} vector of length n
- * 	that can be added to a spmat via add_row. */
-void convert_adj_list(size_t k, size_t n, int_vector adj, double *res){
-	size_t *i, temp;
-	for (i=adj; i<adj+k; i++){
-		temp=*i;
-		while (temp-->0)
-			*res++=0;
-		*res++=1;
-	}
-	for(temp=n-*i; temp>0; temp--)
-		*res++=0;
-}
-
-
-size_t read_totalV_from_file(FILE *input){
-	int n;
-	read_num_from_file(&n,sizeof(size_t),1,input);
-	rewind(input);
-	return n;
-}
-
-void load_mod_matrix_from_file(FILE *input, modMat *B){
-	size_t i, currDeg;
-	int_vector inputNeighbours, k=B->K, g=B->g;
-	double *matLine=(double*)malloc(B->gSize*sizeof(size_t));
-	verify(matLine!=NULL,MEM_ALLOC_ERROR);
-	read_num_from_file(&i,sizeof(size_t),1,input); /*Assuming file rewinded, skip |V| */
-	/* Populate B with A, K matrices, and compute M */
-	for (i=0; i<B->gSize; i++){
-		read_num_from_file(&currDeg,sizeof(size_t),1,input);
-		*(k++)=currDeg;
-		B->M+=currDeg;
-		inputNeighbours=(int*)malloc(currDeg*sizeof(int));
-		verify(inputNeighbours!=NULL,MEM_ALLOC_ERROR);
-		read_num_from_file(inputNeighbours,sizeof(size_t),currDeg,input);
-		convert_adj_list(currDeg, B->gSize, inputNeighbours, matLine);
-		B->A->add_row(B->A,matLine,i);
-		*(g++)=i; /*Fill g subgroup array with 0,1,2,...n */
-		free(inputNeighbours);
-	}
-	free(matLine);
-	rewind(input);
-	set_1_norm(B);
-}
 
 /* helping function, populate resK and resM with sub-vector K and M aligned with the subgroup g*/
 void genKandM(int_vector K, Subgroup g, size_t gSize, modMat *Bg){
     int_vector Kg = (int_vector)malloc(sizeof(size_t) * gSize);
     size_t Mg = 0;
+	VERIFY(Kg!=NULL,MEM_ALLOC_ERROR)
     for (int_vector p = Kg ; p-Kg < gSize ; p++){
         *p = K[*g];
         Mg += *p;
@@ -165,8 +107,7 @@ size_t genM(int_vector K, size_t sizeG){
 
 modMat *create_Sub_Matrix(modMat *B, Subgroup g, size_t sizeG, int impl_flag){
     modMat *Bg = allocate_mod_mat(sizeG);
-    if (Bg==NULL)
-		exit(MEM_ALLOC_ERROR);
+    VERIFY(Bg!=NULL,MEM_ALLOC_ERROR)
 	if (impl_flag)
     	Bg->A = create_sub_sparse_matrix_linked(B->A, g, sizeG, Bg->spmatSize);
 	else
@@ -191,7 +132,7 @@ void mult_K(modMat *B, modMat *Bg, double *v, double *res){
     int_vector K = Bg->K;
     size_t origM = B->M, sizeG = Bg->gSize;
     double dot = dot_product(K,v,sizeG);
-    verify(res != NULL, NULL_POINTER_ERROR);
+    VERIFY(res != NULL,NULL_POINTER_ERROR)
     for (size_t *ki = K ; ki-K < sizeG ; ki++){
       *res = (*ki) * dot * (1 / (double)origM);
       res++;
@@ -200,7 +141,7 @@ void mult_K(modMat *B, modMat *Bg, double *v, double *res){
 
 
 /* part of the modularity matrix multiplication for power iteration, multiplying the 2 matrices (f_i - ||C||) * I */
-void mult_F_and_C(modMat *B, modMat *Bg, double *v, bool shift, double *res){
+void mult_F_and_C(modMat *B, modMat *Bg, double *v, boolean shift, double *res){
     int_vector K = Bg->K;
     int_vector spmatSize = Bg->spmatSize;
     size_t M = Bg->M, origM = B->M ,sizeG = Bg->gSize;
@@ -222,20 +163,11 @@ void mult_F_and_C(modMat *B, modMat *Bg, double *v, bool shift, double *res){
 void mult_B_hat_g(modMat *B, modMat *Bg, const double *v, double *result){
 	double *tmp1, *tmp2, *tmp3, *p;
 	tmp1=(double*)malloc(sizeof(double)*B->gSize);
-	if (tmp1==NULL)
-		exit(MEM_ALLOC_ERROR);
+	VERIFY(tmp1!=NULL,MEM_ALLOC_ERROR)
 	tmp2=(double*)malloc(sizeof(double)*B->gSize);
-	if (tmp2==NULL){
-		free(tmp1);
-		exit(MEM_ALLOC_ERROR);
-	}
+	VERIFY(tmp2!=NULL,MEM_ALLOC_ERROR)
 	tmp3=(double*)malloc(sizeof(double)*B->gSize);
-	if (tmp3==NULL){
-		free(tmp2);
-		free(tmp1);
-		exit(MEM_ALLOC_ERROR);
-	}
-
+	VERIFY(tmp3!=NULL,MEM_ALLOC_ERROR)
 	Bg->A->mult(Bg->A,v,tmp1);
 	mult_K(B, Bg, v, tmp2);
 	mult_F_and_C(B, Bg, v, (Bg->gSize == B->gSize), tmp3);
@@ -250,30 +182,19 @@ void mult_B_hat_g(modMat *B, modMat *Bg, const double *v, double *result){
 modMat* allocate_mod_mat(int n){
 	char z='z';
 	modMat *rep=(modMat*)malloc(sizeof(modMat));
-	if (rep==NULL)
-		exit(MEM_ALLOC_ERROR);
-
+	VERIFY(rep!=NULL,MEM_ALLOC_ERROR)
 	rep->gSize=n;
 
 	if (USE_LINKED)
 		rep->A = spmat_allocate_list(n);
-	if (rep->A==NULL)
-		z='a';
+	VERIFY(rep->A != NULL,MEM_ALLOC_ERROR)
 
 	rep->K=(int_vector)malloc(n*sizeof(double));
-	if (rep->K==NULL)
-		z='b';
+	VERIFY(rep->K != NULL,MEM_ALLOC_ERROR)
 
 	rep->g=(Subgroup)malloc(n*sizeof(size_t));
-	if (rep->g==NULL)
-		z='c';
-
-	switch(z){
-		case 'c':	free(rep->K);
-		case 'b':	rep->A->free(rep->A);
-		case 'a':	free(rep);
-		default : 	return NULL;
-	}
+	VERIFY(rep->g != NULL,MEM_ALLOC_ERROR)
+	
 	rep->free=free_mod_mat;
 
 	rep->get_row=get_B_hat_row;
@@ -295,10 +216,8 @@ modMat* allocate_mod_mat(int n){
 void multSubgroupMatrix(modMat *Bg, Subgroup g, double *u, double *res){
 	double *resAu, *resKu, sumK=0;
 	vector j, *i, t, *tempg=g;
-
 	resAu=(double*)malloc(Bg->n*sizeof(double));
 	Bg->A->mult(Bg->A,u,resAu); 
-
 	resKu=(double*)malloc(Bg->n*sizeof(double));
 	for (j=Bg->K; j<Bg->K+Bg->n; j++)
 		if (*tempg==j-Bg->K && *tempg<Bg->n){
@@ -306,7 +225,6 @@ void multSubgroupMatrix(modMat *Bg, Subgroup g, double *u, double *res){
 			tempg++;
 		}
 	
-
 	tempg=g;
 	for (i=Bg->K; i<Bg->K+Bg->n; i++)
 		if (*tempg==i-Bg->K && *tempg<Bg->n){
@@ -314,7 +232,6 @@ void multSubgroupMatrix(modMat *Bg, Subgroup g, double *u, double *res){
 			tempg++;
 		}
 	resKu-=Bg->n;
-
 	for (t=0; t<Bg->n; t++)
 		*res++=(*resAu++)-(*resKu++);
 	free(resAu);
