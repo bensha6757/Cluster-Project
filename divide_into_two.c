@@ -21,7 +21,7 @@ double get_modularity(modMat *B, vector s, vector Bs, int movedVertex){
 	double Q, *p;
 	int sgn=0;
 	if (movedVertex==INITIAL_Q){
-		B->mult(B, B, s, Bs);
+		mult_B_hat_g(B, B, s, Bs);
 		Q = 0.5 * dotProd(Bs,s,B->gSize);
 	}
 	else {
@@ -47,7 +47,8 @@ double get_modularity(modMat *B, vector s, vector Bs, int movedVertex){
 /*Optimize a division encoded by {-1,1} vector s by moving a vertex to other group and ascending modularity Q */
 void optimize_division_modified(modMat *B, vector s){
 	vector p;
-	size_t i, *max_v=s;/* impInd=0;*/
+	size_t i;
+	vector max_v=s;/* impInd=0;*/
 	double Q_0, Qmax, Qtmp, deltaQ=1,improveTmp=0, improveMax=0;
 	double *Bs=(double*)malloc(B->gSize*sizeof(double));
 	if (Bs==NULL)
