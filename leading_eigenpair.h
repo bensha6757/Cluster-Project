@@ -16,11 +16,6 @@
 
 #define IS_POSITIVE(X) ((X) > 0.00001)
 
-typedef enum message_t {
-	GROUP_INDIVISIBLE,
-	GROUP_DIVIDED
-} MESSAGE;
-
 typedef double* vector;
 typedef unsigned int boolean;
 

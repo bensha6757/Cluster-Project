@@ -93,8 +93,8 @@ void leading_eigenpair(modMat *B, modMat *Bg, vector leadEigenVec, double *leadE
 	#ifdef PERFORMANCE_ITER
 		printf("# of power iterations: %d\n", (int)iter);
 	#endif
-	leadEigenVec=bnext;
-	*leadEigenVal = approx_dom_eigen_val(Bg,bprev,bnext) - get_1_norm(Bg);
+	memcpy(leadEigenVec,bnext,Bg->gSize*sizeof(double));
+	*leadEigenVal = approx_dom_eigen_val(Bg,bprev,bnext) - (Bg->one_norm);
 	free(bnext);
 	free(bprev);
 }
