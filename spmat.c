@@ -3,7 +3,7 @@
 #include <assert.h>
 #include "spmat.h"
 #include <stddef.h>
-
+#include "io_mem_errors.h"
 
 typedef double DATA;
 typedef double scalar;
@@ -20,52 +20,12 @@ typedef  struct  linked_list Node;
 /* insert a new node after head */
 void add_after(Node *head, int i){
 	head->next = (Node*)malloc(sizeof(Node));
-	verify(head->next != NULL);
+	verify(head->next != NULL,MEM_ALLOC_ERROR);
 	head->next->col = i;
 	head->next->val = 1;
 }
 
-/* adding a row to the sub sparse matrix */
-size_t add_row_to_sub_linked(int *col, int row, int *g, int i, Node *AHead, Node *subTail, int n){
-	size_t rowSize = 0;
-	while (col-g < n && AHead != NULL){
-		if (row == *col || AHead->col > *col){
-			col++;
-			i++;
-		} 
-		else if (AHead->col == *col){
-			add_after(subTail, i);
-			rowSize++;
-			subTail = subTail->next;
-			col++;
-			i++;
-			AHead = AHead->next;
-		}
-		else{
-			AHead = AHead->next;
-		}	
-	}
-	return rowSize;
-}
 
-/* creating a sub sparse matrix for Algorithm 2 */
-spmat* create_sub_sparse_matrix_linked(spmat *A, int *g, int n , size_t *spmatSize){
-	spmat *sub = spmat_allocate_list(n);
-	Node **subSparse = sub->private, **Asparse = A->private, *AHead, *subHead, *tmp;
-	int *q, i;
-	for (int *row = g ; row-g < n ; row++){
-		subHead = (Node*)malloc(sizeof(Node));
-		AHead = Asparse[*row];
-		*spmatSize = add_row_to_sub_linked(g, *row, g, 0, AHead, subHead, n);
-		tmp = subHead;
-		subHead = subHead->next;
-		free(tmp);
-		*subSparse = subHead;
-		subSparse++;
-		spmatSize++;
-	}
-	return sub;
-}
 
 void add_row_linked(spmat *A, const double *row, int i){
 	Node *head = NULL, *tail;
@@ -159,10 +119,52 @@ spmat* spmat_allocate_list(int n){
 	A->add_row = add_row_linked;
 	A->free = free_linked;
 	A->mult = mult_linked;
-	A->get_row = getSpMatRow;
+	/* A->get_row = get_spmat_row_linked; */
 	A->private =  (Node**) malloc (sizeof(Node*) * (A->n));
 	assert(A->private != NULL);
 	return A;
+}
+
+/* adding a row to the sub sparse matrix */
+size_t add_row_to_sub_linked(int *col, int row, int *g, int i, Node *AHead, Node *subTail, int n){
+	size_t rowSize = 0;
+	while (col-g < n && AHead != NULL){
+		if (row == *col || AHead->col > *col){
+			col++;
+			i++;
+		} 
+		else if (AHead->col == *col){
+			add_after(subTail, i);
+			rowSize++;
+			subTail = subTail->next;
+			col++;
+			i++;
+			AHead = AHead->next;
+		}
+		else{
+			AHead = AHead->next;
+		}	
+	}
+	return rowSize;
+}
+
+/* creating a sub sparse matrix for Algorithm 2 */
+spmat* create_sub_sparse_matrix_linked(spmat *A, int *g, int sizeG , size_t *spmatSize){
+	spmat *sub = spmat_allocate_list(sizeG);
+	Node **subSparse = sub->private, **Asparse = A->private, *AHead, *subHead, *tmp;
+	int *q, i;
+	for (int *row = g ; row-g < sizeG ; row++){
+		subHead = (Node*)malloc(sizeof(Node));
+		AHead = Asparse[*row];
+		*spmatSize = add_row_to_sub_linked(g, *row, g, 0, AHead, subHead, sizeG);
+		tmp = subHead;
+		subHead = subHead->next;
+		free(tmp);
+		*subSparse = subHead;
+		subSparse++;
+		spmatSize++;
+	}
+	return sub;
 }
 
 /*** ARRAY MATRIX IMPLEMENTATION - TO BE DELETED OR MODIFIED ***/
@@ -174,13 +176,32 @@ typedef struct _arrmat
 	int* rowptr;
 } arraymat;
 
+void get_row_arrays(struct _spmat *A, const double *row, int i){
+	arraymat *imp=((arraymat*)(A->private));
+	int rowNNZ=*(imp->rowptr+i+1)-*(imp->rowptr+i);
+	int colscnt;
+	int *vals, *cols;
+	double *p;
+	vals=imp->values+*(imp->rowptr+i);
+	cols=imp->colind+*(imp->rowptr+i);
+	for (p=row; p<row+A->n; p++){
+		if (p-row == *cols){
+			*p = *vals;
+			vals++;
+			cols++;
+		}
+		else
+			*p=0;
+	}
+}
+
+
 void add_row_arrays(struct _spmat *A, const double *row, int i)
 {
 	arraymat *imp=((arraymat*)(A->private));
 	scalar *valOffset=imp->values;
 	const double *vecEntry;
 	int *colOffset=imp->colind, *rp=imp->rowptr+i, rowNNZ=0;
-	assert(i<A->n);
 
 	/* Find the last position in values array that stores a valid non-zero value.
 	*/
@@ -267,21 +288,64 @@ spmat* spmat_allocate_array(int n, int nnz)
 	return ret;
 }
 
-
-size_t get_sub_matrix_nnz_arrays(spmat *A, int *g, int n){
-
+size_t get_sub_matrix_nnz_arrays(spmat *A, int *g, int sizeG){
+	arraymat *imp=((arraymat*)(A->private));
+	int *cols=imp->colind, *t, *p;
+	size_t cnt=0;
+	for (p=g; p<g+sizeG; p++){
+		for (t=cols; t<cols+A->n; t++)
+			cnt += *p==*t ? 1 : 0;
+	}
+	return cnt;
 }
-
-/* creating a sub sparse matrix for Algorithm 2 */
-spmat* create_sub_sparse_matrix_arrays(spmat *A, int *g, int n , size_t *spmatSize){
-	spmat *sub = spmat_allocate_arrays(n,get_sub_matrix_nnz_arrays(A, g,n));
-
+/**
+ * Can be used as a generic interface function of spmat module (for both impl.)
+ */
+void get_sub_row_arrays(spmat *A, int i, double *dest, int *g, size_t sizeG, size_t *spmatSize){
+	double *p, sub_ij;
+	int *q;
+	p=(double*)malloc(A->n*sizeof(double));
+	if (p==NULL)
+		exit(MEM_ALLOC_ERROR);
+	A->get_row(A,p,i);
+	for (q=g; q<g+sizeG; q++){
+		sub_ij=*(p+*q);
+		*(dest++)=sub_ij;
+		*(spmatSize+i)+=(size_t)sub_ij;
+	}
+	free(p);
+}
+/* Creating a sub sparse matrix for Algorithm 2.
+ * Can be used as a generic interface function of spmat module (for both impl.)
+ * 
+ * If impl_flag==1, uses linked-list implementation. Otherwise, use arrays impl.
+ */
+spmat* create_sub_sparse_matrix_arrays(spmat *A, int *g, int sizeG , size_t *spmatSize /*, int impl_flag*/){
+	spmat *sub;
+	double *sub_row;
+	int *p;
+	/*if (impl_flag)
+		sub = spmat_allocate_linked(sizeG);
+	else */
+		sub = spmat_allocate_arrays(sizeG,get_sub_matrix_nnz_arrays(A, g, sizeG));
+	sub_row=(double*)malloc(sizeG*sizeof(double));
+	if (sub_row==NULL)
+		exit(MEM_ALLOC_ERROR);
+	for (p=g; p<g+sizeG; p++){
+		get_sub_row_arrays(A,*p,sub_row,g,sizeG,spmatSize);
+		sub->add_row(sub,sub_row,p-g);
+	}
+	free(sub_row);
 	return sub;
 }
 
-
-/**** GET_ROW FUNCTION FOR SPMAT, INDEPENDENT FROM IMPL ****/
-void getSpMatRow(struct _spmat *A, const double *row, int i){
+/**
+ * Get spmats row i into vector row.
+ * Independent of implementation - based on A->mult function, 
+ * where by multiplying A with a vector v s.t. v[i]==1, and for j!=i v[j]==0
+ * /
+/*
+void get_sp_mat_row(struct _spmat *A, const double *row, int i){
 	double *basis;
 	basis=(double*)calloc(A->n,sizeof(double));
 	if (basis==NULL){
@@ -291,6 +355,7 @@ void getSpMatRow(struct _spmat *A, const double *row, int i){
 	A->mult(A,basis,row);
 	free(basis);
 }
+*/
 
 /**** TEST SUBMATRIX IMPLEMENTATION ****/
 
