@@ -11,7 +11,6 @@
 #define IS_POSITIVE(X) ((X) > 0.00001)
 
 typedef double* vector;
-typedef unsigned int boolean;
 
 
 /**

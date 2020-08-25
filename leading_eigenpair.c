@@ -32,7 +32,7 @@ double approx_dom_eigen_val(modMat *B, vector bprev, vector bnext){
 	return dot_prod(bnext,bprev,B->gSize) / dot_prod(bprev,bprev,B->gSize);
 }
 
-boolean is_within(vector a, vector b, size_t d){
+unsigned int is_within(vector a, vector b, size_t d){
 	size_t i;
 	for (i=0; i<d; i++, a++, b++){
 		if (IS_POSITIVE(fabs(*a - *b)))

@@ -15,7 +15,7 @@ double get_modularity(modMat *B, vector s, vector Bs, int movedVertex){
 	int sgn=0;
 	if (movedVertex==INITIAL_Q){
 		mult_B_hat_g(B, B, s, Bs);
-		Q = 0.5 * dotProd(Bs,s,B->gSize);
+		Q = 0.5 * dot_prod(Bs,s,B->gSize);
 	}
 	else {
 		double *tmp=(double*)malloc(B->gSize*sizeof(double));
@@ -25,7 +25,7 @@ double get_modularity(modMat *B, vector s, vector Bs, int movedVertex){
 		sgn=*(s+movedVertex);
 		for (p=Bs; p<Bs+B->gSize; p++)
 			*p=sgn*2*(*(tmp++));
-		Q = 0.5 * dotProd(Bs,s,B->gSize);
+		Q = 0.5 * dot_prod(Bs,s,B->gSize);
 		/* Restore s, Bs to initial state */
 		*(s+movedVertex)*=-1;
 		tmp-=B->gSize;
@@ -38,7 +38,6 @@ double get_modularity(modMat *B, vector s, vector Bs, int movedVertex){
 
 /*Optimize a division encoded by {-1,1} vector s by moving a vertex to other group and ascending modularity Q */
 void optimize_division_modified(modMat *B, vector s){
-	vector p;
 	size_t i;
 	vector max_v=s;/* impInd=0;*/
 	double Q_0, Qmax, Qtmp, deltaQ=1,improveTmp=0, improveMax=0;
@@ -57,7 +56,6 @@ void optimize_division_modified(modMat *B, vector s){
 					improveMax=improveTmp;
 					/*impInd=p-s;*/
 				}
-				(*p)*=-1;
 		}
 		*max_v*=-1;
 		deltaQ=improveMax;
@@ -67,7 +65,7 @@ void optimize_division_modified(modMat *B, vector s){
 
 void optimize_division_original(modMat *B, vector s){
 	vector p;
-	size_t i, *indices, maxi, *moved, impInd=0;
+	size_t i, *indices, maxi, *moved, *m, impInd=0;
 	double Q_0, *score, maxScore=0, deltaQ=1,*improve, improveMax=0;
 	double *Bs=(double*)malloc(B->gSize*sizeof(double));
 	VERIFY (Bs!=NULL,MEM_ALLOC_ERROR)
@@ -78,8 +76,8 @@ void optimize_division_original(modMat *B, vector s){
 		VERIFY(moved!=NULL,MEM_ALLOC_ERROR)
 		for (i=0; i<B->gSize ; i++){
 			Q_0=get_modularity(B ,s, Bs, INITIAL_Q);
-			for (p=moved; p<moved+B->gSize; p++){
-				if (!p)
+			for (m=moved; m<moved+B->gSize; m++){
+				if (!(*m))
 					*score++=get_modularity(B,s,Bs,i)-Q_0;
 			}
 			score-=B->gSize;
@@ -122,7 +120,7 @@ void eigen_to_s(modMat *B, vector eigenVec, vector s){
 }
 
 /* Maps a {-1,1} vector s of B's dim. to a partition g1,g2 */  
-void map_s_to_groups(modMat *B, vector s, size_t *g1, size_t *g2,  size_t *sizeG1, size_t *sizeG2){
+void map_s_to_groups(modMat *B, vector s, Subgroup *g1, Subgroup *g2,  size_t *sizeG1, size_t *sizeG2){
 	vector i;
 	size_t v=0;
 	*sizeG1=0;
