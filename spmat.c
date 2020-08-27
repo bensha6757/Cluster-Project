@@ -260,18 +260,17 @@ size_t get_sub_matrix_nnz_arrays(spmat *A, Subgroup g, int sizeG){
  * Can be used as a generic interface function of spmat module (for both impl.)
  */
 void get_sub_row_arrays(spmat *A, int i, double *dest, Subgroup g, size_t sizeG, size_t *spmatSize){
-	double *p, sub_ij;
+	double *v, sub_ij;
 	Subgroup q;
-	p=(double*)malloc(A->n*sizeof(double));
-	if (p==NULL)
-		exit(MEM_ALLOC_ERROR);
-	A->get_row(A,p,i);
+	v=(double*)malloc(A->n*sizeof(double));
+	VERIFY(v!=NULL, MEM_ALLOC_ERROR)
+	A->get_row(A,v,i);
 	for (q=g; q<g+sizeG; q++){
-		sub_ij=*(p+*q);
+		sub_ij=*(v+*q);
 		*(dest++)=sub_ij;
 		*(spmatSize+i)+=(size_t)sub_ij;
 	}
-	free(p);
+	free(v);
 }
 /* Creating a sub sparse matrix for Algorithm 2.
  * Can be used as a generic interface function of spmat module (for both impl.)
@@ -287,8 +286,7 @@ spmat* create_sub_sparse_matrix_array(spmat *A, Subgroup g, int sizeG , size_t *
 	else */
 		sub = spmat_allocate_array(sizeG,get_sub_matrix_nnz_arrays(A, g, sizeG));
 	sub_row=(double*)malloc(sizeG*sizeof(double));
-	if (sub_row==NULL)
-		exit(MEM_ALLOC_ERROR);
+	VERIFY(sub_row!=NULL, MEM_ALLOC_ERROR)
 	for (p=g; p<g+sizeG; p++){
 		get_sub_row_arrays(A,*p,sub_row,g,sizeG,spmatSize);
 		sub->add_row(sub,sub_row,p-g);

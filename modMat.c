@@ -41,6 +41,7 @@ void get_B_hat_row(const struct _modmat *B, size_t i, double *row){
 	K_i-=B->gSize;
 	for (j=0; j<B->gSize; j++)
 		*row++=*A_i++ -*K_i++;
+	row-=B->gSize;
 	*(row+i)-=f_i;
 	free(A_i);
 	free(K_i);
@@ -170,8 +171,11 @@ void mult_B_hat_g(modMat *B, modMat *Bg, double *v, double *result){
 	mult_F_and_C(B, Bg, v, (Bg->gSize == B->gSize), tmp3);
 	for (p=result; p<result+Bg->gSize; p++)
 		*p=*tmp1++ - *tmp2++ - *tmp3++;
+	tmp3-=Bg->gSize;
 	free(tmp3);
+	tmp2-=Bg->gSize;
 	free(tmp2);
+	tmp1-=Bg->gSize;
 	free(tmp1);
 }
 
