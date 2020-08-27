@@ -14,6 +14,7 @@ void runClusterProject(char* inputFileName, char* outputFileName){
 	memcpy(g, mat->g, mat->gSize * sizeof(size_t));
 	O = div_into_mod_groups(mat, g, mat->gSize); /* calling Algorithm 3 */
 	generate_output_file(O, outputFileName); /* writing result to file */
+	delete_Stack(O);
 	mat->free(mat);
 }
 
