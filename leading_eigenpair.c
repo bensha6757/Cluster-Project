@@ -57,6 +57,7 @@ void leading_eigenpair(modMat *B, modMat *Bg, vector leadEigenVec, double *leadE
 	VERIFY(bprev!=NULL,MEM_ALLOC_ERROR)
 	bnext=(vector)malloc(Bg->gSize*sizeof(double));
 	VERIFY(bnext!=NULL,MEM_ALLOC_ERROR)
+	srand(time(NULL));
 	set_rand_vector(bprev, Bg->gSize);
 	power_iteration(B,Bg,bprev,bnext);
 	iter++;
