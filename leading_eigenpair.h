@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <string.h>
+#include <time.h>
 #include "Types.h"
 
 #define IS_POSITIVE(X) ((X) > 0.00001)
