@@ -1,5 +1,5 @@
 #include "IO.h"
-
+#define DEBUG
 
 /*********************************
  * INPUT FILE TO MEMORY FUNCTIONS*
@@ -62,6 +62,9 @@ void load_mod_matrix_from_file(FILE *input, modMat *B){
 void load_input_file(char* filename, modMat *mat){
 	size_t N;
 	FILE* inputFile = fopen(filename,"r");
+	#ifdef DEBUG
+	printf("Read input file");
+	#endif
 	N=read_totalV_from_file(inputFile);
 	mat = allocate_mod_mat(N);
 	load_mod_matrix_from_file(inputFile, mat);
@@ -76,7 +79,7 @@ void generate_output_file(Stack *O, char *outputPath){
     fputc(O->size + '0', out);
     while(node != NULL){
         fputc(node->sizeG + '0', out);
-        for (gi = node->g ; gi  < node->sizeG +  node->g ; gi++){
+        for (gi = node->g ; gi  < node->sizeG + node->g ; gi++){
             fputc(*gi + '0', out);
         }
         node = node->next;

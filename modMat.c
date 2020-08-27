@@ -33,9 +33,12 @@ void get_B_hat_row(const struct _modmat *B, size_t i, double *row){
 	VERIFY (A_i!=NULL,MEM_ALLOC_ERROR)
 	get_adj_row(B,i,A_i);
 	get_K_row(B,i,K_i);
-	/*Compute f_i*/
+	/* Compute f_i*/
 	for (j=0; j<B->gSize; j++)
-		f_i += *A_i++ + *K_i++;
+		f_i += (*A_i++ - *K_i++);
+	/* Compute entire row of B_hat[g] */
+	A_i-=B->gSize;
+	K_i-=B->gSize;
 	for (j=0; j<B->gSize; j++)
 		*row++=*A_i++ -*K_i++;
 	*(row+i)-=f_i;
@@ -139,7 +142,7 @@ void mult_F_and_C(modMat *B, modMat *Bg, double *v, boolean shift, double *res){
     int_vector K = Bg->K;
     int_vector spmatSize = Bg->spmatSize;
     size_t M = Bg->M, origM = B->M ,sizeG = Bg->gSize, *ki;
-    double fi, shiftNorm;
+    double fi, shiftNorm=0;
     if (!shift)
       shiftNorm = Bg->one_norm;
     for (ki = K ; ki < sizeG + K ; ki++){
@@ -182,7 +185,7 @@ modMat* allocate_mod_mat(int n){
 		rep->A = spmat_allocate_list(n);
 	VERIFY(rep->A != NULL,MEM_ALLOC_ERROR)
 
-	rep->K=(int_vector)malloc(n*sizeof(double));
+	rep->K=(int_vector)malloc(n*sizeof(size_t));
 	VERIFY(rep->K != NULL,MEM_ALLOC_ERROR)
 
 	rep->g=(Subgroup)malloc(n*sizeof(size_t));
