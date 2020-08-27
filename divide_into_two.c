@@ -1,10 +1,5 @@
-
-#include "io_mem_errors.h"
-#include "modMat.h"
 #include "divide_into_two.h"
-#include "leading_eigenpair.h"
-#include <stdio.h>
-#include <stdlib.h>
+
 
 /*Compute Modularity of B[g]_hat: 0.5 * s^T * B[g]_hat * s
  * w.r.t to a moved vertex (or INITIAL_Q for initial state).

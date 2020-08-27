@@ -1,4 +1,3 @@
-
 #ifndef LEADING_EIGENPAIR_H_
 #define LEADING_EIGENPAIR_H_
 
@@ -7,11 +6,11 @@
 #include "modMat.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
+#include <string.h>
+#include "Types.h"
 
 #define IS_POSITIVE(X) ((X) > 0.00001)
-
-typedef double* vector;
-
 
 /**
  * Compute leading eigen pair of modularity Matrix B_hat[g]

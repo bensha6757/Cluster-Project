@@ -1,11 +1,5 @@
-#include "spmat.h"
 #include "modMat.h"
-#include "io_mem_errors.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <stddef.h>
-#include <math.h>
-#define USE_LINKED 1
+
 
 void free_mod_mat(modMat *B){
 	B->A->free(B->A);
@@ -23,7 +17,7 @@ void get_K_row(const modMat *B, size_t i, double *row){
 	int_vector p;
 	size_t k_i;
 	k_i=*(B->K+i);
-	for (p=B->K; p<B->K+B->gSize; p++)
+	for (p = B->K; p < B->K + B->gSize; p++)
 		*row++=(k_i)*((double)((*p)/B->M));
 }
 
@@ -78,10 +72,10 @@ void set_1_norm(modMat *B){
 
 /* helping function, populate resK and resM with sub-vector K and M aligned with the subgroup g*/
 void genKandM(int_vector K, Subgroup g, size_t gSize, modMat *Bg){
-    int_vector Kg = (int_vector)malloc(sizeof(size_t) * gSize);
+    int_vector Kg = (int_vector)malloc(sizeof(size_t) * gSize), p;
     size_t Mg = 0;
 	VERIFY(Kg!=NULL,MEM_ALLOC_ERROR)
-    for (int_vector p = Kg ; p-Kg < gSize ; p++){
+    for (p = Kg ; p < gSize + Kg ; p++){
         *p = K[*g];
         Mg += *p;
         g++;
@@ -92,8 +86,8 @@ void genKandM(int_vector K, Subgroup g, size_t gSize, modMat *Bg){
 
 /* helping function, generates M, which is the sum of all degrees in K*/
 size_t genM(int_vector K, size_t sizeG){
-    size_t M = 0;
-    for (size_t *p = K ; p-K < sizeG ; p++){
+    size_t M = 0, *p;
+    for (p = K ; p < sizeG + K ; p++){
       M += *p;
     }
     return M;
@@ -119,7 +113,8 @@ modMat *create_Sub_Matrix(modMat *B, Subgroup g, size_t sizeG, int impl_flag){
 
 double dot_product(size_t *K, double *v, size_t sizeG){
     double res = 0;
-    for (size_t *ki = K ; ki-K < sizeG ; ki++){
+	size_t *ki;
+    for (ki = K ; ki < sizeG + K ; ki++){
         res += (*ki) * (*v);
         v++;
     }
@@ -127,12 +122,12 @@ double dot_product(size_t *K, double *v, size_t sizeG){
 }
 
 /* part of the modularity matrix multiplication for power iteration, multiplying the degrees matrix (k_i * k_j / M) */
-void mult_K(modMat *B, modMat *Bg, const double *v, double *res){
+void mult_K(modMat *B, modMat *Bg, double *v, double *res){
     int_vector K = Bg->K;
-    size_t origM = B->M, sizeG = Bg->gSize;
+    size_t origM = B->M, sizeG = Bg->gSize, *ki;
     double dot = dot_product(K,v,sizeG);
     VERIFY(res != NULL,NULL_POINTER_ERROR)
-    for (size_t *ki = K ; ki-K < sizeG ; ki++){
+    for (ki = K ; ki < sizeG + K ; ki++){
       *res = (*ki) * dot * (1 / (double)origM);
       res++;
     }
@@ -140,14 +135,14 @@ void mult_K(modMat *B, modMat *Bg, const double *v, double *res){
 
 
 /* part of the modularity matrix multiplication for power iteration, multiplying the 2 matrices (f_i - ||C||) * I */
-void mult_F_and_C(modMat *B, modMat *Bg, const double *v, boolean shift, double *res){
+void mult_F_and_C(modMat *B, modMat *Bg, double *v, boolean shift, double *res){
     int_vector K = Bg->K;
     int_vector spmatSize = Bg->spmatSize;
-    size_t M = Bg->M, origM = B->M ,sizeG = Bg->gSize;
+    size_t M = Bg->M, origM = B->M ,sizeG = Bg->gSize, *ki;
     double fi, shiftNorm;
     if (!shift)
       shiftNorm = Bg->one_norm;
-    for (size_t *ki = K ; ki-K < sizeG ; ki++){
+    for (ki = K ; ki < sizeG + K ; ki++){
       fi = (*spmatSize) - (((*ki) * M) / origM);
       *res = (fi - shiftNorm)  * (*v) ;
       v++;
@@ -159,7 +154,7 @@ void mult_F_and_C(modMat *B, modMat *Bg, const double *v, boolean shift, double 
 
 /* Implements multiplication of B_hat[g] with a vector by
  * using several mult. functions and adding results together */
-void mult_B_hat_g(modMat *B, modMat *Bg, const double *v, double *result){
+void mult_B_hat_g(modMat *B, modMat *Bg, double *v, double *result){
 	double *tmp1, *tmp2, *tmp3, *p;
 	tmp1=(double*)malloc(sizeof(double)*B->gSize);
 	VERIFY(tmp1!=NULL,MEM_ALLOC_ERROR)

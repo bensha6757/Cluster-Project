@@ -1,8 +1,4 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <stddef.h>
 #include "Stack.h"
-#include "io_mem_errors.h"
 
 void init(Stack *s){
 	s->size = 0;
@@ -30,14 +26,9 @@ Subgroup pop(Stack *s, size_t *sizeG){
 	return g;
 }
 
-bool isEmpty(Stack *s){
+boolean isEmpty(Stack *s){
 	return s->size == 0;
 } 
-
-void delete_Stack(Stack *s){
-	delete_StackNodes(s->top);
-	free(s);
-}
 
 void delete_StackNodes(Snode *node){
 	if (node != NULL){
@@ -46,3 +37,9 @@ void delete_StackNodes(Snode *node){
 		free(node);
 	}
 }
+
+void delete_Stack(Stack *s){
+	delete_StackNodes(s->top);
+	free(s);
+}
+

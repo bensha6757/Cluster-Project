@@ -1,12 +1,4 @@
-#include <stdio.h>
-#include <stdlib.h>
 #include "spmat.h"
-#include <stddef.h>
-
-
-typedef double DATA;
-typedef double scalar;
-typedef int boolean;
 
 typedef struct linked_list {
 	DATA val;
@@ -25,14 +17,14 @@ void add_after(Node *head, int i){
 }
 
 /* adding a row to the sub sparse matrix */
-size_t add_row_to_sub_linked(int *col, int row, int *g, int i, Node *AHead, Node *subTail, int n){
+size_t add_row_to_sub_linked(Subgroup col, size_t row, Subgroup g, int i, Node *AHead, Node *subTail, int n){
 	size_t rowSize = 0;
-	while (col-g < n && AHead != NULL){
-		if (row == *col || AHead->col > *col){
+	while (col < n + g && AHead != NULL){
+		if (row == *col || (size_t)AHead->col > *col){
 			col++;
 			i++;
 		} 
-		else if (AHead->col == *col){
+		else if ((size_t)AHead->col == *col){
 			add_after(subTail, i);
 			rowSize++;
 			subTail = subTail->next;
@@ -48,11 +40,11 @@ size_t add_row_to_sub_linked(int *col, int row, int *g, int i, Node *AHead, Node
 }
 
 /* creating a sub sparse matrix for Algorithm 2 */
-spmat* create_sub_sparse_matrix_linked(spmat *A, int *g, int n , size_t *spmatSize){
+spmat* create_sub_sparse_matrix_linked(spmat *A, Subgroup g, int n , size_t *spmatSize){
 	spmat *sub = spmat_allocate_list(n);
 	Node **subSparse = sub->private, **Asparse = A->private, *AHead, *subHead, *tmp;
-	int *row;
-	for (row = g ; row-g < n ; row++){
+	Subgroup row;
+	for (row = g ; row < (size_t)n + g ; row++){
 		subHead = (Node*)malloc(sizeof(Node));
 		VERIFY(subHead != NULL,MEM_ALLOC_ERROR)
 		AHead = Asparse[*row];
@@ -252,13 +244,14 @@ spmat* spmat_allocate_array(int n, int nnz)
 	return ret;
 }
 
-size_t get_sub_matrix_nnz_arrays(spmat *A, int *g, int sizeG){
+size_t get_sub_matrix_nnz_arrays(spmat *A, Subgroup g, int sizeG){
 	arraymat *imp=((arraymat*)(A->private));
-	int *cols=imp->colind, *t, *p;
+	int *cols=imp->colind, *t;
+	Subgroup p;
 	size_t cnt=0;
 	for (p=g; p<g+sizeG; p++){
 		for (t=cols; t<cols+A->n; t++)
-			cnt += *p==*t ? 1 : 0;
+			cnt += ((int)*p)==*t ? 1 : 0;
 	}
 	return cnt;
 }
@@ -266,9 +259,9 @@ size_t get_sub_matrix_nnz_arrays(spmat *A, int *g, int sizeG){
 /**
  * Can be used as a generic interface function of spmat module (for both impl.)
  */
-void get_sub_row_arrays(spmat *A, int i, double *dest, int *g, size_t sizeG, size_t *spmatSize){
+void get_sub_row_arrays(spmat *A, int i, double *dest, Subgroup g, size_t sizeG, size_t *spmatSize){
 	double *p, sub_ij;
-	int *q;
+	Subgroup q;
 	p=(double*)malloc(A->n*sizeof(double));
 	if (p==NULL)
 		exit(MEM_ALLOC_ERROR);
@@ -285,14 +278,14 @@ void get_sub_row_arrays(spmat *A, int i, double *dest, int *g, size_t sizeG, siz
  * 
  * If impl_flag==1, uses linked-list implementation. Otherwise, use arrays impl.
  */
-spmat* create_sub_sparse_matrix_array(spmat *A, int *g, int sizeG , size_t *spmatSize /*, int impl_flag*/){
+spmat* create_sub_sparse_matrix_array(spmat *A, Subgroup g, int sizeG , size_t *spmatSize /*, int impl_flag*/){
 	spmat *sub;
 	double *sub_row;
-	int *p;
+	Subgroup p;
 	/*if (impl_flag)
 		sub = spmat_allocate_linked(sizeG);
 	else */
-		sub = spmat_allocate_arrays(sizeG,get_sub_matrix_nnz_arrays(A, g, sizeG));
+		sub = spmat_allocate_array(sizeG,get_sub_matrix_nnz_arrays(A, g, sizeG));
 	sub_row=(double*)malloc(sizeG*sizeof(double));
 	if (sub_row==NULL)
 		exit(MEM_ALLOC_ERROR);
@@ -320,29 +313,3 @@ void getSpMatRow(struct _spmat *A, const double *row, int i){
 }
 */
 
-/**** TEST SUBMATRIX IMPLEMENTATION ****/
-
-void testCreateSubSpMat(){
-	spmat *A = spmat_allocate_list(6), *sub;
-	int g[3] = {1,3,5};
-	const double row0[6] = {0,1,1,0,0,1};
-	const double row1[6] = {1,0,1,1,0,1};
-	const double row2[6] = {1,1,0,0,1,0};
-	const double row3[6] = {0,0,0,0,1,1};
-	const double row4[6] = {0,0,1,1,0,0};
-	const double row5[6] = {1,1,0,1,0,0};
-	A->add_row(A, row0, 0);
-	A->add_row(A, row1, 1);
-	A->add_row(A, row2, 2);
-	A->add_row(A, row3, 3);
-	A->add_row(A, row4, 4);
-	A->add_row(A, row5, 5);
-	size_t spmatSize[3];
-	sub = create_sub_sparse_matrix_linked(A, g, 3 , spmatSize);
-	printf("%d %d %d", (int)spmatSize[0], (int)spmatSize[1] , (int)spmatSize[2]);
-}
-
-int main(){
-	testCreateSubSpMat();
-	return 0;
-}

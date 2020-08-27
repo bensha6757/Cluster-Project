@@ -24,8 +24,7 @@ void add_to_stacks(Stack* P, Stack* O, size_t sizeG, size_t sizeG1, size_t sizeG
 /* Algorithm 3*/
 Stack* div_into_mod_groups(modMat* B, Subgroup g, size_t sizeG){
 	Stack* P = (Stack*)malloc(sizeof(Stack)), *O = (Stack*)malloc(sizeof(Stack));
-	Snode* node;
-	Subgroup res, g1, g2;
+	Subgroup g1, g2;
 	size_t sizeG1, sizeG2;
 	VERIFY(P != NULL,MEM_ALLOC_ERROR)
 	VERIFY(O != NULL,MEM_ALLOC_ERROR)

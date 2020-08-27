@@ -1,8 +1,8 @@
 /*
  * generateInput.c
  *
- *  Created on: 18 баевЧ 2020
- *      Author: вм
+ *  Created on: 18 пїЅпїЅпїЅпїЅпїЅ 2020
+ *      Author: пїЅпїЅ
  */
 
 #include <stdio.h>

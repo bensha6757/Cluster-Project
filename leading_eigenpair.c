@@ -1,11 +1,5 @@
-
-#include "io_mem_errors.h"
-#include "modMat.h"
 #include "leading_eigenpair.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <math.h>
-#include <string.h>
+
 
 double dot_prod(vector v, vector u, size_t d){
 	unsigned int i;
@@ -58,9 +52,10 @@ void power_iteration(modMat *B, modMat *Bg, vector v, vector result){
  */
 void leading_eigenpair(modMat *B, modMat *Bg, vector leadEigenVec, double *leadEigenVal){
 	size_t iter=0;
-	vector bprev=(vector)malloc(Bg->gSize*sizeof(double));
+	vector bprev, bnext;
+	bprev=(vector)malloc(Bg->gSize*sizeof(double));
 	VERIFY(bprev!=NULL,MEM_ALLOC_ERROR)
-	vector bnext=(vector)malloc(Bg->gSize*sizeof(double));
+	bnext=(vector)malloc(Bg->gSize*sizeof(double));
 	VERIFY(bnext!=NULL,MEM_ALLOC_ERROR)
 	set_rand_vector(bprev, Bg->gSize);
 	power_iteration(B,Bg,bprev,bnext);

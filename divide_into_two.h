@@ -4,6 +4,7 @@
 #include "io_mem_errors.h"
 #include "modMat.h"
 #include "leading_eigenpair.h"
+#include "Types.h"
 #include <stdio.h>
 #include <stdlib.h>
 

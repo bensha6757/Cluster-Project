@@ -6,12 +6,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stddef.h>
+#include "io_mem_errors.h"
+#include <math.h>
+#include "Types.h"
 
 #define USE_LINKED 1
 
-typedef size_t* int_vector;
-typedef int_vector Subgroup;
-typedef int boolean;
 
 /*
  * A struct representing Modularity Matrix B[g].
@@ -50,6 +50,9 @@ modMat *create_Sub_Matrix(modMat *B, Subgroup g, size_t sizeG, int impl_flag);
 
 /* Implements multiplication of B_hat[g] with a vector by
  * using several mult. functions and adding results together */
-void mult_B_hat_g(modMat *B, modMat *Bg, const double *v, double *result);
+void mult_B_hat_g(modMat *B, modMat *Bg, double *v, double *result);
+
+/* Computes and sets 1-norm of B, i.e. max_i(sum_j(abs(B_ij))) */
+void set_1_norm(modMat *B);
 
 #endif /* MODMAT_H_ */
