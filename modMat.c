@@ -111,7 +111,7 @@ modMat *create_Sub_Matrix(modMat *B, Subgroup g, size_t sizeG, int impl_flag){
     return Bg;
 }
 
-double dot_product(size_t *K, double *v, size_t sizeG){
+double k_dot_product(size_t *K, double *v, size_t sizeG){
     double res = 0;
 	size_t *ki;
     for (ki = K ; ki < sizeG + K ; ki++){
@@ -125,7 +125,7 @@ double dot_product(size_t *K, double *v, size_t sizeG){
 void mult_K(modMat *B, modMat *Bg, double *v, double *res){
     int_vector K = Bg->K;
     size_t origM = B->M, sizeG = Bg->gSize, *ki;
-    double dot = dot_product(K,v,sizeG);
+    double dot = k_dot_product(K,v,sizeG);
     VERIFY(res != NULL,NULL_POINTER_ERROR)
     for (ki = K ; ki < sizeG + K ; ki++){
       *res = (*ki) * dot * (1 / (double)origM);
