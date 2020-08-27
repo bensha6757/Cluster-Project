@@ -132,20 +132,20 @@ void map_s_to_groups(modMat *B, vector s, Subgroup *g1, Subgroup *g2,  size_t *s
 	}
 	*sizeG1 = v;
 	*sizeG2 = B->gSize - *sizeG1;
-	g1=(size_t*)malloc(*sizeG1*sizeof(size_t));
+	*g1=(size_t*)malloc(*sizeG1*sizeof(size_t));
 	VERIFY(g1!=NULL,MEM_ALLOC_ERROR)
-	g2=(size_t*)malloc(*sizeG2*sizeof(size_t));
+	*g2=(size_t*)malloc(*sizeG2*sizeof(size_t));
 	VERIFY(g2!=NULL,MEM_ALLOC_ERROR)
 	for (i=s; i<s+B->gSize; i++){
 		v=i-s;
 		if (IS_POSITIVE(*i))
-			*g1++=v;
+			**g1++=v;
 		else
-			*g2++=v;
+			**g2++=v;
 	}
 }
 
-DIV_RESULT div_into_two(modMat *B,Subgroup g, size_t sizeG, Subgroup **g1, Subgroup **g2, size_t *sizeG1, size_t *sizeG2){
+DIV_RESULT div_into_two(modMat *B,Subgroup g, size_t sizeG, Subgroup *g1, Subgroup *g2, size_t *sizeG1, size_t *sizeG2){
 	double beta;
 	vector u,s;
 	modMat *Bg;
@@ -163,7 +163,7 @@ DIV_RESULT div_into_two(modMat *B,Subgroup g, size_t sizeG, Subgroup **g1, Subgr
 		ret=GROUP_INDIVISIBLE;
 	else {
 		optimize_division_original(B, s);
-		map_s_to_groups(B,s, *g1, *g2, sizeG1, sizeG2);
+		map_s_to_groups(B,s, g1, g2, sizeG1, sizeG2);
 		ret=GROUP_DIVIDED;
 	}
 	Bg->free(Bg);

@@ -3,6 +3,7 @@
 
 #include "io_mem_errors.h"
 #include "modMat.h"
+#include "leading_eigenpair.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -13,6 +14,6 @@ typedef enum divres_t {
 	GROUP_DIVIDED
 } DIV_RESULT;
 
-DIV_RESULT div_into_two(modMat *B,Subgroup g, size_t sizeG, Subgroup **g1, Subgroup **g2, size_t *sizeG1, size_t *sizeG2);
+DIV_RESULT div_into_two(modMat *B,Subgroup g, size_t sizeG, Subgroup *g1, Subgroup *g2, size_t *sizeG1, size_t *sizeG2);
 
 #endif /* DIV_INTO_TWO_H_ */
