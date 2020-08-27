@@ -26,8 +26,7 @@ void set_rand_vector(vector v, size_t n){
 		*v = (double)rand();
 }
 
-/*	Approximate dominant eigen value of matrix B
- *  with last vector v returned from power iterations.*/
+/*	Approximate dominant eigen value of matrix B. */
 double approx_dom_eigen_val(modMat *B, vector bprev, vector bnext){
 	return dot_prod(bnext,bprev,B->gSize) / dot_prod(bprev,bprev,B->gSize);
 }

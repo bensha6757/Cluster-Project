@@ -1,12 +1,11 @@
-/*
- * io_mem_errors.h
- *
- *  Created on: 22 ����� 2020
- *      Author: ��
- */
-
 #ifndef IO_MEM_ERRORS_H_
 #define IO_MEM_ERRORS_H_
+
+#define VERIFY(expression, error)                                                           \
+    if (!(expression)){                                                                      \
+        printf("\n%s%s, %s", "Verification Failed: ", #expression, stringFromError(error));   \
+        exit(1);                                                                               \
+    }                                                                                           \
 
 typedef enum error_t {
 	FILE_READ_ERROR,
@@ -17,12 +16,10 @@ typedef enum error_t {
     NULL_POINTER_ERROR
 } ERROR;
 
-#define verify(expression, msg)                                         \
-    if (!expression){                                                   \
-        printf("\n%s%s", "Verification Failed: ", #expression);         \
-        exit(msg);                                                      \
-    }                                                                   \
-
-
+static inline char* stringFromError(enum error_t e)
+{
+    static const char *strings[] = { "Error while reading the file", "Error while writing to file", "Memory allocation error", "Infinite loop error", "Out of bounds error", "Null pointer error"};
+    return strings[e];
+}
 
 #endif /* IO_MEM_ERRORS_H_ */

@@ -127,7 +127,7 @@ double dot_product(size_t *K, double *v, size_t sizeG){
 }
 
 /* part of the modularity matrix multiplication for power iteration, multiplying the degrees matrix (k_i * k_j / M) */
-void mult_K(modMat *B, modMat *Bg, double *v, double *res){
+void mult_K(modMat *B, modMat *Bg, const double *v, double *res){
     int_vector K = Bg->K;
     size_t origM = B->M, sizeG = Bg->gSize;
     double dot = dot_product(K,v,sizeG);
@@ -140,7 +140,7 @@ void mult_K(modMat *B, modMat *Bg, double *v, double *res){
 
 
 /* part of the modularity matrix multiplication for power iteration, multiplying the 2 matrices (f_i - ||C||) * I */
-void mult_F_and_C(modMat *B, modMat *Bg, double *v, boolean shift, double *res){
+void mult_F_and_C(modMat *B, modMat *Bg, const double *v, boolean shift, double *res){
     int_vector K = Bg->K;
     int_vector spmatSize = Bg->spmatSize;
     size_t M = Bg->M, origM = B->M ,sizeG = Bg->gSize;
@@ -179,7 +179,6 @@ void mult_B_hat_g(modMat *B, modMat *Bg, const double *v, double *result){
 
 /*allocate new ModMat of size n*/
 modMat* allocate_mod_mat(int n){
-	char z='z';
 	modMat *rep=(modMat*)malloc(sizeof(modMat));
 	VERIFY(rep!=NULL,MEM_ALLOC_ERROR)
 	rep->gSize=n;

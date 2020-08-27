@@ -13,12 +13,13 @@
 double get_modularity(modMat *B, vector s, vector Bs, int movedVertex){
 	double Q, *p;
 	int sgn=0;
+	double *tmp;
 	if (movedVertex==INITIAL_Q){
 		mult_B_hat_g(B, B, s, Bs);
 		Q = 0.5 * dot_prod(Bs,s,B->gSize);
 	}
 	else {
-		double *tmp=(double*)malloc(B->gSize*sizeof(double));
+		tmp=(double*)malloc(B->gSize*sizeof(double));
 		VERIFY(tmp!=NULL,MEM_ALLOC_ERROR)
 		B->get_row(B,movedVertex,tmp);
 		*(s+movedVertex)*=-1;

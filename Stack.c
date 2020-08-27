@@ -2,17 +2,7 @@
 #include <stdlib.h>
 #include <stddef.h>
 #include "Stack.h"
-
-typedef struct Snode{
-	int* g;
-	int sizeG;
-	Snode* next;
-} Snode;
-
-typedef struct Stack{
-	int size;
-	Snode* top;
-} Stack;
+#include "io_mem_errors.h"
 
 void init(Stack *s){
 	s->size = 0;
@@ -20,9 +10,9 @@ void init(Stack *s){
 }
 
 /* adding the new node to the beggining of the stack (implemented as linked-list), and updating the stack size*/
-void push(Stack *s, int* g, int sizeG){ 
+void push(Stack *s, Subgroup g, size_t sizeG){ 
 	Snode * node = (Snode*)malloc(sizeof(Snode));
-	verify(node != NULL);
+	VERIFY(node != NULL,MEM_ALLOC_ERROR)
 	node->g = g;
 	node->sizeG = sizeG;
 	node->next = s->top;
@@ -30,8 +20,8 @@ void push(Stack *s, int* g, int sizeG){
 	s->size++;
 }
 
-int* pop(Stack *s, int *sizeG){
-	int* g = s->top->g;
+Subgroup pop(Stack *s, size_t *sizeG){
+	Subgroup g = s->top->g;
 	Snode * p = s->top;
 	*sizeG = p->sizeG;
 	s->top = s->top->next;

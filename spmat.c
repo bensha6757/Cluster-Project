@@ -51,8 +51,8 @@ size_t add_row_to_sub_linked(int *col, int row, int *g, int i, Node *AHead, Node
 spmat* create_sub_sparse_matrix_linked(spmat *A, int *g, int n , size_t *spmatSize){
 	spmat *sub = spmat_allocate_list(n);
 	Node **subSparse = sub->private, **Asparse = A->private, *AHead, *subHead, *tmp;
-	int *q, i;
-	for (int *row = g ; row-g < n ; row++){
+	int *row;
+	for (row = g ; row-g < n ; row++){
 		subHead = (Node*)malloc(sizeof(Node));
 		VERIFY(subHead != NULL,MEM_ALLOC_ERROR)
 		AHead = Asparse[*row];
@@ -234,7 +234,6 @@ void mult_arrays(const struct _spmat *A, const double *v, double *result)
 /* Allocates a new arrays sparse matrix of size n with nnz non-zero elements */
 spmat* spmat_allocate_array(int n, int nnz)
 {
-	char f='z';
 	spmat *ret=(spmat*)malloc(sizeof(spmat));
 	arraymat *imp=(arraymat*)malloc(sizeof(arraymat));
 	VERIFY(ret != NULL,MEM_ALLOC_ERROR)

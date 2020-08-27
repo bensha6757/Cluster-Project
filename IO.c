@@ -1,31 +1,6 @@
 #include <stdio.h>
 #include "IO.h"
-typedef size_t* vector;
 
-void load_input_file(char* filename, modMat *mat){
-	size_t N;
-	fopen(filename,"r");
-	N=read_totalV_from_file(filename);
-	mat = allocate_mod_mat(N);
-	load_mod_matrix_from_file(filename, mat);
-	fclose(filename);
-}
-
-void generate_output_file(Stack *O, char *outputPath){
-    FILE *out = fopen(outputPath, "w"); /*file should be open for write in main*/
-    Snode *node = O->top;
-	Subgroup gi;
-    VERIFY(out != NULL, FILE_WRITE_ERROR)
-    fputc(O->size + '0', out);
-    while(node != NULL){
-        fputc(node->sizeG + '0', out);
-        for (gi = node->g ; gi - node->g < node->sizeG ; gi++){
-            fputc(*gi + '0', out);
-        }
-        node = node->next;
-    }
-    fclose(out);
-}
 
 /*********************************
  * INPUT FILE TO MEMORY FUNCTIONS*
@@ -81,4 +56,31 @@ void load_mod_matrix_from_file(FILE *input, modMat *B){
 	free(matLine);
 	rewind(input);
 	set_1_norm(B);
+}
+
+/*** INTERFACE FOR MAIN PROGRAM FUNCTIONS ***/
+
+void load_input_file(char* filename, modMat *mat){
+	size_t N;
+	fopen(filename,"r");
+	N=read_totalV_from_file(filename);
+	mat = allocate_mod_mat(N);
+	load_mod_matrix_from_file(filename, mat);
+	fclose(filename);
+}
+
+void generate_output_file(Stack *O, char *outputPath){
+    FILE *out = fopen(outputPath, "w"); /*file should be open for write in main*/
+    Snode *node = O->top;
+	Subgroup gi;
+    VERIFY(out != NULL, FILE_WRITE_ERROR)
+    fputc(O->size + '0', out);
+    while(node != NULL){
+        fputc(node->sizeG + '0', out);
+        for (gi = node->g ; gi - node->g < node->sizeG ; gi++){
+            fputc(*gi + '0', out);
+        }
+        node = node->next;
+    }
+    fclose(out);
 }

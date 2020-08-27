@@ -1,24 +1,23 @@
 typedef int bool;
+typedef size_t* Subgroup;
 
 typedef struct Snode{
-	int* g;
-	int sizeG;
+	Subgroup g;
+	size_t sizeG;
 	Snode* next;
 } Snode;
 
 typedef struct Stack{
-	int size;
+	size_t size;
 	Snode* top;
 } Stack;
 
 void init(Stack* s);
 
-void push(Stack* s, int* g, int sizeG);
+void push(Stack* s, Subgroup g, size_t sizeG);
 
-int* pop(Stack* s, int* sizeG);
+Subgroup pop(Stack* s, size_t* sizeG);
 
 bool isEmpty(Stack* s);
 
 void delete_Stack(Stack* s);
-
-void delete_StackNodes(Snode* node);

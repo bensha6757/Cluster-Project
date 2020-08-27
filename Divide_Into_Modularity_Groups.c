@@ -1,13 +1,7 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <stddef.h>
-#include <time.h>
-#include <math.h>
-#include "Assertions.h"
-#include "Stack.h"
-#include "modMat.c"
 
-void add_to_stacks(Stack* P, Stack* O, int sizeG, int sizeG1, int sizeG2, int* g1, int* g2, int* g){
+#include "Divide_Into_Modularity_Groups.h"
+
+void add_to_stacks(Stack* P, Stack* O, size_t sizeG, size_t sizeG1, size_t sizeG2, Subgroup g1, Subgroup g2, Subgroup g){
 	if (sizeG1 == 0 || sizeG2 == 0){
 			push(O, g, sizeG);
 	}
@@ -28,12 +22,13 @@ void add_to_stacks(Stack* P, Stack* O, int sizeG, int sizeG1, int sizeG2, int* g
 	}
 }
 /* Algorithm 3*/
-Stack* div_into_mod_groups(modMat* B, int *g, int sizeG){
+Stack* div_into_mod_groups(modMat* B, Subgroup g, size_t sizeG){
 	Stack* P = (Stack*)malloc(sizeof(Stack)), *O = (Stack*)malloc(sizeof(Stack));
 	Snode* node;
-	int *res, sizeG1, sizeG2, *g1, *g2;
-	verify(P != NULL);
-	verify(O != NULL);
+	Subgroup res, g1, g2;
+	size_t sizeG1, sizeG2;
+	VERIFY(P != NULL,MEM_ALLOC_ERROR)
+	VERIFY(O != NULL,MEM_ALLOC_ERROR)
 	init(P);
 	init(O); /* initializing O to be empty */
 	push(P,g,sizeG); /* starting with a trivial division into one group */
