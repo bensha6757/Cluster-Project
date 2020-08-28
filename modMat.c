@@ -57,7 +57,7 @@ double sum_of_abs(double *row, size_t n){
 void set_1_norm(modMat *B){
 	/*
 	 * By symmetry, row i == column i.
-	 * Thus, any operation mapped on a row of B is equivalent to the same operation on columns.
+	 * Thus, any operation mapped (entry-wise) on a row of B is equivalent to the same operation on a column of B.
 	 */
 	size_t i;
 	double tmp=0, max=0;
@@ -194,40 +194,3 @@ modMat* allocate_mod_mat(int n){
 
 	return rep;
 }
-
-
-/* 	DEPRECATED
- *
- *	Multiply submatrix B[g] with vector u;
- *  This is an implementation for mult method in ModMat type struct.
- *	For original B of the whole network, sumK == B->M 
- *  
- *  spmat's mult must be modified to support multiplying B[g]
- */
-
-/*
-void multSubgroupMatrix(modMat *Bg, Subgroup g, double *u, double *res){
-	double *resAu, *resKu, sumK=0;
-	vector j, *i, t, *tempg=g;
-	resAu=(double*)malloc(Bg->n*sizeof(double));
-	Bg->A->mult(Bg->A,u,resAu); 
-	resKu=(double*)malloc(Bg->n*sizeof(double));
-	for (j=Bg->K; j<Bg->K+Bg->n; j++)
-		if (*tempg==j-Bg->K && *tempg<Bg->n){
-			sumK += (*j);
-			tempg++;
-		}
-	
-	tempg=g;
-	for (i=Bg->K; i<Bg->K+Bg->n; i++)
-		if (*tempg==i-Bg->K && *tempg<Bg->n){
-			*resKu++ = ((double)((*i)*sumK) / Bg->M)*(*u++);
-			tempg++;
-		}
-	resKu-=Bg->n;
-	for (t=0; t<Bg->n; t++)
-		*res++=(*resAu++)-(*resKu++);
-	free(resAu);
-	free(resKu);
-}
-*/
