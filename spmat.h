@@ -16,7 +16,7 @@ typedef struct _spmat {
 	void (*add_row)(struct _spmat *A, const double *row, int i);
 
 	/*Gets row i from the matrix */
-	void (*get_row)(struct _spmat *A, const double *row, int i);
+	void (*get_row)(const struct _spmat *A, int i, double *result);
 
 	/* Frees all resources used by A */
 	void (*free)(struct _spmat *A);

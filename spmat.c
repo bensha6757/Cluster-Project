@@ -196,6 +196,22 @@ void add_row_arrays(struct _spmat *A, const double *row, int i)
 }
 
 
+void get_row_arrays(const struct _spmat *A, int i, double *result){
+	arraymat *imp=((arraymat*)(A->private));
+	double *p, *v=imp->values+*(imp->rowptr+i);
+	int *src_col = imp->colind+*(imp->rowptr+i), dest_col;
+	for (p=result; p<result+A->n; p++){
+		dest_col=p-result;
+		if (dest_col==*src_col){
+			*p=*v;
+			v++;
+			src_col++;
+		}
+		else
+			*p=0;
+	}
+}
+
 void free_arrays(struct _spmat *A)
 {
 	arraymat *imp=((arraymat*)(A->private));
@@ -223,6 +239,23 @@ void mult_arrays(const struct _spmat *A, const double *v, double *result)
 	}
 }
 
+/** TO BE TESTED.
+ * 
+ * 	Generic get_row for spmat, independently of implementation (lists or arrays).
+ * 	Utilizes A->mult with a standard vector (v[j]==1 if i=j, else v[j]==0).	
+ *  
+ */
+/*
+void get_spmat_row_with_mult(const struct _spmat *A, double *row, int i){
+	double *basis;
+	basis=(double*)calloc(A->n,sizeof(double));
+	VERIFY(basis!=NULL,MEM_ALLOC_ERROR)
+	*(basis+i)=1;
+	A->mult(A,basis,row);
+	free(basis);
+}
+*/
+
 /* Allocates a new arrays sparse matrix of size n with nnz non-zero elements */
 spmat* spmat_allocate_array(int n, int nnz)
 {
@@ -237,6 +270,7 @@ spmat* spmat_allocate_array(int n, int nnz)
 	imp->rowptr = (int*)malloc((n+1)*sizeof(int));
 	VERIFY(imp->rowptr != NULL,MEM_ALLOC_ERROR)
 	ret->n=n;
+	ret->get_row=get_row_arrays;
 	ret->add_row=add_row_arrays;
 	ret->free=free_arrays;
 	ret->mult=mult_arrays;
@@ -264,7 +298,7 @@ void get_sub_row_arrays(spmat *A, int i, double *dest, Subgroup g, size_t sizeG,
 	Subgroup q;
 	v=(double*)malloc(A->n*sizeof(double));
 	VERIFY(v!=NULL, MEM_ALLOC_ERROR)
-	A->get_row(A,v,i);
+	A->get_row(A,i,v);
 	for (q=g; q<g+sizeG; q++){
 		sub_ij=*(v+*q);
 		*(dest++)=sub_ij;
@@ -294,20 +328,4 @@ spmat* create_sub_sparse_matrix_array(spmat *A, Subgroup g, int sizeG , size_t *
 	free(sub_row);
 	return sub;
 }
-
-
-/** DEPRECATED
- * 	Generic get_row for spmat, independently of implementation (lists or arrays).
- * 	Utilizes A->mult with a standard vector (v[j]==1 if i=j, else v[j]==0).	
- *  ****/
-/*
-void getSpMatRow(struct _spmat *A, const double *row, int i){
-	double *basis;
-	basis=(double*)calloc(A->n,sizeof(double));
-	VERIFY(basis!=NULL,MEM_ALLOC_ERROR)
-	*(basis+i)=1;
-	A->mult(A,basis,row);
-	free(basis);
-}
-*/
 

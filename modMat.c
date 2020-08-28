@@ -10,7 +10,7 @@ void free_mod_mat(modMat *B){
 
 
 void get_adj_row(const modMat *B, size_t i, double *row){
-	B->A->get_row(B->A, row, i);
+	B->A->get_row(B->A, i, row);
 }
 
 void get_K_row(const modMat *B, size_t i, double *row){
@@ -101,10 +101,10 @@ size_t genM(int_vector K, size_t sizeG){
  * If impl_flag==1, uses linked-list implementation. Otherwise, use arrays impl.
  */
 
-modMat *create_Sub_Matrix(modMat *B, Subgroup g, size_t sizeG, int impl_flag){
+modMat *create_Sub_Matrix(modMat *B, Subgroup g, size_t sizeG, boolean impl_flag){
     modMat *Bg = allocate_mod_mat(sizeG);
     VERIFY(Bg!=NULL,MEM_ALLOC_ERROR)
-	if (impl_flag)
+	if (impl_flag==USE_LINKED)
     	Bg->A = create_sub_sparse_matrix_linked(B->A, g, sizeG, Bg->spmatSize);
 	else
 		Bg->A = create_sub_sparse_matrix_array(B->A, g, sizeG, Bg->spmatSize);
@@ -114,22 +114,17 @@ modMat *create_Sub_Matrix(modMat *B, Subgroup g, size_t sizeG, int impl_flag){
     return Bg;
 }
 
-double k_dot_product(size_t *K, double *v, size_t sizeG){
-    double res = 0;
-	size_t *ki;
-    for (ki = K ; ki < sizeG + K ; ki++){
-        res += (*ki) * (*v);
-        v++;
-    }
-    return res;
-}
-
 /* part of the modularity matrix multiplication for power iteration, multiplying the degrees matrix (k_i * k_j / M) */
 void mult_K(modMat *B, modMat *Bg, double *v, double *res){
     int_vector K = Bg->K;
     size_t origM = B->M, sizeG = Bg->gSize, *ki;
-    double dot = k_dot_product(K,v,sizeG);
+    double dot = 0;
     VERIFY(res != NULL,NULL_POINTER_ERROR)
+    for (ki = K ; ki < sizeG + K ; ki++){
+        dot += (*ki) * (*v);
+        v++;
+    }
+	v-=sizeG;
     for (ki = K ; ki < sizeG + K ; ki++){
       *res = (*ki) * dot * (1 / (double)origM);
       res++;
@@ -142,9 +137,8 @@ void mult_F_and_C(modMat *B, modMat *Bg, double *v, boolean shift, double *res){
     int_vector K = Bg->K;
     int_vector spmatSize = Bg->spmatSize;
     size_t M = Bg->M, origM = B->M ,sizeG = Bg->gSize, *ki;
-    double fi, shiftNorm=0;
-    if (!shift)
-      shiftNorm = Bg->one_norm;
+    double fi, shiftNorm;
+	shiftNorm = shift ? Bg->one_norm : 0;
     for (ki = K ; ki < sizeG + K ; ki++){
       fi = (*spmatSize) - (((*ki) * M) / origM);
       *res = (fi - shiftNorm)  * (*v) ;
@@ -167,7 +161,7 @@ void mult_B_hat_g(modMat *B, modMat *Bg, double *v, double *result){
 	VERIFY(tmp3!=NULL,MEM_ALLOC_ERROR)
 	Bg->A->mult(Bg->A,v,tmp1);
 	mult_K(B, Bg, v, tmp2);
-	mult_F_and_C(B, Bg, v, (Bg->gSize == B->gSize), tmp3);
+	mult_F_and_C(B, Bg, v, (Bg->gSize != B->gSize), tmp3);
 	for (p=result; p<result+Bg->gSize; p++)
 		*p=*tmp1++ - *tmp2++ - *tmp3++;
 	tmp3-=Bg->gSize;
