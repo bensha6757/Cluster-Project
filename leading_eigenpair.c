@@ -16,11 +16,12 @@ double norm(vector v, size_t d){
 
 void set_rand_vector(vector v, size_t n){
 	unsigned int i;
-	for (i=0; i<n; i++, v++)
-		*v = (double)rand();
+	srand(time(NULL));
+	for (i=0; i<n; i++)
+		*v++ = (double)rand();
 }
 
-/*	Approximate dominant eigen value of matrix B. */
+/*	Approximate dominant eigen value of matrix B using vectors computed in last power iteration */
 double approx_dom_eigen_val(modMat *B, vector bprev, vector bnext){
 	return dot_prod(bnext,bprev,B->gSize) / dot_prod(bprev,bprev,B->gSize);
 }
@@ -57,7 +58,6 @@ void leading_eigenpair(modMat *B, modMat *Bg, vector leadEigenVec, double *leadE
 	VERIFY(bprev!=NULL,MEM_ALLOC_ERROR)
 	bnext=(vector)malloc(Bg->gSize*sizeof(double));
 	VERIFY(bnext!=NULL,MEM_ALLOC_ERROR)
-	srand(time(NULL));
 	set_rand_vector(bprev, Bg->gSize);
 	power_iteration(B,Bg,bprev,bnext);
 	iter++;
@@ -71,6 +71,7 @@ void leading_eigenpair(modMat *B, modMat *Bg, vector leadEigenVec, double *leadE
 		printf("# of power iterations: %d\n", (int)iter);
 	#endif
 	memcpy(leadEigenVec,bnext,Bg->gSize*sizeof(double));
+	/* The leading eigenvalue is a 1-norm shifted dominant eigenvalue*/
 	*leadEigenVal = approx_dom_eigen_val(Bg,bprev,bnext) - (Bg->one_norm);
 	free(bnext);
 	free(bprev);
