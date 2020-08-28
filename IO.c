@@ -21,11 +21,8 @@ void convert_adj_list(size_t deg, size_t n, int* adj, double *res){
 		*res++=1;
 	}
 	/* Fill the last remaining entries of res with non-edge (zero) */  
-	for(temp=*i; (size_t)temp < n; temp++)
+	for(temp=*i; temp < (int)n; temp++)
 		*res++=0;
-	#ifdef DEBUG
-	printf("SUCCESS: %d neighbours now represented as %d-length vector\n", (int)deg, (int)n);
-	#endif
 }
 
 
@@ -66,6 +63,9 @@ void load_mod_matrix_from_file(FILE *input, modMat *B){
 		VERIFY(neighbours!=NULL, MEM_ALLOC_ERROR)
 		VERIFY(fread(neighbours,sizeof(size_t),k_i,input) == (size_t)k_i, FILE_READ_ERROR)
 		convert_adj_list((size_t)k_i, B->gSize, neighbours, matLine);
+		#ifdef DEBUG
+		printf("SUCCESS: %d neighbours now represented as %d-length vector\n", (int)k_i, (int)B->gSize);
+		#endif
 		B->A->add_row(B->A,matLine,i);
 		#ifdef DEBUG
 		printf("SUCCESS: {0,1} row added to B->A\n");
