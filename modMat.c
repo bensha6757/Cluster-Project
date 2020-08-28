@@ -33,17 +33,16 @@ void get_B_hat_row(const struct _modmat *B, size_t i, double *row){
 	VERIFY (A_i!=NULL,MEM_ALLOC_ERROR)
 	get_adj_row(B,i,A_i);
 	get_K_row(B,i,K_i);
-	/* Compute f_i*/
-	for (j=0; j<B->gSize; j++)
-		f_i += (*A_i++ - *K_i++);
-	/* Compute entire row of B_hat[g] */
-	A_i-=B->gSize;
-	K_i-=B->gSize;
-	for (j=0; j<B->gSize; j++)
+	/* Compute entire row of B_hat[g] and f_i */
+	for (j=0; j<B->gSize; j++){
 		*row++=*A_i++ -*K_i++;
+		f_i += (*A_i++ - *K_i++);
+	}
 	row-=B->gSize;
 	*(row+i)-=f_i;
+	A_i-=B->gSize;
 	free(A_i);
+	K_i-=B->gSize;
 	free(K_i);
 }
 
