@@ -36,7 +36,7 @@ void load_mod_matrix_from_file(FILE *input, modMat *B){
 	int i;
 	int_vector k=B->K, g=B->g;
 	int *inputNeighbours, currDeg;
-	double *matLine=(double*)malloc(B->gSize*sizeof(size_t));
+	double *matLine=(double*)malloc(B->gSize*sizeof(double));
 	VERIFY(matLine!=NULL,MEM_ALLOC_ERROR)
 	read_num_from_file(&i,sizeof(size_t),1,input); /*Assuming file rewinded, skip |V| */
 	/* Populate B with A, K matrices, and compute M */
