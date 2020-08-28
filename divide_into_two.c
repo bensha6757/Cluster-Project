@@ -61,9 +61,9 @@ void optimize_division_modified(modMat *B, vector s){
 
 void optimize_division_original(modMat *B, vector s){
 	vector p;
-	size_t i, *indices, maxi, *moved, *m, impInd=0;
-	double Q_0, *score, maxScore=0, deltaQ=1,*improve, improveMax=0;
-	double *Bs=(double*)malloc(B->gSize*sizeof(double));
+	size_t i, *indices, maxi, *moved, *q, impInd=0;
+	double Q_0, *Bs, *score, maxScore=0, deltaQ=1,*improve, improveMax=0;
+	Bs=(double*)malloc(B->gSize*sizeof(double));
 	VERIFY (Bs!=NULL,MEM_ALLOC_ERROR)
 	score=(double*)malloc(B->gSize*sizeof(double));
 	VERIFY(score!=NULL,MEM_ALLOC_ERROR)
@@ -72,8 +72,8 @@ void optimize_division_original(modMat *B, vector s){
 		VERIFY(moved!=NULL,MEM_ALLOC_ERROR)
 		for (i=0; i<B->gSize ; i++){
 			Q_0=get_modularity(B ,s, Bs, INITIAL_Q);
-			for (m=moved; m<moved+B->gSize; m++){
-				if (!(*m))
+			for (q=moved; q<moved+B->gSize; q++){
+				if (!(*q))
 					*score++=get_modularity(B,s,Bs,i)-Q_0;
 			}
 			score-=B->gSize;
@@ -95,9 +95,9 @@ void optimize_division_original(modMat *B, vector s){
 				impInd=improve-p;
 			}
 		}
-		for (i=B->gSize-1; i>impInd; i--)
-			*(s+*(indices+i))*=-1;
-		deltaQ = i == B->gSize-1 ? 0 : improveMax;
+		for (q=indices+B->gSize; q>indices+impInd; q--)
+			*(s+*(q))*=-1;
+		deltaQ = q == indices+B->gSize ? 0 : improveMax;
 	}
 	free(Bs);
 	free(score);
@@ -106,8 +106,7 @@ void optimize_division_original(modMat *B, vector s){
 }
 
 /*
- * Map a double's vector to a {-1,1} vector with size_t elements.
- * consider s vector to be a double as well if upcasting fails when applying mult.
+ * Map a real vector to a pre-allocated vector of {-1,1} elements.
  */
 void eigen_to_s(modMat *B, vector eigenVec, vector s){
 	vector e=eigenVec;
@@ -149,12 +148,12 @@ DIV_RESULT div_into_two(modMat *B,Subgroup g, size_t sizeG, Subgroup *g1, Subgro
 	u=(vector)malloc(Bg->gSize*sizeof(double));
 	VERIFY(u!=NULL,MEM_ALLOC_ERROR)
 	leading_eigenpair(B,Bg,u,&beta);
-	if (beta<=0.0)
+	if (!IS_POSITIVE(beta))
 		ret=GROUP_INDIVISIBLE;
 	s=(vector)malloc(B->gSize*sizeof(size_t));
 	VERIFY(s!=NULL,MEM_ALLOC_ERROR)
 	eigen_to_s(B,u,s);
-	if (get_modularity(B,s,u,INITIAL_Q)<=0.0)
+	if (!IS_POSITIVE(get_modularity(B,s,u,INITIAL_Q)))
 		ret=GROUP_INDIVISIBLE;
 	else {
 		optimize_division_original(B, s);
