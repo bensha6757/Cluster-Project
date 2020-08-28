@@ -1,4 +1,5 @@
 #include "modMat.h"
+#define DEBUG
 
 
 void free_mod_mat(modMat *B){
@@ -177,9 +178,16 @@ modMat* allocate_mod_mat(int n){
 	modMat *rep=(modMat*)malloc(sizeof(modMat));
 	VERIFY(rep!=NULL,MEM_ALLOC_ERROR)
 	rep->gSize=n;
-
+	#ifdef DEBUG
+	printf("Allocated modmat size = %d\n",(int)rep->gSize);
+	#endif
 	if (USE_LINKED)
 		rep->A = spmat_allocate_list(n);
+	/* Assume 2*m := count of non-zero elements required for spmat arrays impl. */ 
+	/*
+	else
+		rep->A = spmat_allocate_array((int)n,(int)2*m);
+	*/
 	VERIFY(rep->A != NULL,MEM_ALLOC_ERROR)
 
 	rep->K=(int_vector)malloc(n*sizeof(size_t));
@@ -191,6 +199,10 @@ modMat* allocate_mod_mat(int n){
 	rep->free=free_mod_mat;
 
 	rep->get_row=get_B_hat_row;
+	
+	#ifdef DEBUG
+	printf("SUCCESS: Allocated B resources\n");
+	#endif
 
 	return rep;
 }
