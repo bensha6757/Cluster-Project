@@ -31,23 +31,23 @@ size_t read_network_size_from_file(FILE *input){
 
 void load_mod_matrix_from_file(FILE *input, modMat *B){
 	int i;
-	int_vector k=B->K, g=B->g;
-	int *inputNeighbours, currDeg;
+	int_vector K=B->K, g=B->g;
+	int *neighbours, k_i;
 	double *matLine=(double*)malloc(B->gSize*sizeof(double));
-	VERIFY(matLine!=NULL,MEM_ALLOC_ERROR)
-	VERIFY(fread(&i,sizeof(size_t),1,input) == 1,FILE_READ_ERROR)  /*Assuming file rewinded, skip |V| */
+	VERIFY(matLine!=NULL, MEM_ALLOC_ERROR)
+	VERIFY(fread(&i,sizeof(size_t),1,input) == 1, FILE_READ_ERROR)  /*Assuming file rewinded, skip |V| */
 	/* Populate B with A, K matrices, and compute M */
 	for (i=0; i<(int)B->gSize; i++){
-		VERIFY(fread(&currDeg,sizeof(int),1,input) == 1,FILE_READ_ERROR)
-		*(k++)=(size_t)currDeg;
-		B->M+=(size_t)currDeg;
-		inputNeighbours=(int*)malloc(currDeg*sizeof(int));
-		VERIFY(inputNeighbours!=NULL,MEM_ALLOC_ERROR)
-		VERIFY(fread(inputNeighbours,sizeof(size_t),currDeg,input) == 1,FILE_READ_ERROR)
-		convert_adj_list((size_t)currDeg, B->gSize, inputNeighbours, matLine);
+		VERIFY(fread(&k_i,sizeof(int),1,input) == 1, FILE_READ_ERROR)
+		*(K++)=(size_t)k_i;
+		B->M+=(size_t)k_i;
+		neighbours=(int*)malloc(k_i*sizeof(int));
+		VERIFY(neighbours!=NULL, MEM_ALLOC_ERROR)
+		VERIFY(fread(neighbours,sizeof(size_t),k_i,input) == (size_t)k_i, FILE_READ_ERROR)
+		convert_adj_list((size_t)k_i, B->gSize, neighbours, matLine);
 		B->A->add_row(B->A,matLine,i);
 		*(g++)=i; /*Fill g subgroup array with 0,1,2,...n */
-		free(inputNeighbours);
+		free(neighbours);
 	}
 	free(matLine);
 	rewind(input);
