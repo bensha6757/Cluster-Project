@@ -5,16 +5,13 @@
  * INPUT FILE TO MEMORY FUNCTIONS*
  *********************************/
 
-/*  Read bytes from file or exit if failed. used to replace assert functionality */
-void read_num_from_file(int *dest,unsigned int num,unsigned int size,FILE* file){
-	VERIFY(fread(dest,num,size,file) == size,FILE_READ_ERROR)
-}
 
 /*	Convert node indices (like input file format) to a pre-allocated result {0,1} vector of length n
- * 	that can be added to a spmat via add_row. */
-void convert_adj_list(size_t k, size_t n, int* adj, double *res){
+ * 	that can be added to a spmat via add_row. 
+ */
+void convert_adj_list(size_t deg, size_t n, int* adj, double *res){
 	int *i, temp;
-	for (i=adj; i<adj+k; i++){
+	for (i=adj; i<adj+deg; i++){
 		temp=*i;
 		while (temp-->0)
 			*res++=0;
@@ -25,11 +22,11 @@ void convert_adj_list(size_t k, size_t n, int* adj, double *res){
 }
 
 
-size_t read_totalV_from_file(FILE *input){
+size_t read_network_size_from_file(FILE *input){
 	int n;
-	read_num_from_file(&n,sizeof(size_t),1,input);
+	VERIFY(fread(&n,sizeof(size_t),1,input) == 1,FILE_READ_ERROR)
 	rewind(input);
-	return n;
+	return (size_t)n;
 }
 
 void load_mod_matrix_from_file(FILE *input, modMat *B){
@@ -38,15 +35,15 @@ void load_mod_matrix_from_file(FILE *input, modMat *B){
 	int *inputNeighbours, currDeg;
 	double *matLine=(double*)malloc(B->gSize*sizeof(double));
 	VERIFY(matLine!=NULL,MEM_ALLOC_ERROR)
-	read_num_from_file(&i,sizeof(size_t),1,input); /*Assuming file rewinded, skip |V| */
+	VERIFY(fread(&i,sizeof(size_t),1,input) == 1,FILE_READ_ERROR)  /*Assuming file rewinded, skip |V| */
 	/* Populate B with A, K matrices, and compute M */
 	for (i=0; i<(int)B->gSize; i++){
-		read_num_from_file(&currDeg,sizeof(int),1,input);
+		VERIFY(fread(&currDeg,sizeof(int),1,input) == 1,FILE_READ_ERROR)
 		*(k++)=(size_t)currDeg;
 		B->M+=(size_t)currDeg;
 		inputNeighbours=(int*)malloc(currDeg*sizeof(int));
 		VERIFY(inputNeighbours!=NULL,MEM_ALLOC_ERROR)
-		read_num_from_file(inputNeighbours,sizeof(size_t),currDeg,input);
+		VERIFY(fread(inputNeighbours,sizeof(size_t),currDeg,input) == 1,FILE_READ_ERROR)
 		convert_adj_list((size_t)currDeg, B->gSize, inputNeighbours, matLine);
 		B->A->add_row(B->A,matLine,i);
 		*(g++)=i; /*Fill g subgroup array with 0,1,2,...n */
@@ -63,9 +60,12 @@ void load_input_file(char* filename, modMat *mat){
 	size_t N;
 	FILE* inputFile = fopen(filename,"r");
 	#ifdef DEBUG
-	printf("Read input file");
+	printf("Open input file\n");
 	#endif
-	N=read_totalV_from_file(inputFile);
+	N=read_network_size_from_file(inputFile);
+	#ifdef DEBUG
+	printf("Open Read |V|=%d\n", (int)N);
+	#endif
 	mat = allocate_mod_mat(N);
 	load_mod_matrix_from_file(inputFile, mat);
 	fclose(inputFile);

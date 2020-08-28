@@ -9,11 +9,11 @@ void runClusterProject(char* inputFileName, char* outputFileName){
 	Subgroup g;
 	Stack *O;
 	#ifdef DEBUG
-	printf("Read input file begins");
+	printf("BEGIN: Read input file\n");
 	#endif
 	load_input_file(inputFileName,mat); /* reading input */
 	#ifdef DEBUG
-	printf("Read input file successfully");
+	printf("SUCCESS: Read input file\n");
 	#endif
 	g = (Subgroup)malloc(mat->gSize * sizeof(size_t));
 	VERIFY(g!=NULL,MEM_ALLOC_ERROR)
@@ -28,7 +28,7 @@ int main(int argc, char* argv[]){
 	char* inputFileName=argv[1];
 	char* outputFileName=argv[2];
 	#ifdef DEBUG
-	printf("Recieved file names: %s, %s",inputFileName,outputFileName);
+	printf("Received file names: %s, %s\n",inputFileName,outputFileName);
 	#endif
 	VERIFY(argc - 1 == 2,FILE_READ_ERROR)
 	runClusterProject(inputFileName, outputFileName);
