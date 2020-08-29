@@ -1,4 +1,5 @@
 #include "spmat.h"
+#define DEBUG
 
 typedef struct linked_list {
 	DATA val;
@@ -6,7 +7,7 @@ typedef struct linked_list {
 	struct linked_list *next;
 } linked_list;
 
-typedef  struct  linked_list Node;
+typedef struct linked_list Node;
 
 /* insert a new node after head */
 void add_after(Node *head, int i){
@@ -63,7 +64,9 @@ void add_row_linked(spmat *A, const double *row, int i){
 	Node *head = NULL, *tail;
 	int j = 0, n = A->n;
 	const DATA *rowPtr = row;
-
+	#ifdef DEBUG
+	printf("Enter add_row_linked\n");
+	#endif
 	while (j < n && *rowPtr == 0){ /* getting to the first non-zero value and adding it to the first node*/
 		rowPtr++;
 		j++;
