@@ -11,10 +11,19 @@ void runClusterProject(char* inputFileName, char* outputFileName){
 	#ifdef DEBUG
 	printf("BEGIN: runClusterProject\n");
 	#endif
-	load_input_file(inputFileName,mat); /* reading input */
+	load_input_file(inputFileName,&mat); /* reading input */
+	#ifdef DEBUG
+	printf("SUCCESS: mat initialized and stored of size %d\n", (int)mat->gSize);
+	#endif
 	g = (Subgroup)malloc(mat->gSize * sizeof(num));
+	#ifdef DEBUG
+	printf("SUCCESS: g allocated\n");
+	#endif
 	VERIFY(g!=NULL,MEM_ALLOC_ERROR)
 	memcpy(g, mat->g, mat->gSize * sizeof(num));
+	#ifdef DEBUG
+	printf("SUCCESS: memcpy g\n");
+	#endif
 	O = div_into_mod_groups(mat, g, mat->gSize); /* calling Algorithm 3 */
 	mat->free(mat);
 	generate_output_file(O, outputFileName); /* writing result to file */

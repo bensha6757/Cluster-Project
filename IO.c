@@ -67,18 +67,18 @@ void load_mod_matrix_from_file(FILE *input, modMat *B){
 	#endif
 	set_1_norm(B);
 	#ifdef DEBUG
-	printf("SUCCESS:load_mod_matrix_from_file\n");
+	printf("SUCCESS: load_mod_matrix_from_file\n");
 	#endif
 }
 
 /*** INTERFACE FOR MAIN PROGRAM FUNCTIONS ***/
 
-void load_input_file(char* filename, modMat *mat){
+void load_input_file(char* filename, modMat **mat){
 	num N, M;
 	FILE* inputFile = fopen(filename,"r");
 	N=read_network_size_from_file(inputFile, &M);
-	mat = allocate_mod_mat(N);
-	load_mod_matrix_from_file(inputFile, mat);
+	*mat = allocate_mod_mat(N);
+	load_mod_matrix_from_file(inputFile, *mat);
 	fclose(inputFile);
 	#ifdef DEBUG
 	printf("SUCCESS: load_input_file\n");

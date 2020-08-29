@@ -1,5 +1,5 @@
 #include "leading_eigenpair.h"
-
+#define DEBUG
 
 double dot_prod(vector v, vector u, num d){
 	unsigned int i;
@@ -54,6 +54,9 @@ void power_iteration(modMat *B, modMat *Bg, vector v, vector result){
 void leading_eigenpair(modMat *B, modMat *Bg, vector leadEigenVec, double *leadEigenVal){
 	num iter=0;
 	vector bprev, bnext;
+	#ifdef DEBUG
+	printf("BEGIN: leading_eigenpair\n");
+	#endif
 	bprev=(vector)malloc(Bg->gSize*sizeof(double));
 	VERIFY(bprev!=NULL,MEM_ALLOC_ERROR)
 	bnext=(vector)malloc(Bg->gSize*sizeof(double));
@@ -65,9 +68,9 @@ void leading_eigenpair(modMat *B, modMat *Bg, vector leadEigenVec, double *leadE
 		memcpy(bprev,bnext,Bg->gSize*sizeof(double));
 		power_iteration(B,Bg,bprev,bnext);
 		iter++;
-		VERIFY (iter>1000*Bg->gSize,INFINITE_LOOP_ERROR)
+		VERIFY(iter<1000*Bg->gSize,INFINITE_LOOP_ERROR)
 	}
-	#ifdef PERFORMANCE_ITER
+	#ifdef DEBUG
 		printf("# of power iterations: %d\n", (int)iter);
 	#endif
 	memcpy(leadEigenVec,bnext,Bg->gSize*sizeof(double));
@@ -75,4 +78,7 @@ void leading_eigenpair(modMat *B, modMat *Bg, vector leadEigenVec, double *leadE
 	*leadEigenVal = approx_dom_eigen_val(Bg,bprev,bnext) - (Bg->one_norm);
 	free(bnext);
 	free(bprev);
+	#ifdef DEBUG
+	printf("SUCCESS: leading_eigenpair\n");
+	#endif
 }

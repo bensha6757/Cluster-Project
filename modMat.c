@@ -27,9 +27,6 @@ void get_B_hat_row(const struct _modmat *B, num i, double *row){
 	double *A_i, *K_i;
 	double f_i=0;
 	num j;
-	#ifdef DEBUG
-	printf("BEGIN: get_B_hat_row\n");
-	#endif
 	A_i=(vector)malloc(B->gSize*sizeof(double));
 	VERIFY(A_i!=NULL,MEM_ALLOC_ERROR)
 	K_i=(vector)malloc(B->gSize*sizeof(double));
@@ -47,9 +44,6 @@ void get_B_hat_row(const struct _modmat *B, num i, double *row){
 	free(A_i);
 	K_i-=B->gSize;
 	free(K_i);
-	#ifdef DEBUG
-	printf("SUCCESS: get_B_hat_row\n");
-	#endif
 }
 
 double sum_of_abs(double *row, num n){
@@ -68,9 +62,6 @@ void set_1_norm(modMat *B){
 	num i;
 	double tmp=0, max=0;
 	vector B_i;
-	#ifdef DEBUG
-	printf("BEGIN: set_1_norm\n");
-	#endif
 	B_i=(vector)malloc(B->gSize*sizeof(double));
 	VERIFY(B_i!=NULL,MEM_ALLOC_ERROR)
 	for (i=0; i<B->gSize; i++){
@@ -81,9 +72,6 @@ void set_1_norm(modMat *B){
 	}
 	free(B_i);
 	B->one_norm=max;
-	#ifdef DEBUG
-	printf("SUCCESS: set_1_norm\n");
-	#endif
 }
 
 /* helping function, populate resK and resM with sub-vector K and M aligned with the subgroup g*/

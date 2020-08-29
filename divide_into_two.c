@@ -110,8 +110,14 @@ void optimize_division_original(modMat *B, vector s){
  */
 void eigen_to_s(modMat *B, vector eigenVec, vector s){
 	vector e=eigenVec;
+	#ifdef DEBUG
+	printf("BEGIN: eigen_to_s\n");
+	#endif
 	while(e < eigenVec+B->gSize)
 		*s++ = IS_POSITIVE(*(e++)) ? 1 : -1;
+	#ifdef DEBUG
+	printf("SUCCESS: eigen_to_s\n");
+	#endif
 }
 
 /* Maps a {-1,1} vector s of B's dim. to a partition g1,g2 */  

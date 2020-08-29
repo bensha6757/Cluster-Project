@@ -26,6 +26,9 @@ Stack* div_into_mod_groups(modMat* B, Subgroup g, num sizeG){
 	Stack* P = (Stack*)malloc(sizeof(Stack)), *O = (Stack*)malloc(sizeof(Stack));
 	Subgroup g1, g2;
 	num sizeG1, sizeG2;
+	#ifdef DEBUG
+	printf("BEGIN: div_into_mod_groups\n");
+	#endif
 	VERIFY(P != NULL,MEM_ALLOC_ERROR)
 	VERIFY(O != NULL,MEM_ALLOC_ERROR)
 	init(P);
@@ -37,5 +40,8 @@ Stack* div_into_mod_groups(modMat* B, Subgroup g, num sizeG){
 		add_to_stacks(P, O, sizeG, sizeG1, sizeG2, g1, g2, g);
 	}
 	free(P);
+	#ifdef DEBUG
+	printf("SUCCESS: div_into_mod_groups\n");
+	#endif
 	return O;
 }

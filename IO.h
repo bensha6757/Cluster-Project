@@ -9,7 +9,7 @@
 #include "Types.h"
 
 
-void load_input_file(char* filename, modMat *mat);
+void load_input_file(char* filename, modMat **mat);
 
 void generate_output_file(Stack *O, char *outputPath);
 
