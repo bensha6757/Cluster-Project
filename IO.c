@@ -1,5 +1,4 @@
 #include "IO.h"
-#define DEBUG
 
 /*********************************
  * INPUT FILE TO MEMORY FUNCTIONS*
@@ -33,9 +32,6 @@ num read_network_size_from_file(FILE *input, num *edges_num){
 		VERIFY(fread(tmp,sizeof(int),k,input) == k,FILE_READ_ERROR)
 		cnt+=k;
 	}
-	#ifdef DEBUG
-	printf("|E| of network == %d\n",cnt);
-	#endif
 	*edges_num=cnt/2; /*Assuming sum_v(deg(v))==2*|E| */
 	free(tmp);
 	rewind(input);
@@ -62,13 +58,7 @@ void load_mod_matrix_from_file(FILE *input, modMat *B){
 		free(matLine);
 	}
 	rewind(input);
-	#ifdef DEBUG
-	printf("SUCCESS: B loaded from file to memory with %d lines, dim=%d\n", (int)i, (int)B->gSize);
-	#endif
 	set_1_norm(B);
-	#ifdef DEBUG
-	printf("SUCCESS: load_mod_matrix_from_file\n");
-	#endif
 }
 
 /*** INTERFACE FOR MAIN PROGRAM FUNCTIONS ***/
@@ -80,22 +70,16 @@ void load_input_file(char* filename, modMat **mat){
 	*mat = allocate_mod_mat(N);
 	load_mod_matrix_from_file(inputFile, *mat);
 	fclose(inputFile);
-	#ifdef DEBUG
-	printf("SUCCESS: load_input_file\n");
-	#endif
 }
 
 void generate_output_file(Stack *O, char *outputPath){
     FILE *out = fopen(outputPath, "w"); /*file should be open for write in main*/
     Snode *node = O->top;
-	Subgroup gi;
     VERIFY(out != NULL, FILE_WRITE_ERROR)
-    fputc(O->size + '0', out);
+	VERIFY(fwrite(&(O->size), sizeof(num), 1, out) == 1, FILE_WRITE_ERROR)
     while(node != NULL){
-        fputc(node->sizeG + '0', out);
-        for (gi = node->g ; gi  < node->sizeG + node->g ; gi++){
-            fputc(*gi + '0', out);
-        }
+        VERIFY(fwrite(&(node->sizeG),sizeof(num),1, out) == 1, FILE_WRITE_ERROR)
+        VERIFY(fwrite(node->g, sizeof(num), node->sizeG, out) == node->sizeG , FILE_WRITE_ERROR)
         node = node->next;
     }
     fclose(out);
