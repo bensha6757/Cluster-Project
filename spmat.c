@@ -9,6 +9,19 @@ typedef struct linked_list {
 
 typedef struct linked_list Node;
 
+/** 
+ * 	Generic get_row for spmat, independently of implementation (lists or arrays).
+ * 	Utilizes A->mult with a standard vector (v[j]==1 if i=j, else v[j]==0).	 
+ */
+void get_spmat_row_via_mult(const struct _spmat *A, int i, double *result){
+	vector e_i=(vector)calloc(A->n,sizeof(double));
+	VERIFY(e_i!=NULL,MEM_ALLOC_ERROR)
+	*(e_i+i)=1;
+	A->mult(A,e_i,result);
+	free(e_i);
+}
+
+
 /* insert a new node after head */
 void add_after(Node *head, int i){
 	head->next = (Node*)malloc(sizeof(Node));
@@ -16,6 +29,7 @@ void add_after(Node *head, int i){
 	head->next->col = i;
 	head->next->val = 1;
 }
+
 
 /* adding a row to the sub sparse matrix */
 num add_row_to_sub_linked(Subgroup col, num row, Subgroup g, int i, Node *AHead, Node *subTail, int n){
@@ -152,6 +166,7 @@ spmat* spmat_allocate_list(int n){
 	A->free = free_linked;
 	A->mult = mult_linked;
 	/*A->get_row = get_spmat_row_linked;*/
+	A->get_row =  get_spmat_row_via_mult;
 	A->private =  (Node**) malloc (sizeof(Node*) * (A->n));
 	VERIFY(A->private != NULL,MEM_ALLOC_ERROR)
 	return A;
@@ -195,7 +210,7 @@ void add_row_arrays(struct _spmat *A, const double *row, int i)
 	*(rp+1)=*rp+rowNNZ;
 }
 
-
+/* private implementation of spmat get_row based on arrays representation */
 void get_row_arrays(const struct _spmat *A, int i, double *result){
 	arraymat *imp=((arraymat*)(A->private));
 	double *p, *v=imp->values+*(imp->rowptr+i);
@@ -238,23 +253,6 @@ void mult_arrays(const struct _spmat *A, const double *v, double *result)
 		*result++=sum;
 	}
 }
-
-/** TO BE TESTED.
- * 
- * 	Generic get_row for spmat, independently of implementation (lists or arrays).
- * 	Utilizes A->mult with a standard vector (v[j]==1 if i=j, else v[j]==0).	
- *  
- */
-/*
-void get_spmat_row_with_mult(const struct _spmat *A, double *row, int i){
-	double *basis;
-	basis=(double*)calloc(A->n,sizeof(double));
-	VERIFY(basis!=NULL,MEM_ALLOC_ERROR)
-	*(basis+i)=1;
-	A->mult(A,basis,row);
-	free(basis);
-}
-*/
 
 /* Allocates a new arrays sparse matrix of size n with nnz non-zero elements */
 spmat* spmat_allocate_array(int n, int nnz)

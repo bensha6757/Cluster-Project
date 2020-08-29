@@ -40,13 +40,13 @@ typedef struct _modmat {
 } modMat;
 
 /* Allocate a new, empty instance of Modularity Matrix */
-modMat *allocate_mod_mat(int n);
+modMat *allocate_mod_mat(num n);
 
 /* constructor, creating a new sub matrix B_hat[g]. 
  * 
  * If impl_flag==1, uses linked-list implementation. Otherwise, use arrays impl.
  */
-modMat *create_Sub_Matrix(modMat *B, Subgroup g, num sizeG, int impl_flag);
+modMat *create_Sub_Matrix(modMat *B, Subgroup g, num sizeG, boolean use_linked_impl);
 
 /* Implements multiplication of B_hat[g] with a vector by
  * using several mult. functions and adding results together */

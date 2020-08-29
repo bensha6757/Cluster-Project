@@ -11,13 +11,7 @@ void free_mod_mat(modMat *B){
 
 
 void get_adj_row(const modMat *B, num i, double *row){
-	#ifdef DEBUG
-	printf("BEGIN: get_adj_row");
-	#endif
 	B->A->get_row(B->A, i, row);
-	#ifdef DEBUG
-	printf("SUCCESS: get_adj_row");
-	#endif
 }
 
 void get_K_row(const modMat *B, num i, double *row){
@@ -33,19 +27,18 @@ void get_B_hat_row(const struct _modmat *B, num i, double *row){
 	double *A_i, *K_i;
 	double f_i=0;
 	num j;
-	VERIFY(i<B->gSize,OUT_OF_BOUNDS_ERROR)
 	#ifdef DEBUG
-	printf("BEGIN: get_B_hat_row");
+	printf("BEGIN: get_B_hat_row\n");
 	#endif
-	A_i=(double*)malloc(B->gSize*sizeof(double));
+	A_i=(vector)malloc(B->gSize*sizeof(double));
 	VERIFY(A_i!=NULL,MEM_ALLOC_ERROR)
-	K_i=(double*)malloc(B->gSize*sizeof(double));
-	VERIFY (A_i!=NULL,MEM_ALLOC_ERROR)
-	get_adj_row(B,i,A_i);
-	get_K_row(B,i,K_i);
-	/* Compute entire row of B_hat[g] and f_i */
+	K_i=(vector)malloc(B->gSize*sizeof(double));
+	VERIFY (K_i!=NULL,MEM_ALLOC_ERROR)
+	get_adj_row(B, i, A_i);
+	get_K_row(B, i, K_i);
+	/* Compute entire row i of B_hat[g] and f_i */
 	for (j=0; j<B->gSize; j++){
-		*row++=*A_i++ -*K_i++;
+		*row++=*A_i -*K_i;
 		f_i += (*A_i++ - *K_i++);
 	}
 	row-=B->gSize;
@@ -55,7 +48,7 @@ void get_B_hat_row(const struct _modmat *B, num i, double *row){
 	K_i-=B->gSize;
 	free(K_i);
 	#ifdef DEBUG
-	printf("SUCCESS: get_B_hat_row");
+	printf("SUCCESS: get_B_hat_row\n");
 	#endif
 }
 
@@ -81,7 +74,7 @@ void set_1_norm(modMat *B){
 	B_i=(vector)malloc(B->gSize*sizeof(double));
 	VERIFY(B_i!=NULL,MEM_ALLOC_ERROR)
 	for (i=0; i<B->gSize; i++){
-		B->get_row(B,i,B_i);
+		B->get_row(B, i, B_i);
 		tmp=sum_of_abs(B_i, B->gSize);
 		if (tmp>max)
 			max=tmp;
@@ -121,10 +114,10 @@ num genM(int_vector K, num sizeG){
  * If impl_flag==1, uses linked-list implementation. Otherwise, use arrays impl.
  */
 
-modMat *create_Sub_Matrix(modMat *B, Subgroup g, num sizeG, boolean impl_flag){
+modMat *create_Sub_Matrix(modMat *B, Subgroup g, num sizeG, boolean use_linked_impl){
     modMat *Bg = allocate_mod_mat(sizeG);
     VERIFY(Bg!=NULL,MEM_ALLOC_ERROR)
-	if (impl_flag==USE_LINKED)
+	if (use_linked_impl==USE_LINKED)
     	Bg->A = create_sub_sparse_matrix_linked(B->A, g, sizeG, Bg->spmatSize);
 	else
 		Bg->A = create_sub_sparse_matrix_array(B->A, g, sizeG, Bg->spmatSize);
@@ -193,7 +186,7 @@ void mult_B_hat_g(modMat *B, modMat *Bg, double *v, double *result){
 }
 
 /*allocate new ModMat of size n*/
-modMat* allocate_mod_mat(int n){
+modMat* allocate_mod_mat(num n){
 	modMat *rep=(modMat*)malloc(sizeof(modMat));
 	VERIFY(rep!=NULL,MEM_ALLOC_ERROR)
 	rep->gSize=n;
