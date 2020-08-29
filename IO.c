@@ -63,7 +63,11 @@ void load_mod_matrix_from_file(FILE *input, modMat *B){
 	}
 	rewind(input);
 	#ifdef DEBUG
-	printf("SUCCESS: B loaded from file to memory with %d lines\n", (int)i);
+	printf("SUCCESS: B loaded from file to memory with %d lines, dim=%d\n", (int)i, (int)B->gSize);
+	#endif
+	set_1_norm(B);
+	#ifdef DEBUG
+	printf("SUCCESS:load_mod_matrix_from_file\n");
 	#endif
 }
 
@@ -75,8 +79,10 @@ void load_input_file(char* filename, modMat *mat){
 	N=read_network_size_from_file(inputFile, &M);
 	mat = allocate_mod_mat(N);
 	load_mod_matrix_from_file(inputFile, mat);
-	set_1_norm(mat);
 	fclose(inputFile);
+	#ifdef DEBUG
+	printf("SUCCESS: load_input_file\n");
+	#endif
 }
 
 void generate_output_file(Stack *O, char *outputPath){

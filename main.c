@@ -9,12 +9,9 @@ void runClusterProject(char* inputFileName, char* outputFileName){
 	Subgroup g;
 	Stack *O;
 	#ifdef DEBUG
-	printf("BEGIN: Read input file\n");
+	printf("BEGIN: runClusterProject\n");
 	#endif
 	load_input_file(inputFileName,mat); /* reading input */
-	#ifdef DEBUG
-	printf("SUCCESS: Read input file\n");
-	#endif
 	g = (Subgroup)malloc(mat->gSize * sizeof(num));
 	VERIFY(g!=NULL,MEM_ALLOC_ERROR)
 	memcpy(g, mat->g, mat->gSize * sizeof(num));
@@ -22,6 +19,9 @@ void runClusterProject(char* inputFileName, char* outputFileName){
 	mat->free(mat);
 	generate_output_file(O, outputFileName); /* writing result to file */
 	delete_Stack(O);
+	#ifdef DEBUG
+	printf("SUCCESS: runClusterProject\n");
+	#endif
 }
 
 int main(int argc, char* argv[]){
