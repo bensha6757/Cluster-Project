@@ -29,7 +29,7 @@ int main(int argc, char* argv[]){
 	#ifdef DEBUG
 	printf("Received file names: %s, %s\n",inputFileName,outputFileName);
 	#endif
-	VERIFY(argc - 1 == 2,FILE_READ_ERROR)
+	VERIFY(argc - 1 == 2, FILE_READ_ERROR)
 	runClusterProject(inputFileName, outputFileName);
 	return 0;
 }

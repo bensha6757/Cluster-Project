@@ -61,7 +61,7 @@ void load_mod_matrix_from_file(FILE *input, modMat *B){
 	set_1_norm(B);
 }
 
-/*** INTERFACE FOR MAIN PROGRAM FUNCTIONS ***/
+/*** INTERFACE FOR MAIN PROGRAM ***/
 
 void load_input_file(char* filename, modMat **mat){
 	num N, M;
