@@ -93,10 +93,13 @@ void move_maximal_score_vertex(modMat *B, vector *s, int_vector indices, double 
 				maxScore=*p;
 				maxi=p-score;
 			}
-		/* lines 12-19 in Alg. 4 PsCode */
+		/* lines 12-13 in Alg. 4 PsCode */
 		*(*s+maxi)*=-1;
 		*indices++  = maxi;
-		*improve++ += maxScore;
+		/* lines 14-18 in Alg. 4 PsCode */
+		*improve  = (i==0 ? 0 : *(improve-1)) + maxScore;
+		improve++;
+		/* line 19 in Alg. 4 PsCode */
 		*(moved+maxi)=!*(moved+maxi);
 	}
 	free(moved);
