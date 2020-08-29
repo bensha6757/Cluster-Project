@@ -30,4 +30,9 @@ modMat.o: modMat.c modMat.h spmat.o
 spmat.o: spmat.c spmat.h
 	gcc $(FLAGS) -c spmat.c
 
+print_bin: print_bin.o
+	gcc print_bin.o -o print_bin $(LIBS)
+
+print_bin.o: print_bin.c
+	gcc $(FLAGS) -c print_bin.c
 
