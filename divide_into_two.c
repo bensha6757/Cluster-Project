@@ -37,7 +37,7 @@ double get_modularity(modMat *B, vector s, vector *Bs, int movedVertex){
 /*Optimize a division encoded by {-1,1} vector s by moving a vertex to other group and ascending modularity Q */
 void optimize_division_modified(modMat *B, vector *s){
 	num i;
-	vector max_v=s;
+	vector max_v=*s;
 	double Q_0, Qmax, Qtmp, deltaQ, improveTmp=0, improveMax=0;
 	vector Bs=(vector)malloc(B->gSize*sizeof(double));
 	VERIFY(Bs!=NULL,MEM_ALLOC_ERROR)
@@ -48,7 +48,7 @@ void optimize_division_modified(modMat *B, vector *s){
 				if (Qtmp>Qmax){
 					Qmax=Qtmp;
 					improveTmp+=Qmax;
-					max_v=s+i;
+					max_v=*s+i;
 				}
 				if (improveTmp>improveMax)
 					improveMax=improveTmp;
@@ -63,7 +63,7 @@ void optimize_division_modified(modMat *B, vector *s){
 void move_maximal_score_vertex(modMat *B, vector *s, int_vector indices, double *improve) {
 	vector p, Bs;
 	int_vector moved;
-	num i, j, maxi, *m;
+	num i, maxi, *m;
 	double Q_0, *score, maxScore=0;
 	
 	Bs=(vector)malloc(B->gSize*sizeof(double));
@@ -85,10 +85,8 @@ void move_maximal_score_vertex(modMat *B, vector *s, int_vector indices, double 
 		Q_0=get_modularity(B ,*s, &Bs, INITIAL_Q);
 		p=score;
 		for (m=moved; m<moved+B->gSize; m++)
-			if (!(*m)){
-				j=m-moved;
-				*p++=get_modularity(B, *s, &Bs, j)-Q_0;
-			}
+			if (!(*m))
+				*p++=get_modularity(B, *s, &Bs, m-moved)-Q_0;
 		/* line 11 in Alg. 4 PsCode */
 		for (p=score; p<score+B->gSize; p++)
 			if (*p > maxScore){
