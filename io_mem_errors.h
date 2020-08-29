@@ -8,6 +8,7 @@
 #define VERIFY(expression, error)                                                           \
     if (!(expression)){                                                                      \
         printf("\n%s%s, %s", "Verification Failed: ", #expression, stringFromError(error));   \
+        printf("\n");                                                                          \
         exit(1);                                                                               \
     }                                                                \
 
