@@ -6,7 +6,7 @@ void init(Stack *s){
 }
 
 /* adding the new node to the beggining of the stack (implemented as linked-list), and updating the stack size*/
-void push(Stack *s, Subgroup g, size_t sizeG){ 
+void push(Stack *s, Subgroup g, num sizeG){ 
 	Snode * node = (Snode*)malloc(sizeof(Snode));
 	VERIFY(node != NULL,MEM_ALLOC_ERROR)
 	node->g = g;
@@ -16,7 +16,7 @@ void push(Stack *s, Subgroup g, size_t sizeG){
 	s->size++;
 }
 
-Subgroup pop(Stack *s, size_t *sizeG){
+Subgroup pop(Stack *s, num *sizeG){
 	Subgroup g = s->top->g;
 	Snode * p = s->top;
 	*sizeG = p->sizeG;

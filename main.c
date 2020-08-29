@@ -15,9 +15,9 @@ void runClusterProject(char* inputFileName, char* outputFileName){
 	#ifdef DEBUG
 	printf("SUCCESS: Read input file\n");
 	#endif
-	g = (Subgroup)malloc(mat->gSize * sizeof(size_t));
+	g = (Subgroup)malloc(mat->gSize * sizeof(num));
 	VERIFY(g!=NULL,MEM_ALLOC_ERROR)
-	memcpy(g, mat->g, mat->gSize * sizeof(size_t));
+	memcpy(g, mat->g, mat->gSize * sizeof(num));
 	O = div_into_mod_groups(mat, g, mat->gSize); /* calling Algorithm 3 */
 	mat->free(mat);
 	generate_output_file(O, outputFileName); /* writing result to file */

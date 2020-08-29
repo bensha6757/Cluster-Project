@@ -21,6 +21,6 @@ void leading_eigenpair(modMat *B, modMat *Bg, vector leadEigenVec, double* leadE
 /**
  * Compute dot product of two vectors of length d
  */
-double dot_prod(vector v, vector u, size_t d);
+double dot_prod(vector v, vector u, num d);
 
 #endif /* LEADING_EIGENPAIR_H_ */

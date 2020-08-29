@@ -13,7 +13,7 @@
 #include "divide_into_two.h"
 
 
-Stack* div_into_mod_groups(modMat* B, Subgroup g, size_t sizeG);
+Stack* div_into_mod_groups(modMat* B, Subgroup g, num sizeG);
 
 
 #endif /* DIVIDE_INTO_MODULARITY_GROUPS_H_ */

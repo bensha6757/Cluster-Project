@@ -1,7 +1,7 @@
 
 #include "Divide_Into_Modularity_Groups.h"
 
-void add_to_stacks(Stack* P, Stack* O, size_t sizeG, size_t sizeG1, size_t sizeG2, Subgroup g1, Subgroup g2, Subgroup g){
+void add_to_stacks(Stack* P, Stack* O, num sizeG, num sizeG1, num sizeG2, Subgroup g1, Subgroup g2, Subgroup g){
 	if (sizeG1 == 0 || sizeG2 == 0){
 			push(O, g, sizeG);
 	}
@@ -22,10 +22,10 @@ void add_to_stacks(Stack* P, Stack* O, size_t sizeG, size_t sizeG1, size_t sizeG
 	}
 }
 /* Algorithm 3*/
-Stack* div_into_mod_groups(modMat* B, Subgroup g, size_t sizeG){
+Stack* div_into_mod_groups(modMat* B, Subgroup g, num sizeG){
 	Stack* P = (Stack*)malloc(sizeof(Stack)), *O = (Stack*)malloc(sizeof(Stack));
 	Subgroup g1, g2;
-	size_t sizeG1, sizeG2;
+	num sizeG1, sizeG2;
 	VERIFY(P != NULL,MEM_ALLOC_ERROR)
 	VERIFY(O != NULL,MEM_ALLOC_ERROR)
 	init(P);

@@ -9,20 +9,20 @@
 
 typedef struct Snode{
 	Subgroup g;
-	size_t sizeG;
+	num sizeG;
 	struct Snode* next;
 } Snode;
 
 typedef struct Stack{
-	size_t size;
+	num size;
 	Snode* top;
 } Stack;
 
 void init(Stack* s);
 
-void push(Stack* s, Subgroup g, size_t sizeG);
+void push(Stack* s, Subgroup g, num sizeG);
 
-Subgroup pop(Stack* s, size_t* sizeG);
+Subgroup pop(Stack* s, num *sizeG);
 
 boolean isEmpty(Stack* s);
 

@@ -1,7 +1,7 @@
 #include "leading_eigenpair.h"
 
 
-double dot_prod(vector v, vector u, size_t d){
+double dot_prod(vector v, vector u, num d){
 	unsigned int i;
 	double acc=0;
 	for (i=0; i<d; i++, v++, u++){
@@ -10,11 +10,11 @@ double dot_prod(vector v, vector u, size_t d){
 	return acc;
 }
 
-double norm(vector v, size_t d){
+double norm(vector v, num d){
 	return sqrt(dot_prod(v,v,d));
 }
 
-void set_rand_vector(vector v, size_t n){
+void set_rand_vector(vector v, num n){
 	unsigned int i;
 	srand(time(NULL));
 	for (i=0; i<n; i++)
@@ -26,8 +26,8 @@ double approx_dom_eigen_val(modMat *B, vector bprev, vector bnext){
 	return dot_prod(bnext,bprev,B->gSize) / dot_prod(bprev,bprev,B->gSize);
 }
 
-unsigned int is_within(vector a, vector b, size_t d){
-	size_t i;
+unsigned int is_within(vector a, vector b, num d){
+	num i;
 	for (i=0; i<d; i++, a++, b++){
 		if (IS_POSITIVE(fabs(*a - *b)))
 			return 0;
@@ -52,7 +52,7 @@ void power_iteration(modMat *B, modMat *Bg, vector v, vector result){
  * Compute leading eigen pair of modularity Matrix B_hat[g]
  */
 void leading_eigenpair(modMat *B, modMat *Bg, vector leadEigenVec, double *leadEigenVal){
-	size_t iter=0;
+	num iter=0;
 	vector bprev, bnext;
 	bprev=(vector)malloc(Bg->gSize*sizeof(double));
 	VERIFY(bprev!=NULL,MEM_ALLOC_ERROR)

@@ -9,27 +9,31 @@
 /*	Converts node indices (like input file format) to a {0,1} vector of length n
  * 	that can be added to a spmat via add_row. 
  */
-void convert_adj_list(size_t deg, size_t n, int *adj, double *line){
-	int *p;
-	line=(double*)calloc(n,sizeof(double));
-	VERIFY(line!=NULL, MEM_ALLOC_ERROR)
-	for (p=adj; p<adj+deg; p++)
-		*(line+*p)=1;
+
+void convert_adj_list(int_vector adj, int deg, vector *line, num n){
+	int_vector k;
 	#ifdef DEBUG
-	printf("matrix line finished\n");
+	printf("BEGIN: convert_adj_list\n");
+	#endif
+	*line=(double*)calloc(n,sizeof(double));
+	VERIFY(*line!=NULL, MEM_ALLOC_ERROR)
+	for (k=adj; k<adj+deg; k++)
+		*(*(line+*k))=1;
+	#ifdef DEBUG
+	printf("SUCCESS: convert_adj_list\n");
 	#endif
 }
 
 
-size_t read_network_size_from_file(FILE *input, size_t *edges_num){
-	int n, i, k, *tmp, cnt=0;
+num read_network_size_from_file(FILE *input, num *edges_num){
+	num n, i, k, *tmp, cnt=0;
 	VERIFY(fread(&n,sizeof(int),1,input) == 1,FILE_READ_ERROR)
-	tmp=(int*)malloc(n*sizeof(int));
+	tmp=(int_vector)malloc(n*sizeof(num));
 	VERIFY(tmp!=NULL,MEM_ALLOC_ERROR)
 	/* Count number of edges (for spmat arrays impl.) */
 	for (i=0; i<n; i++){
 		VERIFY(fread(&k,sizeof(int),1,input) == 1,FILE_READ_ERROR)
-		VERIFY(fread(tmp,sizeof(int),k,input) == (size_t)k,FILE_READ_ERROR)
+		VERIFY(fread(tmp,sizeof(int),k,input) == k,FILE_READ_ERROR)
 		cnt+=k;
 	}
 	#ifdef DEBUG
@@ -38,33 +42,29 @@ size_t read_network_size_from_file(FILE *input, size_t *edges_num){
 	*edges_num=cnt/2; /*Assuming sum_v(deg(v))==2*|E| */
 	free(tmp);
 	rewind(input);
-	return (size_t)n;
+	return n;
 }
 
 void load_mod_matrix_from_file(FILE *input, modMat *B){
-	int i;
-	int_vector K=B->K, g=B->g;
-	int *neighbours, k_i;
-	double *matLine=NULL;
-	VERIFY(fread(&i,sizeof(size_t),1,input) == 1, FILE_READ_ERROR)  /*Assuming file rewinded, skip |V| */
+	int_vector K=B->K, g=B->g, neighbours;
+	num k_i, i;
+	vector matLine=NULL;
+	VERIFY(fread(&i,sizeof(num),1,input) == 1, FILE_READ_ERROR)  /*Assuming file rewinded, skip |V| */
 	/* Populate B with A, K matrices, and compute M */
-	for (i=0; i<(int)B->gSize; i++){
-		VERIFY(fread(&k_i,sizeof(int),1,input) == 1, FILE_READ_ERROR)
-		neighbours=(int*)malloc(k_i*sizeof(int));
+	for (i=0; i<B->gSize; i++){
+		VERIFY(fread(&k_i,sizeof(num),1,input) == 1, FILE_READ_ERROR)
+		neighbours=(int_vector)malloc(k_i*sizeof(num));
 		VERIFY(neighbours!=NULL, MEM_ALLOC_ERROR)
-		VERIFY(fread(neighbours,sizeof(size_t),k_i,input) == (size_t)k_i, FILE_READ_ERROR)
-		convert_adj_list((size_t)k_i, B->gSize, neighbours, matLine);
+		VERIFY(fread(neighbours,sizeof(num), k_i, input) == k_i, FILE_READ_ERROR)
+		convert_adj_list(neighbours, k_i, &matLine, B->gSize);
 		B->A->add_row(B->A,matLine,i);
-		#ifdef DEBUG
-		printf("added A row\n");
-		#endif
 		*(g++)=i; /*Fill g subgroup array with 0,1,2,...,n */
-		*(K++)=(size_t)k_i;
-		B->M+=(size_t)k_i;
+		*(K++)=k_i;
+		B->M+=k_i;
 		free(neighbours);
 		free(matLine);
 		#ifdef DEBUG
-		printf("SUCCESS: Complete file to mem line, iter: %d\n",i);
+		printf("SUCCESS: Complete file to mem line, iter: %d\n",(int)i);
 		#endif
 	}
 	rewind(input);
@@ -77,7 +77,7 @@ void load_mod_matrix_from_file(FILE *input, modMat *B){
 /*** INTERFACE FOR MAIN PROGRAM FUNCTIONS ***/
 
 void load_input_file(char* filename, modMat *mat){
-	size_t N, M;
+	num N, M;
 	FILE* inputFile = fopen(filename,"r");
 	N=read_network_size_from_file(inputFile, &M);
 	mat = allocate_mod_mat(N);

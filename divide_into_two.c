@@ -34,7 +34,7 @@ double get_modularity(modMat *B, vector s, vector Bs, int movedVertex){
 
 /*Optimize a division encoded by {-1,1} vector s by moving a vertex to other group and ascending modularity Q */
 void optimize_division_modified(modMat *B, vector s){
-	size_t i;
+	num i;
 	vector max_v=s;/* impInd=0;*/
 	double Q_0, Qmax, Qtmp, deltaQ=1,improveTmp=0, improveMax=0;
 	double *Bs=(double*)malloc(B->gSize*sizeof(double));
@@ -61,14 +61,14 @@ void optimize_division_modified(modMat *B, vector s){
 
 void optimize_division_original(modMat *B, vector s){
 	vector p;
-	size_t i, *indices, maxi, *moved, *q, impInd=0;
+	num i, *indices, maxi, *moved, *q, impInd=0;
 	double Q_0, *Bs, *score, maxScore=0, deltaQ=1,*improve, improveMax=0;
 	Bs=(double*)malloc(B->gSize*sizeof(double));
 	VERIFY (Bs!=NULL,MEM_ALLOC_ERROR)
 	score=(double*)malloc(B->gSize*sizeof(double));
 	VERIFY(score!=NULL,MEM_ALLOC_ERROR)
 	while (deltaQ>0.0){
-		moved=(size_t*)calloc(B->gSize,sizeof(size_t));
+		moved=(int_vector)calloc(B->gSize,sizeof(num));
 		VERIFY(moved!=NULL,MEM_ALLOC_ERROR)
 		for (i=0; i<B->gSize ; i++){
 			Q_0=get_modularity(B ,s, Bs, INITIAL_Q);
@@ -115,9 +115,9 @@ void eigen_to_s(modMat *B, vector eigenVec, vector s){
 }
 
 /* Maps a {-1,1} vector s of B's dim. to a partition g1,g2 */  
-void map_s_to_groups(modMat *B, vector s, Subgroup *g1, Subgroup *g2,  size_t *sizeG1, size_t *sizeG2){
+void map_s_to_groups(modMat *B, vector s, Subgroup *g1, Subgroup *g2,  num *sizeG1, num *sizeG2){
 	vector i;
-	size_t v=0;
+	num v=0;
 	*sizeG1=0;
 	*sizeG2=0;
 	for (i=s; i<s+B->gSize; i++){
@@ -126,9 +126,9 @@ void map_s_to_groups(modMat *B, vector s, Subgroup *g1, Subgroup *g2,  size_t *s
 	}
 	*sizeG1 = v;
 	*sizeG2 = B->gSize - *sizeG1;
-	*g1=(size_t*)malloc(*sizeG1*sizeof(size_t));
+	*g1=(int_vector)malloc(*sizeG1*sizeof(num));
 	VERIFY(g1!=NULL,MEM_ALLOC_ERROR)
-	*g2=(size_t*)malloc(*sizeG2*sizeof(size_t));
+	*g2=(int_vector)malloc(*sizeG2*sizeof(num));
 	VERIFY(g2!=NULL,MEM_ALLOC_ERROR)
 	for (i=s; i<s+B->gSize; i++){
 		v=i-s;
@@ -139,7 +139,7 @@ void map_s_to_groups(modMat *B, vector s, Subgroup *g1, Subgroup *g2,  size_t *s
 	}
 }
 
-DIV_RESULT div_into_two(modMat *B,Subgroup g, size_t sizeG, Subgroup *g1, Subgroup *g2, size_t *sizeG1, size_t *sizeG2){
+DIV_RESULT div_into_two(modMat *B,Subgroup g, num sizeG, Subgroup *g1, Subgroup *g2, num *sizeG1, num *sizeG2){
 	double beta;
 	vector u,s;
 	modMat *Bg;
@@ -150,7 +150,7 @@ DIV_RESULT div_into_two(modMat *B,Subgroup g, size_t sizeG, Subgroup *g1, Subgro
 	leading_eigenpair(B,Bg,u,&beta);
 	if (!IS_POSITIVE(beta))
 		ret=GROUP_INDIVISIBLE;
-	s=(vector)malloc(B->gSize*sizeof(size_t));
+	s=(vector)malloc(B->gSize*sizeof(num));
 	VERIFY(s!=NULL,MEM_ALLOC_ERROR)
 	eigen_to_s(B,u,s);
 	if (!IS_POSITIVE(get_modularity(B,s,u,INITIAL_Q)))
