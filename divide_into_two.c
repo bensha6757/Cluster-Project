@@ -1,8 +1,8 @@
 #include "divide_into_two.h"
 
 
-/*Compute Modularity of B[g]_hat: 0.5 * s^T * B[g]_hat * s
- * w.r.t to a moved vertex (or INITIAL_Q for initial state).
+/* Compute Modularity of B[g]_hat: 0.5 * s^T * B[g]_hat * s
+ * w.r.t to a moved vertex (or INITIAL_Q for initial state, before moving any vertex).
  * Reuses the vector B[g]_hat * s to enhance computations, if needed.
  */
 double get_modularity(modMat *B, vector s, vector Bs, int movedVertex){

@@ -115,7 +115,9 @@ modMat *create_Sub_Matrix(modMat *B, Subgroup g, num sizeG, boolean use_linked_i
     return Bg;
 }
 
-/* part of the modularity matrix multiplication for power iteration, multiplying the degrees matrix (k_i * k_j / M) */
+/** part of the modularity matrix multiplication for power iteration, 
+ * multiplying the degrees matrix (k_i * k_j / M) 
+ * */
 void mult_K(modMat *B, modMat *Bg, double *v, double *res){
     int_vector K = Bg->K;
     num origM = B->M, sizeG = Bg->gSize, *ki;
@@ -133,7 +135,9 @@ void mult_K(modMat *B, modMat *Bg, double *v, double *res){
 }
 
 
-/* part of the modularity matrix multiplication for power iteration, multiplying the 2 matrices (f_i - ||C||) * I */
+/** part of the modularity matrix multiplication for power iteration, 
+ * multiplying the 2 matrices (f_i - ||C||) * I 
+ * */
 void mult_F_and_C(modMat *B, modMat *Bg, double *v, boolean shift, double *res){
     int_vector K = Bg->K;
     int_vector spmatSize = Bg->spmatSize;
@@ -157,7 +161,8 @@ void mult_F_and_C(modMat *B, modMat *Bg, double *v, boolean shift, double *res){
 
 
 /* Implements multiplication of B_hat[g] with a vector by
- * using several mult. functions and adding results together */
+ * using several mult. functions and adding results together 
+ * */
 void mult_B_hat_g(modMat *B, modMat *Bg, double *v, double *result, boolean shift){
 	double *tmp1, *tmp2, *tmp3, *p;
 	tmp1=(double*)malloc(sizeof(double)*B->gSize);

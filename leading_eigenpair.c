@@ -21,7 +21,7 @@ void set_rand_vector(vector v, num n){
 		*v++ = (double)rand();
 }
 
-/*	Approximate dominant eigen value of matrix B using vectors computed in last power iteration */
+/*	Approximate dominant eigen value of matrix B, using vectors computed in last power iteration */
 double approx_dom_eigen_val(modMat *B, vector bprev, vector bnext){
 	return dot_prod(bnext,bprev,B->gSize) / dot_prod(bprev,bprev,B->gSize);
 }
@@ -49,7 +49,7 @@ void power_iteration(modMat *B, modMat *Bg, vector v, vector result){
 }
 
 /*
- * Compute leading eigen pair of modularity Matrix B_hat[g]
+ * Compute leading eigen pair of modularity Matrix B_hat[g].
  */
 void leading_eigenpair(modMat *B, modMat *Bg, vector leadEigenVec, double *leadEigenVal){
 	num iter=0;
