@@ -39,7 +39,7 @@ num read_network_size_from_file(FILE *input, num *edges_num){
 }
 
 void load_mod_matrix_from_file(FILE *input, modMat *B){
-	int_vector K=B->K, g=B->g, neighbours;
+	int_vector K=B->K, g=B->g, sp=B->spmatSize, neighbours;
 	num k_i, i;
 	vector matLine=NULL;
 	VERIFY(fread(&i,sizeof(num),1,input) == 1, FILE_READ_ERROR)  /*Assuming file rewinded, skip |V| */
@@ -53,6 +53,7 @@ void load_mod_matrix_from_file(FILE *input, modMat *B){
 		B->A->add_row(B->A,matLine,i);
 		*(g++)=i; /*Fill g subgroup array with 0,1,2,...,n */
 		*(K++)=k_i;
+		*(sp++)=k_i;
 		B->M+=k_i;
 		free(neighbours);
 		free(matLine);
