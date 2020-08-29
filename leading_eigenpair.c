@@ -42,7 +42,7 @@ unsigned int is_within(vector a, vector b, num d){
 void power_iteration(modMat *B, modMat *Bg, vector v, vector result){
 	vector p;
 	double nrm;
-	mult_B_hat_g(B, Bg, v, result);
+	mult_B_hat_g(B, Bg, v, result,true);
 	nrm=norm(result,Bg->gSize);
 	for (p=result; p<result+Bg->gSize; p++)
 		*p/=nrm;

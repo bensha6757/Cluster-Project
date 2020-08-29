@@ -50,7 +50,7 @@ modMat *create_Sub_Matrix(modMat *B, Subgroup g, num sizeG, boolean use_linked_i
 
 /* Implements multiplication of B_hat[g] with a vector by
  * using several mult. functions and adding results together */
-void mult_B_hat_g(modMat *B, modMat *Bg, double *v, double *result);
+void mult_B_hat_g(modMat *B, modMat *Bg, double *v, double *result, boolean shift);
 
 /* Computes and sets 1-norm of B, i.e. max_i(sum_j(abs(B_ij))) */
 void set_1_norm(modMat *B);

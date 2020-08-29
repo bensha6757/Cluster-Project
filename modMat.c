@@ -139,6 +139,9 @@ void mult_F_and_C(modMat *B, modMat *Bg, double *v, boolean shift, double *res){
     int_vector spmatSize = Bg->spmatSize;
     num M = Bg->M, origM = B->M ,sizeG = Bg->gSize, *ki;
     double fi, shiftNorm;
+	#ifdef DEBUG
+	printf("BEGIN: mult_F_and_C");
+	#endif
 	shiftNorm = shift ? Bg->one_norm : 0;
     for (ki = K ; ki < sizeG + K ; ki++){
       fi = (*spmatSize) - (((*ki) * M) / origM);
@@ -147,12 +150,15 @@ void mult_F_and_C(modMat *B, modMat *Bg, double *v, boolean shift, double *res){
       res++;
       spmatSize++;
     }
+	#ifdef DEBUG
+	printf("END: mult_F_and_C");
+	#endif
 }
 
 
 /* Implements multiplication of B_hat[g] with a vector by
  * using several mult. functions and adding results together */
-void mult_B_hat_g(modMat *B, modMat *Bg, double *v, double *result){
+void mult_B_hat_g(modMat *B, modMat *Bg, double *v, double *result, boolean shift){
 	double *tmp1, *tmp2, *tmp3, *p;
 	tmp1=(double*)malloc(sizeof(double)*B->gSize);
 	VERIFY(tmp1!=NULL,MEM_ALLOC_ERROR)
@@ -162,7 +168,13 @@ void mult_B_hat_g(modMat *B, modMat *Bg, double *v, double *result){
 	VERIFY(tmp3!=NULL,MEM_ALLOC_ERROR)
 	Bg->A->mult(Bg->A,v,tmp1);
 	mult_K(B, Bg, v, tmp2);
-	mult_F_and_C(B, Bg, v, (Bg->gSize != B->gSize), tmp3);
+	#ifdef DEBUG
+	printf("BEGIN: mult_B_hat_g mult_K\n");
+	#endif
+	mult_F_and_C(B, Bg, v, shift, tmp3);
+	#ifdef DEBUG
+	printf("BEGIN: mult_B_hat_g mult_F_and_C\n");
+	#endif
 	for (p=result; p<result+Bg->gSize; p++)
 		*p=*tmp1++ - *tmp2++ - *tmp3++;
 	tmp3-=Bg->gSize;
@@ -189,6 +201,9 @@ modMat* allocate_mod_mat(num n){
 
 	rep->K=(int_vector)malloc(n*sizeof(num));
 	VERIFY(rep->K != NULL,MEM_ALLOC_ERROR)
+	
+	rep->spmatSize=(int_vector)malloc(n*sizeof(num));
+	VERIFY(rep->spmatSize != NULL,MEM_ALLOC_ERROR)
 
 	rep->g=(Subgroup)malloc(n*sizeof(num));
 	VERIFY(rep->g != NULL,MEM_ALLOC_ERROR)

@@ -10,7 +10,10 @@ double get_modularity(modMat *B, vector s, vector Bs, int movedVertex){
 	int sgn=0;
 	vector tmp;
 	if (movedVertex==INITIAL_Q){
-		mult_B_hat_g(B, B, s, Bs);
+		mult_B_hat_g(B, B, s, Bs, false);
+		#ifdef DEBUG
+		printf("BEGIN: get_modularity_if_multBhat\n");
+		#endif
 		Q = 0.5 * dot_prod(Bs,s,B->gSize);
 	}
 	else {
@@ -63,10 +66,16 @@ void optimize_division_original(modMat *B, vector s){
 	vector p;
 	num i, *indices, maxi, *moved, *q, impInd=0;
 	double Q_0, *Bs, *score, maxScore=0, deltaQ=1,*improve, improveMax=0;
+	
+	#ifdef DEBUG
+	printf("Begin: Optimize\n");
+	#endif
+	
 	Bs=(double*)malloc(B->gSize*sizeof(double));
 	VERIFY (Bs!=NULL,MEM_ALLOC_ERROR)
 	score=(double*)malloc(B->gSize*sizeof(double));
 	VERIFY(score!=NULL,MEM_ALLOC_ERROR)
+
 	while (deltaQ>0.0){
 		moved=(int_vector)calloc(B->gSize,sizeof(num));
 		VERIFY(moved!=NULL,MEM_ALLOC_ERROR)
@@ -99,10 +108,16 @@ void optimize_division_original(modMat *B, vector s){
 			*(s+*(q))*=-1;
 		deltaQ = q == indices+B->gSize ? 0 : improveMax;
 	}
+	#ifdef DEBUG
+	printf("end1: Optimize\n");
+	#endif
 	free(Bs);
 	free(score);
 	free(improve);
 	free(indices);
+	#ifdef DEBUG
+	printf("End: Optimize\n");
+	#endif
 }
 
 /*
@@ -156,7 +171,7 @@ DIV_RESULT div_into_two(modMat *B,Subgroup g, num sizeG, Subgroup *g1, Subgroup 
 	leading_eigenpair(B,Bg,u,&beta);
 	if (!IS_POSITIVE(beta))
 		ret=GROUP_INDIVISIBLE;
-	s=(vector)malloc(B->gSize*sizeof(num));
+	s=(vector)malloc(B->gSize*sizeof(double));
 	VERIFY(s!=NULL,MEM_ALLOC_ERROR)
 	eigen_to_s(B,u,s);
 	if (!IS_POSITIVE(get_modularity(B,s,u,INITIAL_Q)))
