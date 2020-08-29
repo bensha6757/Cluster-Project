@@ -10,19 +10,16 @@
  * 	that can be added to a spmat via add_row. 
  */
 
-void convert_adj_list(int_vector adj, int deg, vector *line, num n){
+vector convert_adj_list(int_vector adj, num adj_len, num n){
 	int_vector k;
-	#ifdef DEBUG
-	printf("BEGIN: convert_adj_list\n");
-	#endif
-	*line=(double*)calloc(n,sizeof(double));
-	VERIFY(*line!=NULL, MEM_ALLOC_ERROR)
-	for (k=adj; k<adj+deg; k++)
-		*(*(line+*k))=1;
-	#ifdef DEBUG
-	printf("SUCCESS: convert_adj_list\n");
-	#endif
+	vector line;
+	line=(double*)calloc(n,sizeof(double));
+	VERIFY(line!=NULL, MEM_ALLOC_ERROR)
+	for (k=adj; k<adj+adj_len; k++)
+		*(line+*k)=1;
+	return line;
 }
+
 
 
 num read_network_size_from_file(FILE *input, num *edges_num){
@@ -56,21 +53,17 @@ void load_mod_matrix_from_file(FILE *input, modMat *B){
 		neighbours=(int_vector)malloc(k_i*sizeof(num));
 		VERIFY(neighbours!=NULL, MEM_ALLOC_ERROR)
 		VERIFY(fread(neighbours,sizeof(num), k_i, input) == k_i, FILE_READ_ERROR)
-		convert_adj_list(neighbours, k_i, &matLine, B->gSize);
+		matLine=convert_adj_list(neighbours, k_i, B->gSize);
 		B->A->add_row(B->A,matLine,i);
 		*(g++)=i; /*Fill g subgroup array with 0,1,2,...,n */
 		*(K++)=k_i;
 		B->M+=k_i;
 		free(neighbours);
 		free(matLine);
-		#ifdef DEBUG
-		printf("SUCCESS: Complete file to mem line, iter: %d\n",(int)i);
-		#endif
 	}
 	rewind(input);
-	set_1_norm(B);
 	#ifdef DEBUG
-	printf("SUCCESS: B loaded from file to memory\n");
+	printf("SUCCESS: B loaded from file to memory with %d lines\n", (int)i);
 	#endif
 }
 
@@ -82,6 +75,7 @@ void load_input_file(char* filename, modMat *mat){
 	N=read_network_size_from_file(inputFile, &M);
 	mat = allocate_mod_mat(N);
 	load_mod_matrix_from_file(inputFile, mat);
+	set_1_norm(mat);
 	fclose(inputFile);
 }
 

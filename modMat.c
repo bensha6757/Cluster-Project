@@ -74,11 +74,12 @@ void set_1_norm(modMat *B){
 	 */
 	num i;
 	double tmp=0, max=0;
-	double *B_i=(double*)malloc(B->gSize*sizeof(double));
-	VERIFY(B_i!=NULL,MEM_ALLOC_ERROR)
+	vector B_i;
 	#ifdef DEBUG
-	printf("BEGIN: set_1_norm");
+	printf("BEGIN: set_1_norm\n");
 	#endif
+	B_i=(vector)malloc(B->gSize*sizeof(double));
+	VERIFY(B_i!=NULL,MEM_ALLOC_ERROR)
 	for (i=0; i<B->gSize; i++){
 		B->get_row(B,i,B_i);
 		tmp=sum_of_abs(B_i, B->gSize);
@@ -88,7 +89,7 @@ void set_1_norm(modMat *B){
 	free(B_i);
 	B->one_norm=max;
 	#ifdef DEBUG
-	printf("SUCCESS: set_1_norm");
+	printf("SUCCESS: set_1_norm\n");
 	#endif
 }
 
