@@ -44,9 +44,6 @@ void get_B_hat_row(const struct _modmat *B, num i, double *row){
 	free(A_i);
 	K_i-=B->gSize;
 	free(K_i);
-	#ifdef DEBUG
-	printf("SUCCESS: get_row %d of B\n", i);
-	#endif
 }
 
 double sum_of_abs(double *row, num n){
@@ -91,16 +88,7 @@ void genKandM(int_vector K, Subgroup g, num gSize, modMat *Bg){
     Bg->M = Mg;
 }
 
-/* helping function, generates M, which is the sum of all degrees in K*/
-num genM(int_vector K, num sizeG){
-    num M = 0, *p;
-    for (p = K ; p < sizeG + K ; p++){
-      M += *p;
-    }
-    return M;
-}
-
-/* constructor, creating a new sub matrix B_hat[g]. 
+/* Constructor, creating a new sub matrix B_hat[g]. 
  * 
  * If impl_flag==1, uses linked-list implementation. Otherwise, use arrays impl.
  */
