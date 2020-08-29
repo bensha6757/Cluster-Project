@@ -51,12 +51,16 @@ void power_iteration(modMat *B, modMat *Bg, vector v, vector result){
 /*
  * Compute leading eigen pair of modularity Matrix B_hat[g].
  */
-void leading_eigenpair(modMat *B, modMat *Bg, vector leadEigenVec, double *leadEigenVal){
+void leading_eigenpair(modMat *B, modMat *Bg, vector *leadEigenVec, scalar *leadEigenVal){
 	num iter=0;
 	vector bprev, bnext;
+	
 	#ifdef DEBUG
 	printf("BEGIN: leading_eigenpair\n");
 	#endif
+
+	*leadEigenVec=(vector)malloc(Bg->gSize*sizeof(double));
+	VERIFY(*leadEigenVec!=NULL, MEM_ALLOC_ERROR)
 	bprev=(vector)malloc(Bg->gSize*sizeof(double));
 	VERIFY(bprev!=NULL,MEM_ALLOC_ERROR)
 	bnext=(vector)malloc(Bg->gSize*sizeof(double));
@@ -73,7 +77,7 @@ void leading_eigenpair(modMat *B, modMat *Bg, vector leadEigenVec, double *leadE
 	#ifdef DEBUG
 		printf("# of power iterations: %d\n", (int)iter);
 	#endif
-	memcpy(leadEigenVec,bnext,Bg->gSize*sizeof(double));
+	memcpy(*leadEigenVec,bnext,Bg->gSize*sizeof(double));
 	/* The leading eigenvalue is a 1-norm shifted dominant eigenvalue*/
 	*leadEigenVal = approx_dom_eigen_val(Bg,bprev,bnext) - (Bg->one_norm);
 	free(bnext);
