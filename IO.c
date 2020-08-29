@@ -6,23 +6,18 @@
  *********************************/
 
 
-/*	Convert node indices (like input file format) to a pre-allocated result {0,1} vector of length n
+/*	Converts node indices (like input file format) to a {0,1} vector of length n
  * 	that can be added to a spmat via add_row. 
  */
-void convert_adj_list(size_t deg, size_t n, int* adj, double *res){
-	int *i, temp;
-	/** Scan increasing-ordered adjacency list of length deg, 
-	 * 	and fill adj. mat. row with 1 for every index that has a adjacant edge.
-	 */
-	for (i=adj; i<adj+deg; i++){
-		temp=*i;
-		while (temp-->0)
-			*res++=0;
-		*res++=1;
-	}
-	/* Fill the last remaining entries of res with non-edge (zero) */  
-	for(temp=*i; temp < (int)n; temp++)
-		*res++=0;
+void convert_adj_list(size_t deg, size_t n, int *adj, double *line){
+	int *p;
+	line=(double*)calloc(n,sizeof(double));
+	VERIFY(line!=NULL, MEM_ALLOC_ERROR)
+	for (p=adj; p<adj+deg; p++)
+		*(line+*p)=1;
+	#ifdef DEBUG
+	printf("matrix line finished\n");
+	#endif
 }
 
 
@@ -50,30 +45,28 @@ void load_mod_matrix_from_file(FILE *input, modMat *B){
 	int i;
 	int_vector K=B->K, g=B->g;
 	int *neighbours, k_i;
-	double *matLine=(double*)malloc(B->gSize*sizeof(double));
-
-	VERIFY(matLine!=NULL, MEM_ALLOC_ERROR)
+	double *matLine=NULL;
 	VERIFY(fread(&i,sizeof(size_t),1,input) == 1, FILE_READ_ERROR)  /*Assuming file rewinded, skip |V| */
 	/* Populate B with A, K matrices, and compute M */
 	for (i=0; i<(int)B->gSize; i++){
 		VERIFY(fread(&k_i,sizeof(int),1,input) == 1, FILE_READ_ERROR)
-		*(K++)=(size_t)k_i;
-		B->M+=(size_t)k_i;
 		neighbours=(int*)malloc(k_i*sizeof(int));
 		VERIFY(neighbours!=NULL, MEM_ALLOC_ERROR)
 		VERIFY(fread(neighbours,sizeof(size_t),k_i,input) == (size_t)k_i, FILE_READ_ERROR)
 		convert_adj_list((size_t)k_i, B->gSize, neighbours, matLine);
-		#ifdef DEBUG
-		printf("SUCCESS: %d neighbours now represented as %d-length vector\n", (int)k_i, (int)B->gSize);
-		#endif
 		B->A->add_row(B->A,matLine,i);
 		#ifdef DEBUG
-		printf("SUCCESS: {0,1} row added to B->A\n");
+		printf("added A row\n");
 		#endif
-		*(g++)=i; /*Fill g subgroup array with 0,1,2,...n */
+		*(g++)=i; /*Fill g subgroup array with 0,1,2,...,n */
+		*(K++)=(size_t)k_i;
+		B->M+=(size_t)k_i;
 		free(neighbours);
+		free(matLine);
+		#ifdef DEBUG
+		printf("SUCCESS: Complete file to mem line, iter: %d\n",i);
+		#endif
 	}
-	free(matLine);
 	rewind(input);
 	set_1_norm(B);
 	#ifdef DEBUG
