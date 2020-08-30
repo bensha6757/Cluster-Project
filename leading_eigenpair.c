@@ -53,7 +53,7 @@ void power_iteration(modMat *Bg, vector v, vector result){
  */
 void leading_eigenpair(modMat *Bg, vector *leadEigenVec, scalar *leadEigenVal){
 	num iter=0, gSize = Bg->gSize;
-	num loops_limit = gSize*gSize*gSize;
+	num loops_limit = gSize * gSize * gSize; /*There are about O(N^2) Power iterations for a matrix of size N */
 	vector bprev, bnext, tmp;
 	
 	#ifdef DEBUG
