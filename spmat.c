@@ -13,12 +13,50 @@ typedef struct linked_list Node;
  * 	Generic get_row for spmat, independently of implementation (lists or arrays).
  * 	Utilizes A->mult with a standard vector (v[j]==1 if i=j, else v[j]==0).	 
  */
-void get_spmat_row_via_mult(const struct _spmat *A, int i, double *result){
-	vector e_i=(vector)calloc(A->n,sizeof(double));
+void get_spmat_row_generic(const struct _spmat *A, int i, double *row){
+	vector e_i;
+	e_i=(vector)calloc(A->n,sizeof(double));
 	VERIFY(e_i!=NULL,MEM_ALLOC_ERROR)
 	*(e_i+i)=1;
-	A->mult(A,e_i,result);
+	A->mult(A,e_i,row);
 	free(e_i);
+}
+
+void get_row_linked(const struct _spmat *A, int i, double *row){
+	Node *head = NULL, *tail;
+	int j = 0, n = A->n;
+	const DATA *rowPtr = row;
+	head=((Node**)(A->private))[i];
+	while (j < n && *rowPtr == 0){ /* getting to the first non-zero value and adding it to the first node*/
+		rowPtr++;
+		j++;
+	}
+	if (j < n){
+		head = (Node*) malloc (sizeof(Node));
+		VERIFY(head != NULL,MEM_ALLOC_ERROR)
+		head->val = *rowPtr;
+		head->col = j;
+		tail = head;
+		rowPtr++;
+		j++;
+		while (j < n){ /* add to tail*/
+			while (j < n && *rowPtr == 0){
+				rowPtr++;
+				j++;
+			}
+			if (j < n){
+				tail->next = (Node*) malloc (sizeof(Node));
+				VERIFY(tail->next != NULL,MEM_ALLOC_ERROR)
+				tail = tail->next;
+				tail->val = *rowPtr;
+				tail->col = j;
+				rowPtr++;
+				j++;
+			}
+		}
+		tail->next = NULL; /* end of list*/
+	}
+	
 }
 
 
@@ -54,25 +92,32 @@ num add_row_to_sub_linked(Subgroup col, num row, Subgroup g, int i, Node *AHead,
 	return rowSize;
 }
 
+
 /* creating a sub sparse matrix for Algorithm 2 */
 spmat* create_sub_sparse_matrix_linked(spmat *A, Subgroup g, int n , int_vector spmatSize){
 	spmat *sub = spmat_allocate_list(n);
 	Node **subSparse = sub->private, **Asparse = A->private, *AHead, *subHead, *tmp;
 	Subgroup row;
-	for (row = g ; row < (num)n + g ; row++){
+	#ifdef DEBUG
+	printf("BEGIN: create_sub_sparse_matrix_linked of size %d\n",n);
+	#endif
+	for (row = g ; row < g + n ; row++){
 		subHead = (Node*)malloc(sizeof(Node));
 		VERIFY(subHead != NULL,MEM_ALLOC_ERROR)
+		tmp = subHead;
 		AHead = Asparse[*row];
 		*spmatSize = add_row_to_sub_linked(g, *row, g, 0, AHead, subHead, n);
-		tmp = subHead;
 		subHead = subHead->next;
 		free(tmp);
-		*subSparse = subHead;
-		subSparse++;
+		*(subSparse++) = subHead;
 		spmatSize++;
 	}
+	#ifdef DEBUG
+	printf("SUCCESS: create_sub_sparse_matrix_linked of size %d\n",n);
+	#endif
 	return sub;
 }
+
 
 void add_row_linked(spmat *A, const double *row, int i){
 	Node *head = NULL, *tail;
@@ -120,15 +165,15 @@ DATA dot_product(Node* row, const DATA *col){
 	return sum;
 }
 
-void mult_linked(const spmat *A, const DATA *v, DATA *result){
+void mult_linked(const spmat *A, const DATA *v, DATA *result){	
 	Node **mat = (Node**)(A->private);
 	DATA *resPtr = result;
 	int n = A->n, i;
 	for (i = 0; i < n ; i++){
-		if(*mat == NULL){
+		if (*mat == NULL){
 			*resPtr = 0; /* if there is a row with zero values only*/
 		}
-		else{
+		else {
 			*resPtr = dot_product(*mat,v); /* dot product of each row of the sparse matrix and the input vector*/
 		}
 		resPtr++;
@@ -166,7 +211,7 @@ spmat* spmat_allocate_list(int n){
 	A->free = free_linked;
 	A->mult = mult_linked;
 	/*A->get_row = get_spmat_row_linked;*/
-	A->get_row =  get_spmat_row_via_mult;
+	A->get_row =  get_spmat_row_generic;
 	A->private =  (Node**) malloc (sizeof(Node*) * (A->n));
 	VERIFY(A->private != NULL,MEM_ALLOC_ERROR)
 	return A;
@@ -211,12 +256,12 @@ void add_row_arrays(struct _spmat *A, const double *row, int i)
 }
 
 /* private implementation of spmat get_row based on arrays representation */
-void get_row_arrays(const struct _spmat *A, int i, double *result){
+void get_row_arrays(const struct _spmat *A, int i, double *row){
 	arraymat *imp=((arraymat*)(A->private));
 	double *p, *v=imp->values+*(imp->rowptr+i);
 	int *src_col = imp->colind+*(imp->rowptr+i), dest_col;
-	for (p=result; p<result+A->n; p++){
-		dest_col=p-result;
+	for (p=row; p<row+A->n; p++){
+		dest_col=p-row;
 		if (dest_col==*src_col){
 			*p=*v;
 			v++;
@@ -291,7 +336,7 @@ num get_sub_matrix_nnz_arrays(spmat *A, Subgroup g, int sizeG){
 /**
  * Can be used as a generic interface function of spmat module (for both impl.)
  */
-void get_sub_row_arrays(spmat *A, int i, double *dest, Subgroup g, num sizeG, int_vector spmatSize){
+void get_sub_row_generic(spmat *A, int i, double *dest, Subgroup g, num sizeG, int_vector spmatSize){
 	double *v, sub_ij;
 	Subgroup q;
 	v=(double*)malloc(A->n*sizeof(double));
@@ -306,21 +351,16 @@ void get_sub_row_arrays(spmat *A, int i, double *dest, Subgroup g, num sizeG, in
 }
 /* Creating a sub sparse matrix for Algorithm 2.
  * Can be used as a generic interface function of spmat module (for both impl.)
- * 
- * If impl_flag==1, uses linked-list implementation. Otherwise, use arrays impl.
  */
-spmat* create_sub_sparse_matrix_array(spmat *A, Subgroup g, int sizeG , int_vector spmatSize /*, int impl_flag*/){
+spmat* create_sub_sparse_matrix_generic(spmat *A, Subgroup g, int n , int_vector spmatSize){
 	spmat *sub;
 	double *sub_row;
 	Subgroup p;
-	/*if (impl_flag)
-		sub = spmat_allocate_linked(sizeG);
-	else */
-		sub = spmat_allocate_array(sizeG,get_sub_matrix_nnz_arrays(A, g, sizeG));
-	sub_row=(double*)malloc(sizeG*sizeof(double));
+	sub = spmat_allocate_list(n);
+	sub_row=(double*)malloc(n*sizeof(double));
 	VERIFY(sub_row!=NULL, MEM_ALLOC_ERROR)
-	for (p=g; p<g+sizeG; p++){
-		get_sub_row_arrays(A,*p,sub_row,g,sizeG,spmatSize);
+	for (p=g; p<g+n; p++){
+		get_sub_row_generic(A,*p,sub_row,g,n,spmatSize);
 		sub->add_row(sub,sub_row,p-g);
 	}
 	free(sub_row);

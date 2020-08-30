@@ -16,7 +16,7 @@ typedef struct _spmat {
 	void (*add_row)(struct _spmat *A, const double *row, int i);
 
 	/*Gets row i from the matrix */
-	void (*get_row)(const struct _spmat *A, int i, double *result);
+	void (*get_row)(const struct _spmat *A, int i, double *row);
 
 	/* Frees all resources used by A */
 	void (*free)(struct _spmat *A);
@@ -37,6 +37,8 @@ spmat* spmat_allocate_array(int n, int nnz);
 
 spmat* create_sub_sparse_matrix_linked(spmat *A, Subgroup g, int n , int_vector spmatSize);
 
-spmat* create_sub_sparse_matrix_array(spmat *A, Subgroup g, int sizeG , int_vector spmatSize /*, int impl_flag*/);
+/* spmat*  create_sub_sparse_matrix_array(spmat *A, Subgroup g, int n , int_vector spmatSize); */
+
+spmat*  create_sub_sparse_matrix_generic(spmat *A, Subgroup g, int n , int_vector spmatSize);
 
 #endif /* SPMAT_H_ */
