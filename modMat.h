@@ -20,8 +20,9 @@ typedef struct _modmat {
 	spmat *A; 				/* Network adjacency matrix in form of spmat */
 	int_vector spmatSize; 	/* a vector of the spmat rows sizes for internal use */
 	int_vector K; 			/* Compact representation of degrees-product matrix (k_i * k_j / M) */
-	num M;				/* Total sum of degrees in the network*/
-	num gSize;	 		/* Size of subgroup g  */
+	num M;					/* Total sum of degrees in the network*/
+	num currM;				/* Total sum of degrees in sub-network defined by g */
+	num gSize;	 			/* Size of subgroup g  */
 	Subgroup g; 			/* Array of relevant indices of submatrix */
 	double one_norm;		/* The 1-norm of the matrix, i.e. max_i(sum_j(|B_ij|)) */ 
 
@@ -50,7 +51,7 @@ modMat *create_Sub_Matrix(modMat *B, Subgroup g, num sizeG, boolean use_linked_i
 
 /* Implements multiplication of B_hat[g] with a vector by
  * using several mult. functions and adding results together */
-void mult_B_hat_g(modMat *B, modMat *Bg, double *v, double *result, boolean shift);
+void mult_B_hat_g(modMat *Bg, double *v, double *result, boolean shift);
 
 /* Computes and sets 1-norm of B, i.e. max_i(sum_j(abs(B_ij))) */
 void set_1_norm(modMat *B);

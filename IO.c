@@ -58,6 +58,7 @@ void load_mod_matrix_from_file(FILE *input, modMat *B){
 		free(neighbours);
 		free(matLine);
 	}
+	B->currM=B->M;
 	rewind(input);
 	set_1_norm(B);
 }
