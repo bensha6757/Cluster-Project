@@ -39,45 +39,47 @@ unsigned int is_within(vector a, vector b, num d){
  * Apply a single iteration to a matrix B and a vector v according to the power method.
  * Store result in result vector.
  */
-void power_iteration(modMat *B, modMat *Bg, vector v, vector result){
+void power_iteration(modMat *Bg, vector v, vector result){
 	vector p;
 	double nrm;
-	mult_B_hat_g(B, Bg, v, result,true);
-	nrm=norm(result,Bg->gSize);
-	for (p=result; p<result+Bg->gSize; p++)
-		*p/=nrm;
+	mult_B_hat_g(Bg, v, result, SHIFT);
+	nrm = norm(result, Bg->gSize);
+	for (p = result; p < result + Bg->gSize; p++)
+		*p /= nrm;
 }
 
 /*
  * Compute leading eigen pair of modularity Matrix B_hat[g].
  */
-void leading_eigenpair(modMat *B, modMat *Bg, vector *leadEigenVec, scalar *leadEigenVal){
-	num iter=0;
-	vector bprev, bnext;
+void leading_eigenpair(modMat *Bg, vector *leadEigenVec, scalar *leadEigenVal){
+	num iter=0, gSize = Bg->gSize;
+	num loops_limit = gSize*gSize*gSize;
+	vector bprev, bnext, tmp;
 	
 	#ifdef DEBUG
 	printf("BEGIN: leading_eigenpair\n");
 	#endif
 
-	*leadEigenVec=(vector)malloc(Bg->gSize*sizeof(double));
+	*leadEigenVec = (vector)malloc(gSize * sizeof(double));
 	VERIFY(*leadEigenVec!=NULL, MEM_ALLOC_ERROR)
-	bprev=(vector)malloc(Bg->gSize*sizeof(double));
+	bprev = (vector)malloc(gSize * sizeof(double));
 	VERIFY(bprev!=NULL,MEM_ALLOC_ERROR)
-	bnext=(vector)malloc(Bg->gSize*sizeof(double));
+	bnext = (vector)malloc(gSize * sizeof(double));
 	VERIFY(bnext!=NULL,MEM_ALLOC_ERROR)
-	set_rand_vector(bprev, Bg->gSize);
-	power_iteration(B,Bg,bprev,bnext);
+	set_rand_vector(bprev, gSize);
+	power_iteration(Bg, bprev, bnext);
 	iter++;
-	while (!is_within(bprev,bnext,Bg->gSize)){
-		memcpy(bprev,bnext,Bg->gSize*sizeof(double));
-		power_iteration(B,Bg,bprev,bnext);
+	while (!is_within(bprev, bnext, gSize) && iter < loops_limit){
+		memcpy(bprev, bnext, gSize * sizeof(double));
+		power_iteration(Bg, bprev, bnext);
 		iter++;
-		VERIFY(iter<1000*Bg->gSize,INFINITE_LOOP_ERROR)
+		/*VERIFY(iter < 1000 * gSize,INFINITE_LOOP_ERROR)*/
 	}
 	#ifdef DEBUG
 		printf("# of power iterations: %d\n", (int)iter);
 	#endif
-	memcpy(*leadEigenVec,bnext,Bg->gSize*sizeof(double));
+	tmp = *leadEigenVec;
+	memcpy(tmp,bnext,gSize * sizeof(double));
 	/* The leading eigenvalue is a 1-norm shifted dominant eigenvalue*/
 	*leadEigenVal = approx_dom_eigen_val(Bg,bprev,bnext) - (Bg->one_norm);
 	free(bnext);

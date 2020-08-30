@@ -16,7 +16,7 @@
 /**
  * Compute leading eigen pair of modularity Matrix B_hat[g]
  */
-void leading_eigenpair(modMat *B, modMat *Bg, vector *leadEigenVec, scalar *leadEigenVal);
+void leading_eigenpair(modMat *Bg, vector *leadEigenVec, scalar *leadEigenVal);
 
 /**
  * Compute dot product of two vectors of length d
