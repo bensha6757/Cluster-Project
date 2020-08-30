@@ -8,6 +8,9 @@ void runClusterProject(char* inputFileName, char* outputFileName){
 	Subgroup g;
 	Stack *O;
 	load_input_file(inputFileName,&mat); /* reading input */
+	#ifdef DEBUG
+	printf("SUCCESS: load_input_file\n");
+	#endif
 	g = (Subgroup)malloc(mat->gSize * sizeof(num));
 	VERIFY(g!=NULL,MEM_ALLOC_ERROR)
 	memcpy(g, mat->g, mat->gSize * sizeof(num));
