@@ -79,8 +79,8 @@ modMat *create_Sub_Matrix(modMat *B, Subgroup g, num sizeG, boolean use_linked_i
 	#ifdef DEBUG
 	printf("SUCCESS: create_Sub_Matrix get K and M\n");
 	#endif
-	/*set_1_norm(Bg);*/
-	Bg->one_norm=B->one_norm;
+	set_1_norm(Bg);
+	/*Bg->one_norm=B->one_norm;*/
 	#ifdef DEBUG
 	printf("SUCCESS: create_Sub_Matrix\n");
 	#endif
@@ -151,7 +151,7 @@ void mult_B_hat_g(modMat *Bg, double *v, double *result, boolean shift){
 	free(tmp1-gSize);
 }
 
-
+/*
 void get_B_row_generic(modMat *B, num i, double *row, boolean shift){
 	vector e_i;
 	#ifdef DEBUG
@@ -166,6 +166,7 @@ void get_B_row_generic(modMat *B, num i, double *row, boolean shift){
 	printf("SUCCESS: get_B_row_generic, row %d\n", i);
 	#endif
 }
+*/
 
 void set_1_norm(modMat *B){
 	/*
