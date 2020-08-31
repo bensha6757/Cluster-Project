@@ -9,15 +9,19 @@ typedef struct linked_list {
 
 typedef struct linked_list Node;
 
+void get_basis_unit_vec(vector *e_i, num i, num n){
+	*e_i=(vector)calloc(n,sizeof(double));
+	VERIFY(e_i!=NULL,MEM_ALLOC_ERROR)
+	*(*e_i+i)=1;
+}
+
 /** 
  * 	Generic get_row for spmat, independently of implementation (lists or arrays).
  * 	Utilizes A->mult with a standard vector (v[j]==1 if i=j, else v[j]==0).	 
  */
 void get_spmat_row_generic(const struct _spmat *A, int i, double *row){
 	vector e_i;
-	e_i=(vector)calloc(A->n,sizeof(double));
-	VERIFY(e_i!=NULL,MEM_ALLOC_ERROR)
-	*(e_i+i)=1;
+	get_basis_unit_vec(&e_i, i, A->n);
 	A->mult(A,e_i,row);
 	free(e_i);
 }

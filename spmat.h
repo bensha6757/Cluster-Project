@@ -41,4 +41,8 @@ spmat* create_sub_sparse_matrix_linked(spmat *A, Subgroup g, int n , int_vector 
 
 spmat*  create_sub_sparse_matrix_generic(spmat *A, Subgroup g, int n , int_vector spmatSize);
 
+/** Set e_i to be a n-length vector s.t. 
+ * e[j]==1 if i==j, else e[j]==0. */
+void get_basis_unit_vec(vector *e_i, num i, num n);
+
 #endif /* SPMAT_H_ */
