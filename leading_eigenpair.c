@@ -1,5 +1,4 @@
 #include "leading_eigenpair.h"
-#define DEBUG
 
 double dot_prod(vector v, vector u, num d){
 	num i;
@@ -47,7 +46,6 @@ void power_iteration(modMat *Bg, vector v, vector result){
 	vector p;
 	double nrm;
 	num n=Bg->gSize;
-	#define DEBUG
 	#ifdef DEBUG
 	printf("BEGIN: power_iteration\n");
 	#endif
@@ -68,7 +66,6 @@ void leading_eigenpair(modMat *Bg, vector *leadEigenVec, scalar *leadEigenVal){
 	num loops_limit = (num)pow(gSize,2); /*There are about O(N^2) Power iterations for a matrix of size N */
 	vector bprev, bnext, p, q;
 	
-	#define DEBUG
 	#ifdef DEBUG
 	printf("BEGIN: leading_eigenpair\n");
 	#endif

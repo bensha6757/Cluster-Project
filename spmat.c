@@ -1,5 +1,4 @@
 #include "spmat.h"
-#define DEBUG
 
 typedef struct linked_list {
 	DATA val;
@@ -32,16 +31,23 @@ void get_spmat_row_generic(const struct _spmat *A, int i, double *row){
 	#endif
 }
 
-void get_row_linked(const struct _spmat *A, int i, double *row){
+void get_row_linked(const struct _spmat *A, int i, vector row){
 	Node **mat = (Node**)(A->private), *head;
-	int n = A->n;
-	double *r;
-	head=*(mat+i);
-	for (r=row; r<row+n; r++)
-		*r=0;
-	while(head != NULL){
-		*(row + head->col) = (head->val);
-		head = head->next;
+	int n = A->n, j;
+	head = mat[i];
+	for (j = 0; j < n && head != NULL; row++ ,j++){
+		if (j < head->col){
+			*row = 0;
+		}
+		else{
+			*row = 1;
+			head = head->next;
+		}
+	}
+	while (j < n)
+	{
+		*(row++) = 0;
+		j++;
 	}
 }
 
@@ -56,7 +62,7 @@ void add_after(Node *head, int i){
 
 
 /* adding a row to the sub sparse matrix */
-num add_row_to_sub_linked(Subgroup col, num row, Subgroup g, Node *AHead, Node *subTail, int n){
+num add_row_to_sub_linked(Subgroup col, num row, Subgroup g, Node *AHead, Node *subHead, int n){
 	num rowSize = 0, i=0;
 	while (col < n + g && AHead != NULL){
 		if (row == *col || (num)AHead->col > *col){
@@ -64,9 +70,9 @@ num add_row_to_sub_linked(Subgroup col, num row, Subgroup g, Node *AHead, Node *
 			i++;
 		} 
 		else if ((num)AHead->col == *col){
-			add_after(subTail, i);
+			add_after(subHead, i);
 			rowSize++;
-			subTail = subTail->next;
+			subHead = subHead->next;
 			col++;
 			i++;
 			AHead = AHead->next;
@@ -75,6 +81,7 @@ num add_row_to_sub_linked(Subgroup col, num row, Subgroup g, Node *AHead, Node *
 			AHead = AHead->next;
 		}	
 	}
+	subHead->next = NULL; /* end of list */
 	return rowSize;
 }
 
@@ -82,7 +89,7 @@ num add_row_to_sub_linked(Subgroup col, num row, Subgroup g, Node *AHead, Node *
 /* creating a sub sparse matrix for Algorithm 2 */
 spmat* create_sub_sparse_matrix_linked(spmat *A, Subgroup g, int n , int_vector spmatSize){
 	spmat *sub = spmat_allocate_list(n);
-	Node **subSparse = sub->private, **Asparse = A->private, *AHead, *subHead, *tmp;
+	Node **subMat = sub->private, **AMat = A->private, *AHead, *subHead, *tmp;
 	Subgroup row;
 	#ifdef DEBUG
 	printf("BEGIN: create_sub_sparse_matrix_linked of size %d\n",n);
@@ -91,12 +98,18 @@ spmat* create_sub_sparse_matrix_linked(spmat *A, Subgroup g, int n , int_vector 
 		subHead = (Node*)malloc(sizeof(Node));
 		VERIFY(subHead != NULL,MEM_ALLOC_ERROR)
 		tmp = subHead;
-		AHead = Asparse[*row];
-		*spmatSize = add_row_to_sub_linked(g, *row, g, AHead, subHead, n);
+		AHead = AMat[*row];
+		if (AHead != NULL){
+			*spmatSize = add_row_to_sub_linked(g, *row, g, AHead, subHead, n);
+		}
+		else{
+			*spmatSize = 0;
+			subHead->next = NULL;
+		}
+		spmatSize++;
 		subHead = subHead->next;
 		free(tmp);
-		*(subSparse++) = subHead;
-		spmatSize++;
+		*(subMat++) = subHead;
 	}
 	#ifdef DEBUG
 	printf("SUCCESS: create_sub_sparse_matrix_linked of size %d\n",n);
@@ -155,7 +168,6 @@ void mult_linked(const struct _spmat *A, const double *v, double *result){
 	Node **mat = (Node**)(A->private);
 	DATA *resPtr = result;
 	int n = A->n, i;
-	#define DEBUG2
 	#ifdef DEBUG2
 	printf("BEGIN: mult_linked of size %d\n",n);
 	#endif

@@ -32,10 +32,14 @@ void runClusterProject(char* inputFileName, char* outputFileName){
 int main(int argc, char* argv[]){
 	char* inputFileName=argv[1];
 	char* outputFileName=argv[2];
+	clock_t start, end;
 	#ifdef DEBUG
 	printf("Received file names: %s, %s\n",inputFileName,outputFileName);
 	#endif
 	VERIFY(argc - 1 == 2, FILE_READ_ERROR)
+	start = clock();
 	runClusterProject(inputFileName, outputFileName);
+	end = clock();
+	printf("Execution took %f seconds\n", ((double)(end-start) / CLOCKS_PER_SEC));
 	return 0;
 }

@@ -1,20 +1,18 @@
 #include "divide_into_two.h"
-#define DEBUG
 
 /*  Compute Modularity of B[g]_hat: 0.5 * s^T * B[g]_hat * s.
 	As a secondary result, assigns the product vector B*s to Bs argument.
  */
 
-double get_modularity_init(modMat *Bg, vector s, vector *Bs){
-	double Q, *Bs_tmp=*Bs;
+double get_modularity_init(modMat *Bg, vector s, vector Bs){
+	double Q;
 	num gSize=Bg->gSize;
-	#undef DEBUG
 	#ifdef DEBUG
 	printf("BEGIN: get_modularity_init\n");
 	#endif
 
-	Bg->mult(Bg, s, Bs_tmp, NO_SHIFT);
-	Q = 0.5 * dot_prod(Bs_tmp,s,gSize);
+	Bg->mult(Bg, s, Bs, NO_SHIFT);
+	Q = dot_prod(Bs,s,gSize);
 
 	#ifdef DEBUG
 	printf("SUCCESS: get_modularity_init = %f\n",Q);
@@ -26,40 +24,45 @@ double get_modularity_init(modMat *Bg, vector s, vector *Bs){
  * Recieves a pre-computed matrix-vector prodcut B*s, and the vector s itself.
  */
 double get_modularity_moved(modMat *Bg, vector s, vector Bs, num moved_v){
-	double Q, *p, *q;
+	double Q, *p;
 	int sgn=0;
-	vector Bi_tmp, Bs_tmp, s_tmp;
+	vector Bi_tmp;
 	/*vector e_i;*/
 	num gSize = Bg->gSize;
-	#undef DEBUG
 	#ifdef DEBUG
 	printf("BEGIN: get_modularity_moved for %d\n", moved_v);
 	#endif
 	Bi_tmp=(vector)malloc(gSize*sizeof(double));
 	VERIFY(Bi_tmp!=NULL,MEM_ALLOC_ERROR)
+	/*
 	Bs_tmp=(vector)malloc(gSize*sizeof(double));
 	VERIFY(Bs_tmp!=NULL,MEM_ALLOC_ERROR)
 	s_tmp=(vector)malloc(gSize*sizeof(double));
 	VERIFY(s_tmp!=NULL,MEM_ALLOC_ERROR)
+	*/
 
+	/*
 	for (p=s, q=s_tmp; p<s+gSize; p++, q++)
-		*q=*p;
-
+		*q = *p;
 	for (p=Bs, q=Bs_tmp; p<Bs+gSize; p++, q++)
-		*q=*p;
+		*q = *p;
+	*/
 
 	Bg->get_row(Bg,moved_v,Bi_tmp);
 	
-	*(s_tmp+moved_v) *= -1;
-	sgn=*(s_tmp+moved_v);
+	s[moved_v] *= -1;
+	sgn=s[moved_v];
 
-	for (p=Bs_tmp ; p < Bs_tmp + gSize ; p++, Bi_tmp++)
+	for (p=Bs ; p < Bs + gSize ; p++, Bi_tmp++)
 		*p += sgn * 2 * (*Bi_tmp);
-	Q = 0.5 * dot_prod(Bs_tmp,s_tmp,gSize);
+
+	Q = dot_prod(Bs,s,gSize);
+
+	s[moved_v] *= -1;
 
 	free(Bi_tmp-gSize);
-	free(Bs_tmp);
-	free(s_tmp);
+	/*free(Bs_tmp);*/
+	/*free(s_tmp);*/
 	#ifdef DEBUG
 	printf("SUCCESS: get_modularity_moved = %f for %d\n",Q, moved_v);
 	#endif
@@ -99,7 +102,6 @@ void move_maximal_score_vertex(modMat *Bg, vector *s, int_vector indices, double
 	int_vector moved;
 	num i, maxi = 0, *m, gSize = Bg->gSize;
 	double Q_0, *score, maxScore=0;
-	#define DEBUG
 	#ifdef DEBUG
 	printf("BEGIN: STEP 1 - optimize_division_original\n");
 	#endif
@@ -119,11 +121,17 @@ void move_maximal_score_vertex(modMat *Bg, vector *s, int_vector indices, double
 
 	for (i=0; i<gSize; i++){
 		/* lines 3-10 in Alg. 4 PsCode */
-		Q_0 = get_modularity_init(Bg, s_ptr, &Bs);
+		Q_0 = get_modularity_init(Bg, s_ptr, Bs);
 		p = score;
 		for (m=moved; m < moved + gSize; m++, p++){
-			if (!(*m)) 
+			if (!(*m)) {
 				*p = get_modularity_moved(Bg, s_ptr, Bs, m-moved) - Q_0;
+				/*
+				s_ptr[m-moved]*=-1;
+				*p = get_modularity_init(Bg, s_ptr, Bs) - Q_0;
+				s_ptr[m-moved]*=-1;
+				*/
+			}
 		}
 		/* line 11 in Alg. 4 PsCode */
 		maxi = 0;
@@ -280,27 +288,29 @@ DIV_RESULT div_into_two(modMat *B, Subgroup g, num sizeG, Subgroup *g1, Subgroup
 	vector u, s;
 	modMat *Bg;
 	DIV_RESULT ret;
-	num gSize;
 
 	#ifdef DEBUG
 	printf("BEGIN: div_into_two\n");
-	#endif
 	printG2(g,sizeG);
+	#endif
 	Bg = create_Sub_Matrix(B, g, sizeG, USE_LINKED);
 	/* free(g) ??? */
-	gSize = Bg->gSize;
-	printf("sizeG = %d\n", gSize);
 	leading_eigenpair(Bg, &u, &beta);
 	if (!IS_POSITIVE(beta))
 		ret=GROUP_INDIVISIBLE;
 	eigen_to_s(Bg, u, &s);
-	if (!IS_POSITIVE(get_modularity_init(Bg, s, &u))) /* u is not needed anymore at this stage */
+	if (!IS_POSITIVE(get_modularity_init(Bg, s, u))) /* u is not needed anymore at this stage */
 		ret=GROUP_INDIVISIBLE;
 	else
 		ret=GROUP_DIVIDED;
-	printS(s,gSize);
-	optimize_division_original(Bg, &s);
-	printS(s,gSize);
+	
+	#ifdef DEBUG
+	printS(s,Bg->gSize);
+	#endif
+	/*optimize_division_original(Bg, &s);*/
+	#ifdef DEBUG
+	printS(s,Bg->gSize);
+	#endif	
 	map_s_to_groups(Bg, s, g1, g2, sizeG1, sizeG2);
 	Bg->free(Bg);
 	free(u);

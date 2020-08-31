@@ -9,6 +9,8 @@ typedef int boolean;
 typedef double DATA;
 typedef double scalar;
 #define DEBUG
+#undef DEBUG
+#undef DEBUG2
 #define SHIFT 1
 #define NO_SHIFT 0
 
