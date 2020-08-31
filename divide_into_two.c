@@ -26,43 +26,32 @@ double get_modularity_init(modMat *Bg, vector s, vector Bs){
 double get_modularity_moved(modMat *Bg, vector s, vector Bs, num moved_v){
 	double Q, *p;
 	int sgn=0;
-	vector Bi_tmp;
-	/*vector e_i;*/
+	vector Bi;
 	num gSize = Bg->gSize;
 	#ifdef DEBUG
 	printf("BEGIN: get_modularity_moved for %d\n", moved_v);
 	#endif
-	Bi_tmp=(vector)malloc(gSize*sizeof(double));
-	VERIFY(Bi_tmp!=NULL,MEM_ALLOC_ERROR)
-	/*
-	Bs_tmp=(vector)malloc(gSize*sizeof(double));
-	VERIFY(Bs_tmp!=NULL,MEM_ALLOC_ERROR)
-	s_tmp=(vector)malloc(gSize*sizeof(double));
-	VERIFY(s_tmp!=NULL,MEM_ALLOC_ERROR)
-	*/
-
-	/*
-	for (p=s, q=s_tmp; p<s+gSize; p++, q++)
-		*q = *p;
-	for (p=Bs, q=Bs_tmp; p<Bs+gSize; p++, q++)
-		*q = *p;
-	*/
-
-	Bg->get_row(Bg,moved_v,Bi_tmp);
+	Bi=(vector)malloc(gSize*sizeof(double));
+	VERIFY(Bi!=NULL,MEM_ALLOC_ERROR)
+	Bg->get_row(Bg,moved_v,Bi);
 	
 	s[moved_v] *= -1;
 	sgn=s[moved_v];
 
-	for (p=Bs ; p < Bs + gSize ; p++, Bi_tmp++)
-		*p += sgn * 2 * (*Bi_tmp);
+	for (p=Bs ; p < Bs+ gSize ; p++, Bi++)
+		*p += sgn * 2 * (*Bi);
 
 	Q = dot_prod(Bs,s,gSize);
 
+	/* Restore Bs, s to initial state */
 	s[moved_v] *= -1;
+	sgn=s[moved_v];
+	Bi-=gSize;
+	for (p=Bs ; p < Bs + gSize ; p++, Bi++)
+		*p += sgn * 2 * (*Bi);
 
-	free(Bi_tmp-gSize);
-	/*free(Bs_tmp);*/
-	/*free(s_tmp);*/
+	free(Bi-gSize);
+
 	#ifdef DEBUG
 	printf("SUCCESS: get_modularity_moved = %f for %d\n",Q, moved_v);
 	#endif
@@ -293,12 +282,15 @@ DIV_RESULT div_into_two(modMat *B, Subgroup g, num sizeG, Subgroup *g1, Subgroup
 	printf("BEGIN: div_into_two\n");
 	printG2(g,sizeG);
 	#endif
+
 	Bg = create_Sub_Matrix(B, g, sizeG, USE_LINKED);
-	/* free(g) ??? */
+
 	leading_eigenpair(Bg, &u, &beta);
-	if (!IS_POSITIVE(beta))
-		ret=GROUP_INDIVISIBLE;
+	if (!IS_POSITIVE(beta)) 
+		ret = GROUP_INDIVISIBLE;
+		
 	eigen_to_s(Bg, u, &s);
+
 	if (!IS_POSITIVE(get_modularity_init(Bg, s, u))) /* u is not needed anymore at this stage */
 		ret=GROUP_INDIVISIBLE;
 	else
@@ -307,7 +299,7 @@ DIV_RESULT div_into_two(modMat *B, Subgroup g, num sizeG, Subgroup *g1, Subgroup
 	#ifdef DEBUG
 	printS(s,Bg->gSize);
 	#endif
-	/*optimize_division_original(Bg, &s);*/
+	optimize_division_original(Bg, &s);
 	#ifdef DEBUG
 	printS(s,Bg->gSize);
 	#endif	
