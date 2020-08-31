@@ -37,15 +37,15 @@ double get_modularity_moved(modMat *Bg, vector s, vector Bs, num moved_v){
 	VERIFY(Bs_tmp!=NULL,MEM_ALLOC_ERROR)
 	s_tmp=(vector)malloc(gSize*sizeof(double));
 	VERIFY(s_tmp!=NULL,MEM_ALLOC_ERROR)
-	e_i=(vector)calloc(gSize,sizeof(double));
-	VERIFY(e_i!=NULL,MEM_ALLOC_ERROR)
 
 	memcpy(s_tmp, s, gSize*sizeof(double));
 	memcpy(Bs_tmp, Bs, gSize*sizeof(double));
-	*(e_i+moved_v)=1;
-	/*Bg->get_row(Bg,moved_v,Bi_tmp);*/
-	mult_B_hat_g(Bg, e_i, Bi_tmp, NO_SHIFT);
 
+	/*Bg->get_row(Bg,moved_v,Bi_tmp);*/
+	get_basis_unit_vec(&e_i,moved_v,gSize);
+	mult_B_hat_g(Bg, e_i, Bi_tmp, NO_SHIFT);
+	free(e_i);
+	
 	*(s_tmp+moved_v) *= -1;
 	sgn=*(s_tmp+moved_v);
 
@@ -56,6 +56,7 @@ double get_modularity_moved(modMat *Bg, vector s, vector Bs, num moved_v){
 	free(Bi_tmp-gSize);
 	free(Bs_tmp);
 	free(s_tmp);
+	
 	/*printf("SUCCESS: get_modularity_moved = %f for %d\n",Q, moved_v);*/
 	return Q;
 }
