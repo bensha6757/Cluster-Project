@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stddef.h>
+#include <string.h>
 #include "io_mem_errors.h"
 #include <math.h>
 #include "Types.h"
@@ -33,9 +34,8 @@ typedef struct _modmat {
 	void (*get_row)(const struct _modmat *B, num i, double *row);
 
 	/* Multiply ModMat with vector v and store result.
-	 * Can be extended for submatrix B[g].
 	 */
-	void (*mult)(const struct _modmat *B, const double *v, double *result);
+	void (*mult)(const struct _modmat *B, const double *v, double *result, boolean shift);
 
 
 } modMat;
@@ -48,10 +48,6 @@ modMat *allocate_mod_mat(num n);
  * If impl_flag==1, uses linked-list implementation. Otherwise, use arrays impl.
  */
 modMat *create_Sub_Matrix(modMat *B, Subgroup g, num sizeG, boolean use_linked_impl);
-
-/* Implements multiplication of B_hat[g] with a vector by
- * using several mult. functions and adding results together */
-void mult_B_hat_g(modMat *Bg, double *v, double *result, boolean shift);
 
 /* Computes and sets 1-norm of B, i.e. max_i(sum_j(abs(B_ij))) */
 void set_1_norm(modMat *B);

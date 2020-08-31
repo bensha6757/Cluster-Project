@@ -82,19 +82,21 @@ void compute_K_and_currM(int_vector K, Subgroup g, num gSize, modMat *Bg){
 
 modMat *create_Sub_Matrix(modMat *B, Subgroup g, num sizeG, boolean use_linked_impl){
     modMat *Bg = allocate_mod_mat(sizeG);
+	Subgroup p=B->g, q;
     VERIFY(Bg!=NULL,MEM_ALLOC_ERROR)
 	if (use_linked_impl==USE_LINKED)
 		Bg->A = create_sub_sparse_matrix_linked(B->A, g, sizeG, Bg->spmatSize);
 	else
 		Bg->A = create_sub_sparse_matrix_generic(B->A, g, sizeG, Bg->spmatSize);
-    Bg->g = g;
+	for (p=Bg->g, q=g; p<Bg->g+sizeG; p++, q++)
+		*p=*q;
 	Bg->M = B->M; /* For any submatrix created, keep the original M of the network */
     compute_K_and_currM(B->K, g, sizeG, Bg);
 	#ifdef DEBUG
 	printf("SUCCESS: create_Sub_Matrix - get K and M\n");
 	#endif
-	set_1_norm(Bg);
-	/*Bg->one_norm=B->one_norm;*/
+	/*set_1_norm(Bg);*/
+	Bg->one_norm=B->one_norm;
 	#ifdef DEBUG
 	printf("SUCCESS: create_Sub_Matrix\n");
 	#endif
@@ -104,11 +106,11 @@ modMat *create_Sub_Matrix(modMat *B, Subgroup g, num sizeG, boolean use_linked_i
 /** part of the modularity matrix multiplication for power iteration, 
  * multiplying the degrees matrix (k_i * k_j / M) 
  * */
-void mult_K(modMat *Bg, double *v, double *res){
+void mult_K(const modMat *Bg, const double *v, double *res){
     int_vector K = Bg->K;
     num origM = Bg->M, sizeG = Bg->gSize, *ki;
     double dot = 0;
-	#define DEBUG2
+	#undef DEBUG2
 	#ifdef DEBUG2
 	printf("BEGIN: mult_K of size %d\n", sizeG);
 	#endif
@@ -130,12 +132,12 @@ void mult_K(modMat *Bg, double *v, double *res){
 /** part of the modularity matrix multiplication for power iteration, 
  * multiplying the 2 matrices (f_i - ||C||) * I 
  * */
-void mult_F_and_C(modMat *Bg, double *v, boolean shift, double *res){
+void mult_F_and_C(const modMat *Bg, const double *v, double *res, boolean shift){
     int_vector K = Bg->K;
     int_vector spmatSize = Bg->spmatSize;
     num M = Bg->currM, origM = Bg->M ,sizeG = Bg->gSize, *ki;
     double fi, shiftNorm;
-	#define DEBUG
+	#undef DEBUG
 	#ifdef DEBUG
 	printf("BEGIN: mult_F_and_C of size %d\n", sizeG);
 	#endif
@@ -156,24 +158,24 @@ void mult_F_and_C(modMat *Bg, double *v, boolean shift, double *res){
 /* Implements multiplication of B_hat[g] with a vector by
  * using several mult. functions and adding results together 
  * */
-void mult_B_hat_g(modMat *Bg, double *v, double *result, boolean shift){
+void mult_B_hat_g(const struct _modmat *B, const double *v, double *result, boolean shift){
 	vector tmp1, tmp2, p;
-	num gSize = Bg->gSize;
-	#undef DEBUG
+	num gSize = B->gSize;
+	#define DEBUG
 	#ifdef DEBUG
 	printf("BEGIN: mult_B_hat_g of size %d\n", gSize);
 	#endif
 	tmp1=(vector)malloc(sizeof(double)*gSize);
 	VERIFY(tmp1!=NULL,MEM_ALLOC_ERROR)
-	Bg->A->mult(Bg->A,v,result);
+	B->A->mult(B->A,v,result);
 	
 	tmp1=(vector)malloc(sizeof(double)*gSize);
 	VERIFY(tmp1!=NULL,MEM_ALLOC_ERROR)
-	mult_K(Bg, v, tmp1);
+	mult_K(B, v, tmp1);
 
 	tmp2=(vector)malloc(sizeof(double)*gSize);
 	VERIFY(tmp2!=NULL,MEM_ALLOC_ERROR)
-	mult_F_and_C(Bg, v, shift, tmp2);
+	mult_F_and_C(B, v, tmp2, shift);
 
 	for (p=result; p < result + gSize; p++)
 		*p -= (*(tmp1++) - *(tmp2++));
@@ -246,12 +248,14 @@ modMat* allocate_mod_mat(num n){
 	
 	rep->spmatSize=(int_vector)malloc(n*sizeof(num));
 	VERIFY(rep->spmatSize != NULL,MEM_ALLOC_ERROR)
-
+	
+	
 	rep->g=(Subgroup)malloc(n*sizeof(num));
 	VERIFY(rep->g != NULL,MEM_ALLOC_ERROR)
 	
-	rep->free=free_mod_mat;
 
+	rep->free=free_mod_mat;
+	rep->mult=mult_B_hat_g;
 	rep->get_row=get_B_hat_row;
 
 	#ifdef DEBUG
