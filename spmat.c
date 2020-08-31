@@ -21,46 +21,28 @@ void get_basis_unit_vec(vector *e_i, num i, num n){
  */
 void get_spmat_row_generic(const struct _spmat *A, int i, double *row){
 	vector e_i;
+	#ifdef DEBUG
+	printf("BEGIN: get_spmat_row_generic=%d\n", i);
+	#endif
 	get_basis_unit_vec(&e_i, i, A->n);
 	A->mult(A,e_i,row);
 	free(e_i);
+	#ifdef DEBUG
+	printf("SUCCESS: get_spmat_row_generic=%d\n", i);
+	#endif
 }
 
 void get_row_linked(const struct _spmat *A, int i, double *row){
-	Node *head = NULL, *tail;
-	int j = 0, n = A->n;
-	const DATA *rowPtr = row;
-	head=((Node**)(A->private))[i];
-	while (j < n && *rowPtr == 0){ /* getting to the first non-zero value and adding it to the first node*/
-		rowPtr++;
-		j++;
+	Node **mat = (Node**)(A->private), *head;
+	int n = A->n;
+	double *r;
+	head=*(mat+i);
+	for (r=row; r<row+n; r++)
+		*r=0;
+	while(head != NULL){
+		*(row + head->col) = (head->val);
+		head = head->next;
 	}
-	if (j < n){
-		head = (Node*) malloc (sizeof(Node));
-		VERIFY(head != NULL,MEM_ALLOC_ERROR)
-		head->val = *rowPtr;
-		head->col = j;
-		tail = head;
-		rowPtr++;
-		j++;
-		while (j < n){ /* add to tail*/
-			while (j < n && *rowPtr == 0){
-				rowPtr++;
-				j++;
-			}
-			if (j < n){
-				tail->next = (Node*) malloc (sizeof(Node));
-				VERIFY(tail->next != NULL,MEM_ALLOC_ERROR)
-				tail = tail->next;
-				tail->val = *rowPtr;
-				tail->col = j;
-				rowPtr++;
-				j++;
-			}
-		}
-		tail->next = NULL; /* end of list*/
-	}
-	
 }
 
 
@@ -74,8 +56,8 @@ void add_after(Node *head, int i){
 
 
 /* adding a row to the sub sparse matrix */
-num add_row_to_sub_linked(Subgroup col, num row, Subgroup g, int i, Node *AHead, Node *subTail, int n){
-	num rowSize = 0;
+num add_row_to_sub_linked(Subgroup col, num row, Subgroup g, Node *AHead, Node *subTail, int n){
+	num rowSize = 0, i=0;
 	while (col < n + g && AHead != NULL){
 		if (row == *col || (num)AHead->col > *col){
 			col++;
@@ -110,7 +92,7 @@ spmat* create_sub_sparse_matrix_linked(spmat *A, Subgroup g, int n , int_vector 
 		VERIFY(subHead != NULL,MEM_ALLOC_ERROR)
 		tmp = subHead;
 		AHead = Asparse[*row];
-		*spmatSize = add_row_to_sub_linked(g, *row, g, 0, AHead, subHead, n);
+		*spmatSize = add_row_to_sub_linked(g, *row, g, AHead, subHead, n);
 		subHead = subHead->next;
 		free(tmp);
 		*(subSparse++) = subHead;
@@ -159,7 +141,7 @@ void add_row_linked(spmat *A, const double *row, int i){
 	((Node**)(A->private))[i] = head;
 }
 /* helping function, dot product of a row of the sparse matrix and the input vector*/
-DATA dot_product(Node* row, const DATA *col){
+DATA dot_product_linked(Node* row, const DATA *col){
 	Node* head = row;
 	DATA sum = 0;
 	while(head != NULL){
@@ -173,16 +155,23 @@ void mult_linked(const spmat *A, const DATA *v, DATA *result){
 	Node **mat = (Node**)(A->private);
 	DATA *resPtr = result;
 	int n = A->n, i;
+	#define DEBUG2
+	#ifdef DEBUG2
+	printf("BEGIN: mult_linked of size %d\n",n);
+	#endif
 	for (i = 0; i < n ; i++){
 		if (*mat == NULL){
 			*resPtr = 0; /* if there is a row with zero values only*/
 		}
 		else {
-			*resPtr = dot_product(*mat,v); /* dot product of each row of the sparse matrix and the input vector*/
+			*resPtr = dot_product_linked(*mat,v); /* dot product of each row of the sparse matrix and the input vector*/
 		}
 		resPtr++;
 		mat++;
 	}
+	#ifdef DEBUG2
+	printf("SUCCESS: mult_linked of size %d\n",n);
+	#endif
 }
 
 
@@ -214,8 +203,8 @@ spmat* spmat_allocate_list(int n){
 	A->add_row = add_row_linked;
 	A->free = free_linked;
 	A->mult = mult_linked;
-	/*A->get_row = get_spmat_row_linked;*/
-	A->get_row =  get_spmat_row_generic;
+	A->get_row = get_row_linked;
+	/*A->get_row =  get_spmat_row_generic;*/
 	A->private =  (Node**) malloc (sizeof(Node*) * (A->n));
 	VERIFY(A->private != NULL,MEM_ALLOC_ERROR)
 	return A;
