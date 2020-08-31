@@ -26,7 +26,8 @@ void set_rand_vector(vector v, num n){
 
 /*	Approximate dominant eigen value of matrix B, using vectors computed in last power iteration */
 double approx_dom_eigen_val(modMat *B, vector bprev, vector bnext){
-	return dot_prod(bnext,bprev,B->gSize) / dot_prod(bprev,bprev,B->gSize);
+	num gSize=B->gSize;
+	return dot_prod(bnext,bprev,gSize) / dot_prod(bprev,bprev,gSize);
 }
 
 boolean is_within(vector a, vector b, num d){
@@ -46,12 +47,12 @@ void power_iteration(modMat *Bg, vector v, vector result){
 	vector p;
 	double nrm;
 	num n=Bg->gSize;
-	#undef DEBUG
+	#define DEBUG
 	#ifdef DEBUG
 	printf("BEGIN: power_iteration\n");
 	#endif
-	mult_B_hat_g(Bg, v, result, SHIFT);
-	nrm = l2_norm(result, Bg->gSize);
+	Bg->mult(Bg, v, result, SHIFT);
+	nrm = l2_norm(result, n);
 	for (p = result; p < result + n; p++)
 		*p /= nrm;
 	#ifdef DEBUG
@@ -64,8 +65,8 @@ void power_iteration(modMat *Bg, vector v, vector result){
  */
 void leading_eigenpair(modMat *Bg, vector *leadEigenVec, scalar *leadEigenVal){
 	num iter=0, gSize = Bg->gSize;
-	num loops_limit = gSize * gSize * gSize; /*There are about O(N^2) Power iterations for a matrix of size N */
-	vector bprev, bnext;
+	num loops_limit = (num)pow(gSize,2); /*There are about O(N^2) Power iterations for a matrix of size N */
+	vector bprev, bnext, p, q;
 	
 	#define DEBUG
 	#ifdef DEBUG
@@ -81,7 +82,9 @@ void leading_eigenpair(modMat *Bg, vector *leadEigenVec, scalar *leadEigenVal){
 
 	iter++;
 	while (!is_within(bprev, bnext, gSize) && iter < loops_limit){
-		memcpy(bprev, bnext, gSize * sizeof(double));
+		for (p=bprev, q=bnext; p<bprev+gSize; p++,q++)
+			*p=*q;
+		/*memcpy(bprev, bnext, gSize * sizeof(double));*/
 		power_iteration(Bg, bprev, bnext);
 		iter++;
 		/*VERIFY(iter < 1000 * gSize,INFINITE_LOOP_ERROR)*/
@@ -91,7 +94,9 @@ void leading_eigenpair(modMat *Bg, vector *leadEigenVec, scalar *leadEigenVal){
 	#endif
 	*leadEigenVec = (vector)malloc(gSize * sizeof(double));
 	VERIFY(*leadEigenVec!=NULL, MEM_ALLOC_ERROR)
-	memcpy(*leadEigenVec,bnext,gSize * sizeof(double));
+	for (p=*leadEigenVec, q=bnext; p<*leadEigenVec+gSize; p++,q++)
+		*p=*q;
+	/*memcpy(*leadEigenVec,bnext,gSize * sizeof(double));*/
 	/* The leading eigenvalue is a 1-norm shifted dominant eigenvalue*/
 	*leadEigenVal = approx_dom_eigen_val(Bg,bprev,bnext) - (Bg->one_norm);
 	free(bnext);
