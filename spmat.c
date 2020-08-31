@@ -151,7 +151,7 @@ DATA dot_product_linked(Node* row, const DATA *col){
 	return sum;
 }
 
-void mult_linked(const spmat *A, const DATA *v, DATA *result){	
+void mult_linked(const struct _spmat *A, const double *v, double *result){	
 	Node **mat = (Node**)(A->private);
 	DATA *resPtr = result;
 	int n = A->n, i;
