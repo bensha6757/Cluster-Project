@@ -157,9 +157,7 @@ void get_B_row_generic(modMat *B, num i, double *row, boolean shift){
 	#ifdef DEBUG
 	printf("BEGIN: get_B_row_generic, row %d\n", i);
 	#endif
-	e_i=(vector)calloc(B->gSize,sizeof(double));
-	VERIFY(e_i!=NULL,MEM_ALLOC_ERROR)
-	*(e_i+i)=1;
+	get_basis_unit_vec(&e_i, i, B->gSize)
 	mult_B_hat_g(B, e_i, row, shift);
 	free(e_i);
 	#ifdef DEBUG
