@@ -9,7 +9,10 @@ double get_modularity_init(modMat *Bg, vector s, vector *Bs){
 	double Q;
 	num gSize=Bg->gSize;
 	vector Bs_tmp;
-	/*printf("BEGIN: get_modularity_init\n");*/
+	#define DEBUG
+	#ifdef DEBUG
+	printf("BEGIN: get_modularity_init\n");
+	#endif
 	Bs_tmp=(vector)malloc(gSize*sizeof(double));
 	VERIFY(Bs_tmp!=NULL,MEM_ALLOC_ERROR)
 
@@ -18,7 +21,9 @@ double get_modularity_init(modMat *Bg, vector s, vector *Bs){
 
 	memcpy(*Bs,Bs_tmp,gSize*sizeof(double));
 	free(Bs_tmp);
-	/*printf("SUCCESS: get_modularity_init = %f\n",Q);*/
+	#ifdef DEBUG
+	printf("SUCCESS: get_modularity_init = %f\n",Q);
+	#endif
 	return Q;
 }
 
@@ -28,9 +33,13 @@ double get_modularity_init(modMat *Bg, vector s, vector *Bs){
 double get_modularity_moved(modMat *Bg, vector s, vector Bs, num moved_v){
 	double Q, *p;
 	int sgn=0;
-	vector Bi_tmp, Bs_tmp, s_tmp, e_i;
+	vector Bi_tmp, Bs_tmp, s_tmp;
+	/*vector e_i;*/
 	num gSize = Bg->gSize;
-	/*printf("BEGIN: get_modularity_moved for %d\n", moved_v);*/
+	#undef DEBUG
+	#ifdef DEBUG
+	printf("BEGIN: get_modularity_moved for %d\n", moved_v);
+	#endif
 	Bi_tmp=(vector)malloc(gSize*sizeof(double));
 	VERIFY(Bi_tmp!=NULL,MEM_ALLOC_ERROR)
 	Bs_tmp=(vector)malloc(gSize*sizeof(double));
@@ -41,11 +50,14 @@ double get_modularity_moved(modMat *Bg, vector s, vector Bs, num moved_v){
 	memcpy(s_tmp, s, gSize*sizeof(double));
 	memcpy(Bs_tmp, Bs, gSize*sizeof(double));
 
-	/*Bg->get_row(Bg,moved_v,Bi_tmp);*/
+	Bg->get_row(Bg,moved_v,Bi_tmp);
+
+	/*
 	get_basis_unit_vec(&e_i,moved_v,gSize);
 	mult_B_hat_g(Bg, e_i, Bi_tmp, NO_SHIFT);
 	free(e_i);
-	
+	*/
+
 	*(s_tmp+moved_v) *= -1;
 	sgn=*(s_tmp+moved_v);
 
@@ -56,8 +68,9 @@ double get_modularity_moved(modMat *Bg, vector s, vector Bs, num moved_v){
 	free(Bi_tmp-gSize);
 	free(Bs_tmp);
 	free(s_tmp);
-	
-	/*printf("SUCCESS: get_modularity_moved = %f for %d\n",Q, moved_v);*/
+	#ifdef DEBUG
+	printf("SUCCESS: get_modularity_moved = %f for %d\n",Q, moved_v);
+	#endif
 	return Q;
 }
 
@@ -94,7 +107,9 @@ void move_maximal_score_vertex(modMat *Bg, vector *s, int_vector indices, double
 	int_vector moved;
 	num i, maxi = 0, *m, gSize = Bg->gSize;
 	double Q_0, *score, maxScore=0;
-	
+	#ifdef DEBUG
+	printf("BEGIN: STEP 1 - optimize_division_original\n");
+	#endif
 	/*  A hash set of boolean values, s.t. 
 	 *	moved[v]==1 iff vertex v has moved to the opposite group.
 	 *  
@@ -153,8 +168,9 @@ void optimize_division_original(modMat *Bg, vector *s){
 	int_vector indices, q;
 	num impInd=0, iter=0, gSize = Bg->gSize;
 	double deltaQ, *improve, improveMax=0;
+	
 	#ifdef DEBUG
-	printf("BEGIN: optimize_division_original\n");
+	printf("BEGIN: optimize_division_original!!!\n");
 	#endif
 	
 	indices=(int_vector)malloc(gSize*sizeof(num));
