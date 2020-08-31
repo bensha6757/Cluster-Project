@@ -6,21 +6,16 @@
  */
 
 double get_modularity_init(modMat *Bg, vector s, vector *Bs){
-	double Q;
+	double Q, *Bs_tmp=*Bs;
 	num gSize=Bg->gSize;
-	vector Bs_tmp;
-	#define DEBUG
+	#undef DEBUG
 	#ifdef DEBUG
 	printf("BEGIN: get_modularity_init\n");
 	#endif
-	Bs_tmp=(vector)malloc(gSize*sizeof(double));
-	VERIFY(Bs_tmp!=NULL,MEM_ALLOC_ERROR)
 
-	mult_B_hat_g(Bg, s, Bs_tmp, NO_SHIFT);
+	Bg->mult(Bg, s, Bs_tmp, NO_SHIFT);
 	Q = 0.5 * dot_prod(Bs_tmp,s,gSize);
 
-	memcpy(*Bs,Bs_tmp,gSize*sizeof(double));
-	free(Bs_tmp);
 	#ifdef DEBUG
 	printf("SUCCESS: get_modularity_init = %f\n",Q);
 	#endif
@@ -31,7 +26,7 @@ double get_modularity_init(modMat *Bg, vector s, vector *Bs){
  * Recieves a pre-computed matrix-vector prodcut B*s, and the vector s itself.
  */
 double get_modularity_moved(modMat *Bg, vector s, vector Bs, num moved_v){
-	double Q, *p;
+	double Q, *p, *q;
 	int sgn=0;
 	vector Bi_tmp, Bs_tmp, s_tmp;
 	/*vector e_i;*/
@@ -47,22 +42,19 @@ double get_modularity_moved(modMat *Bg, vector s, vector Bs, num moved_v){
 	s_tmp=(vector)malloc(gSize*sizeof(double));
 	VERIFY(s_tmp!=NULL,MEM_ALLOC_ERROR)
 
-	memcpy(s_tmp, s, gSize*sizeof(double));
-	memcpy(Bs_tmp, Bs, gSize*sizeof(double));
+	for (p=s, q=s_tmp; p<s+gSize; p++, q++)
+		*q=*p;
+
+	for (p=Bs, q=Bs_tmp; p<Bs+gSize; p++, q++)
+		*q=*p;
 
 	Bg->get_row(Bg,moved_v,Bi_tmp);
-
-	/*
-	get_basis_unit_vec(&e_i,moved_v,gSize);
-	mult_B_hat_g(Bg, e_i, Bi_tmp, NO_SHIFT);
-	free(e_i);
-	*/
-
+	
 	*(s_tmp+moved_v) *= -1;
 	sgn=*(s_tmp+moved_v);
 
-	for (p=Bs_tmp ; p < Bs_tmp + gSize ; p++)
-		*p += sgn * 2 * (*(Bi_tmp++));
+	for (p=Bs_tmp ; p < Bs_tmp + gSize ; p++, Bi_tmp++)
+		*p += sgn * 2 * (*Bi_tmp);
 	Q = 0.5 * dot_prod(Bs_tmp,s_tmp,gSize);
 
 	free(Bi_tmp-gSize);
@@ -107,6 +99,7 @@ void move_maximal_score_vertex(modMat *Bg, vector *s, int_vector indices, double
 	int_vector moved;
 	num i, maxi = 0, *m, gSize = Bg->gSize;
 	double Q_0, *score, maxScore=0;
+	#define DEBUG
 	#ifdef DEBUG
 	printf("BEGIN: STEP 1 - optimize_division_original\n");
 	#endif
@@ -200,9 +193,9 @@ void optimize_division_original(modMat *Bg, vector *s){
 		/* lines 26-30 in Alg. 4 pseudo-code */
 		deltaQ = (impInd == gSize-1) ? 0 : improveMax;
 		#ifdef DEBUG
-		printf("SUCCESS: STEP 3 - optimize_division_original\n");
+		printf("SUCCESS: STEP 3 - optimize_division_original, deltaQ=%f\n",deltaQ);
 		#endif
-		VERIFY(iter++ < gSize * gSize,INFINITE_LOOP_ERROR)
+		VERIFY(iter++ < gSize * gSize, INFINITE_LOOP_ERROR)
 	} while (IS_POSITIVE(deltaQ));
 	free(improve);
 	free(indices);
@@ -294,6 +287,7 @@ DIV_RESULT div_into_two(modMat *B, Subgroup g, num sizeG, Subgroup *g1, Subgroup
 	#endif
 	printG2(g,sizeG);
 	Bg = create_Sub_Matrix(B, g, sizeG, USE_LINKED);
+	/* free(g) ??? */
 	gSize = Bg->gSize;
 	printf("sizeG = %d\n", gSize);
 	leading_eigenpair(Bg, &u, &beta);
