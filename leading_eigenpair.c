@@ -2,7 +2,7 @@
 #define DEBUG
 
 double dot_prod(vector v, vector u, num d){
-	unsigned int i;
+	num i;
 	double acc=0;
 	for (i=0; i<d; i++, v++, u++){
 		acc += (*v)*(*u);
@@ -10,15 +10,18 @@ double dot_prod(vector v, vector u, num d){
 	return acc;
 }
 
-double norm(vector v, num d){
+double l2_norm(vector v, num d){
 	return sqrt(dot_prod(v,v,d));
 }
 
 void set_rand_vector(vector v, num n){
-	unsigned int i;
+	vector p;
 	srand(time(NULL));
-	for (i=0; i<n; i++)
-		*v++ = (double)rand();
+	for (p=v; p<v+n; p++)
+		*p = (double)rand();
+	#ifdef DEBUG
+	printf("SUCCESS: set_rand_vector\n");
+	#endif
 }
 
 /*	Approximate dominant eigen value of matrix B, using vectors computed in last power iteration */
@@ -26,7 +29,7 @@ double approx_dom_eigen_val(modMat *B, vector bprev, vector bnext){
 	return dot_prod(bnext,bprev,B->gSize) / dot_prod(bprev,bprev,B->gSize);
 }
 
-unsigned int is_within(vector a, vector b, num d){
+boolean is_within(vector a, vector b, num d){
 	num i;
 	for (i=0; i<d; i++, a++, b++){
 		if (IS_POSITIVE(fabs(*a - *b)))
@@ -42,10 +45,18 @@ unsigned int is_within(vector a, vector b, num d){
 void power_iteration(modMat *Bg, vector v, vector result){
 	vector p;
 	double nrm;
+	num n=Bg->gSize;
+	#undef DEBUG
+	#ifdef DEBUG
+	printf("BEGIN: power_iteration\n");
+	#endif
 	mult_B_hat_g(Bg, v, result, SHIFT);
-	nrm = norm(result, Bg->gSize);
-	for (p = result; p < result + Bg->gSize; p++)
+	nrm = l2_norm(result, Bg->gSize);
+	for (p = result; p < result + n; p++)
 		*p /= nrm;
+	#ifdef DEBUG
+	printf("SUCCESS: power_iteration\n");
+	#endif
 }
 
 /*
@@ -54,20 +65,20 @@ void power_iteration(modMat *Bg, vector v, vector result){
 void leading_eigenpair(modMat *Bg, vector *leadEigenVec, scalar *leadEigenVal){
 	num iter=0, gSize = Bg->gSize;
 	num loops_limit = gSize * gSize * gSize; /*There are about O(N^2) Power iterations for a matrix of size N */
-	vector bprev, bnext, tmp;
+	vector bprev, bnext;
 	
+	#define DEBUG
 	#ifdef DEBUG
 	printf("BEGIN: leading_eigenpair\n");
 	#endif
-
-	*leadEigenVec = (vector)malloc(gSize * sizeof(double));
-	VERIFY(*leadEigenVec!=NULL, MEM_ALLOC_ERROR)
 	bprev = (vector)malloc(gSize * sizeof(double));
 	VERIFY(bprev!=NULL,MEM_ALLOC_ERROR)
 	bnext = (vector)malloc(gSize * sizeof(double));
 	VERIFY(bnext!=NULL,MEM_ALLOC_ERROR)
+
 	set_rand_vector(bprev, gSize);
 	power_iteration(Bg, bprev, bnext);
+
 	iter++;
 	while (!is_within(bprev, bnext, gSize) && iter < loops_limit){
 		memcpy(bprev, bnext, gSize * sizeof(double));
@@ -78,8 +89,9 @@ void leading_eigenpair(modMat *Bg, vector *leadEigenVec, scalar *leadEigenVal){
 	#ifdef DEBUG
 		printf("# of power iterations: %d\n", (int)iter);
 	#endif
-	tmp = *leadEigenVec;
-	memcpy(tmp,bnext,gSize * sizeof(double));
+	*leadEigenVec = (vector)malloc(gSize * sizeof(double));
+	VERIFY(*leadEigenVec!=NULL, MEM_ALLOC_ERROR)
+	memcpy(*leadEigenVec,bnext,gSize * sizeof(double));
 	/* The leading eigenvalue is a 1-norm shifted dominant eigenvalue*/
 	*leadEigenVal = approx_dom_eigen_val(Bg,bprev,bnext) - (Bg->one_norm);
 	free(bnext);
