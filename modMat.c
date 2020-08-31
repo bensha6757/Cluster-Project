@@ -161,7 +161,7 @@ void mult_F_and_C(const modMat *Bg, const double *v, double *res, boolean shift)
 void mult_B_hat_g(const struct _modmat *B, const double *v, double *result, boolean shift){
 	vector tmp1, tmp2, p;
 	num gSize = B->gSize;
-	#define DEBUG
+	#undef DEBUG
 	#ifdef DEBUG
 	printf("BEGIN: mult_B_hat_g of size %d\n", gSize);
 	#endif
