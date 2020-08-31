@@ -93,8 +93,8 @@ modMat *create_Sub_Matrix(modMat *B, Subgroup g, num sizeG, boolean use_linked_i
 	#ifdef DEBUG
 	printf("SUCCESS: create_Sub_Matrix - get K and M\n");
 	#endif
-	/*set_1_norm(Bg);*/
-	Bg->one_norm=B->one_norm;
+	set_1_norm(Bg);
+	/*Bg->one_norm=B->one_norm;*/
 	#ifdef DEBUG
 	printf("SUCCESS: create_Sub_Matrix\n");
 	#endif
