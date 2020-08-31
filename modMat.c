@@ -62,16 +62,21 @@ double sum_of_abs(double *row, num n){
 }
 
 /* helping function, populate resK and resM with sub-vector K and M aligned with the subgroup g*/
-void compute_K_and_currM(int_vector K, Subgroup g, num gSize, modMat *Bg){
-    int_vector Kg = (int_vector)malloc(sizeof(num) * gSize), p;
+void compute_K_and_currM(modMat *Bg, int_vector K, Subgroup g, num gSize){
+    int_vector Kg = (int_vector)malloc(sizeof(num) * gSize), p, q;
     num Mg = 0;
 	VERIFY(Kg!=NULL, MEM_ALLOC_ERROR)
+	for (p=Bg->g, q=g; p<Bg->g+gSize; p++, q++)
+		*p=*q;
+	q=Bg->g;
     for (p = Kg ; p < gSize + Kg ; p++){
-        *p = K[*g];
+        *p = K[*q];
         Mg += *p;
-        g++;
+        q++;
     }
-    Bg->K = Kg;
+	for (p=Bg->K, q=Kg; p<Bg->K+gSize; p++, q++)
+		*p=*q;
+    /*Bg->K = Kg;*/
     Bg->currM = Mg;
 }
 
@@ -82,21 +87,18 @@ void compute_K_and_currM(int_vector K, Subgroup g, num gSize, modMat *Bg){
 
 modMat *create_Sub_Matrix(modMat *B, Subgroup g, num sizeG, boolean use_linked_impl){
     modMat *Bg = allocate_mod_mat(sizeG);
-	Subgroup p=B->g, q;
     VERIFY(Bg!=NULL,MEM_ALLOC_ERROR)
 	if (use_linked_impl==USE_LINKED)
 		Bg->A = create_sub_sparse_matrix_linked(B->A, g, sizeG, Bg->spmatSize);
 	else
 		Bg->A = create_sub_sparse_matrix_generic(B->A, g, sizeG, Bg->spmatSize);
-	for (p=Bg->g, q=g; p<Bg->g+sizeG; p++, q++)
-		*p=*q;
 	Bg->M = B->M; /* For any submatrix created, keep the original M of the network */
-    compute_K_and_currM(B->K, g, sizeG, Bg);
+    compute_K_and_currM(Bg, B->K, g, sizeG);
 	#ifdef DEBUG
 	printf("SUCCESS: create_Sub_Matrix - get K and M\n");
 	#endif
-	/*set_1_norm(Bg);*/
-	Bg->one_norm=B->one_norm;
+	set_1_norm(Bg);
+	/*Bg->one_norm=B->one_norm;*/
 	#ifdef DEBUG
 	printf("SUCCESS: create_Sub_Matrix\n");
 	#endif
@@ -248,7 +250,6 @@ modMat* allocate_mod_mat(num n){
 	
 	rep->spmatSize=(int_vector)malloc(n*sizeof(num));
 	VERIFY(rep->spmatSize != NULL,MEM_ALLOC_ERROR)
-	
 	
 	rep->g=(Subgroup)malloc(n*sizeof(num));
 	VERIFY(rep->g != NULL,MEM_ALLOC_ERROR)
