@@ -59,20 +59,23 @@ double sum_of_abs(double *row, num n){
 
 /* helping function, populate resK and resM with sub-vector K and M aligned with the subgroup g*/
 void compute_K_and_currM(modMat *Bg, int_vector K, Subgroup g, num gSize){
-    int_vector Kg = (int_vector)malloc(sizeof(num) * gSize), p, q;
+    int_vector Kg = (int_vector)malloc(sizeof(num) * gSize);
+	int_vector p, q;
     num Mg = 0;
+
 	VERIFY(Kg!=NULL, MEM_ALLOC_ERROR)
+
 	for (p=Bg->g, q=g; p<Bg->g+gSize; p++, q++)
 		*p=*q;
-	q=Bg->g;
-    for (p = Kg ; p < gSize + Kg ; p++){
+	
+    for (p = Kg, q=Bg->g ; p < gSize + Kg ; p++, q++){
         *p = K[*q];
         Mg += *p;
-        q++;
     }
+	
 	for (p=Bg->K, q=Kg; p<Bg->K+gSize; p++, q++)
 		*p=*q;
-    /*Bg->K = Kg;*/
+	
     Bg->currM = Mg;
 }
 

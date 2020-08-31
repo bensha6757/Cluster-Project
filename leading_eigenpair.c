@@ -64,7 +64,8 @@ void power_iteration(modMat *Bg, vector v, vector result){
 void leading_eigenpair(modMat *Bg, vector *leadEigenVec, scalar *leadEigenVal){
 	num iter=0, gSize = Bg->gSize;
 	num loops_limit = (num)pow(gSize,2); /*There are about O(N^2) Power iterations for a matrix of size N */
-	vector bprev, bnext, p, q;
+	vector bprev, bnext;
+	/*vector p, q;*/
 	
 	#ifdef DEBUG
 	printf("BEGIN: leading_eigenpair\n");
@@ -79,9 +80,7 @@ void leading_eigenpair(modMat *Bg, vector *leadEigenVec, scalar *leadEigenVal){
 
 	iter++;
 	while (!is_within(bprev, bnext, gSize) && iter < loops_limit){
-		for (p=bprev, q=bnext; p<bprev+gSize; p++,q++)
-			*p=*q;
-		/*memcpy(bprev, bnext, gSize * sizeof(double));*/
+		memcpy(bprev, bnext, gSize * sizeof(double));
 		power_iteration(Bg, bprev, bnext);
 		iter++;
 		/*VERIFY(iter < 1000 * gSize,INFINITE_LOOP_ERROR)*/
@@ -91,9 +90,8 @@ void leading_eigenpair(modMat *Bg, vector *leadEigenVec, scalar *leadEigenVal){
 	#endif
 	*leadEigenVec = (vector)malloc(gSize * sizeof(double));
 	VERIFY(*leadEigenVec!=NULL, MEM_ALLOC_ERROR)
-	for (p=*leadEigenVec, q=bnext; p<*leadEigenVec+gSize; p++,q++)
-		*p=*q;
-	/*memcpy(*leadEigenVec,bnext,gSize * sizeof(double));*/
+	memcpy(*leadEigenVec,bnext,gSize * sizeof(double));
+	
 	/* The leading eigenvalue is a 1-norm shifted dominant eigenvalue*/
 	*leadEigenVal = approx_dom_eigen_val(Bg,bprev,bnext) - (Bg->one_norm);
 	free(bnext);

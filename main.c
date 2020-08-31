@@ -7,16 +7,13 @@ void runClusterProject(char* inputFileName, char* outputFileName){
 	modMat *mat=NULL;
 	Subgroup g;
 	Stack *O;
-	num *p,*q;
 	load_input_file(inputFileName,&mat); /* reading input */
 	#ifdef DEBUG
 	printf("SUCCESS: load_input_file\n");
 	#endif
 	g = (Subgroup)malloc(mat->gSize * sizeof(num));
 	VERIFY(g!=NULL,MEM_ALLOC_ERROR)
-	for (p=g, q=mat->g; p<g+mat->gSize; p++,q++)
-		*p=*q;
-	/*memcpy(g, mat->g, mat->gSize * sizeof(num));*/
+	memcpy(g, mat->g, mat->gSize * sizeof(num));
 	O = div_into_mod_groups(mat, g, mat->gSize); /* calling Algorithm 3 */
 	#ifdef DEBUG
 	printf("SUCCESS: div_into_mod g\n");
