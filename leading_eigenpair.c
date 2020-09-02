@@ -23,13 +23,15 @@ void set_rand_vector(vector v, num n){
 	#endif
 }
 
-/*	Approximate dominant eigen value of matrix B, using vectors computed in last power iteration */
+/**	Approximate dominant eigen value of matrix B, 
+ * 	using vectors computed in last power iteration, according to:
+ *  beta_1 = (Ab_k * b_k) / ||b_k||^2.
+ **/
 double approx_dom_eigen_val(modMat *B, vector bprev, vector bnext){
 	num gSize=B->gSize;
 	double d;
-	B->mult(B,bnext,bprev,SHIFT);
-	d = l2_norm(bnext,gSize);
-	/*return dot_prod(bnext,bprev,gSize) / dot_prod(bprev,bprev,gSize);*/
+	B->mult(B, bnext, bprev, SHIFT);
+	d = l2_norm(bnext, gSize);
 	return dot_prod(bnext,bprev,gSize)/(d*d);
 }
 
@@ -62,41 +64,41 @@ void power_iteration(modMat *Bg, vector v, vector result){
 	#endif
 }
 
-/*
- * Compute leading eigen pair of modularity Matrix B_hat[g].
- */
+
+
 void leading_eigenpair(modMat *Bg, vector *leadEigenVec, scalar *leadEigenVal){
 	num iter=0, gSize = Bg->gSize;
 	num loops_limit = (num)pow(gSize,2); /*There are about O(N^2) Power iterations for a matrix of size N */
 	vector bprev, bnext;
-	/*vector p, q;*/
 	
 	#ifdef DEBUG_EIGEN
 	printf("BEGIN: leading_eigenpair\n");
 	#endif
-	bprev = (vector)malloc(gSize * sizeof(double));
+
+	bprev = (vector)malloc(gSize * sizeof(scalar));
 	VERIFY(bprev!=NULL,MEM_ALLOC_ERROR)
-	bnext = (vector)malloc(gSize * sizeof(double));
+	bnext = (vector)malloc(gSize * sizeof(scalar));
 	VERIFY(bnext!=NULL,MEM_ALLOC_ERROR)
 
-	srand(time(NULL));
 	set_rand_vector(bnext, gSize);
 
 	do {
-		memcpy(bprev, bnext, gSize * sizeof(double));
+		memcpy(bprev, bnext, gSize * sizeof(scalar));
 		power_iteration(Bg, bprev, bnext);
-		iter++;
-		/*VERIFY(iter < 1000 * gSize,INFINITE_LOOP_ERROR)*/
-	} while (!is_within(bprev, bnext, gSize) && iter < loops_limit);
+		/*VERIFY(iter < loops_limit ,INFINITE_LOOP_ERROR)*/
+	} while (!is_within(bprev, bnext, gSize) && iter++ < loops_limit);
+
 	#ifdef DEBUG_EIGEN
 		printf("# of power iterations: %d\n", (int)iter);
 	#endif
-	*leadEigenVec = (vector)malloc(gSize * sizeof(double));
+
+	*leadEigenVec = (vector)malloc(gSize * sizeof(scalar));
 	VERIFY(*leadEigenVec!=NULL, MEM_ALLOC_ERROR)
-	memcpy(*leadEigenVec,bnext,gSize * sizeof(double));
+	memcpy(*leadEigenVec, bnext, gSize * sizeof(scalar));
 
 	/* The leading eigenvalue is a 1-norm shifted dominant eigenvalue*/
 	*leadEigenVal = approx_dom_eigen_val(Bg,bprev,bnext) - (Bg->one_norm);
+	
 	free(bnext);
 	free(bprev);
 	#ifdef DEBUG_EIGEN

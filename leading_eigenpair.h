@@ -13,14 +13,18 @@
 
 #define IS_POSITIVE(X) ((X) > 0.00001)
 
+
 /**
- * Compute leading eigen pair of modularity Matrix B_hat[g]
+ * Compute dot product of two vectors of length d.
+ */
+double dot_prod(vector v, vector u, num d);
+
+/** Compute leading eigen pair of modularity Matrix B_hat[g], and store results in referenced pointers.
+ * @param Bg - a modularity matrix.
+ * @param leadEigenVec - the address in memory to store the leading eigenvector (vector) in.
+ * @param leadEigenVal - the address in memory to store the leading eigenvalue (scalar) in.
  */
 void leading_eigenpair(modMat *Bg, vector *leadEigenVec, scalar *leadEigenVal);
 
-/**
- * Compute dot product of two vectors of length d
- */
-double dot_prod(vector v, vector u, num d);
 
 #endif /* LEADING_EIGENPAIR_H_ */

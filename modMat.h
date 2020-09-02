@@ -22,7 +22,7 @@ typedef struct _modmat {
 	int_vector spmatSize; 	/* a vector of the spmat rows sizes for internal use */
 	int_vector K; 			/* Compact representation of degrees-product matrix (k_i * k_j / M) */
 	num M;					/* Total sum of degrees in the network*/
-	num currM;				/* Total sum of degrees in sub-network defined by g */
+	num currM;				/* Total sum of degrees in sub-network defined by some Subgroup g */
 	num gSize;	 			/* Size of matrix, for any Subgroup g it is reduced to */
 	double one_norm;		/* The 1-norm of the matrix, i.e. max_i(sum_j(|B_ij|)) */ 
 
