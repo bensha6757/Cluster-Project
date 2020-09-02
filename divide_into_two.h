@@ -7,10 +7,7 @@
 #include "Types.h"
 #include <stdio.h>
 #include <stdlib.h>
-
-#define INITIAL_Q -1
-
-typedef enum divres_t {
+typedef enum div_res_t {
 	GROUP_INDIVISIBLE,
 	GROUP_DIVIDED
 } DIV_RESULT;
