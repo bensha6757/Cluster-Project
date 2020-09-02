@@ -21,7 +21,7 @@ vector convert_adj_list(int_vector adj, num adj_len, num n){
 
 
 
-num read_network_size_from_file(FILE *input, num *edges_num){
+num read_network_size_from_file(FILE *input, num *deg_sum){
 	num n, i, k, *tmp, cnt=0;
 	VERIFY(fread(&n,sizeof(int),1,input) == 1,FILE_READ_ERROR)
 	tmp=(int_vector)malloc(n*sizeof(num));
@@ -32,14 +32,15 @@ num read_network_size_from_file(FILE *input, num *edges_num){
 		VERIFY(fread(tmp,sizeof(int),k,input) == k,FILE_READ_ERROR)
 		cnt+=k;
 	}
-	*edges_num=cnt/2; /*Assuming sum_v(deg(v))==2*|E| */
+	*deg_sum=cnt; /*Assuming sum_v(deg(v))==2*|E| */
 	free(tmp);
 	rewind(input);
 	return n;
 }
 
+/* Read an open input file into previously allocated modMat B */
 void load_mod_matrix_from_file(FILE *input, modMat *B){
-	int_vector K=B->K, g=B->g, sp=B->spmatSize, neighbours;
+	int_vector K=B->K, sp=B->spmatSize, neighbours;
 	num k_i, i;
 	vector matLine=NULL;
 	VERIFY(fread(&i,sizeof(num),1,input) == 1, FILE_READ_ERROR)  /*Assuming file rewinded, skip |V| */
@@ -51,7 +52,6 @@ void load_mod_matrix_from_file(FILE *input, modMat *B){
 		VERIFY(fread(neighbours,sizeof(num), k_i, input) == k_i, FILE_READ_ERROR)
 		matLine=convert_adj_list(neighbours, k_i, B->gSize);
 		B->A->add_row(B->A,matLine,i);
-		*(g++)=i; /*Fill g subgroup array with 0,1,2,...,n */
 		*(K++)=k_i;
 		*(sp++)=k_i;
 		B->M+=k_i;
@@ -68,16 +68,20 @@ void load_mod_matrix_from_file(FILE *input, modMat *B){
 void load_input_file(char* filename, modMat **mat){
 	num N, M;
 	FILE* inputFile = fopen(filename,"r");
+	VERIFY(inputFile != NULL, FILE_NOT_FOUND_ERROR)
 	N=read_network_size_from_file(inputFile, &M);
-	*mat = allocate_mod_mat(N);
+	*mat = allocate_mod_mat(N, M);
 	load_mod_matrix_from_file(inputFile, *mat);
 	fclose(inputFile);
+	#ifdef DEBUG
+	printf("SUCCESS: load_input_file\n");
+	#endif
 }
 
 void generate_output_file(Stack *O, char *outputPath){
     FILE *out = fopen(outputPath, "w"); /*file should be open for write in main*/
     Snode *node = O->top;
-    VERIFY(out != NULL, FILE_WRITE_ERROR)
+    VERIFY(out != NULL, FILE_NOT_FOUND_ERROR)
 	VERIFY(fwrite(&(O->size), sizeof(num), 1, out) == 1, FILE_WRITE_ERROR)
     while(node != NULL){
         VERIFY(fwrite(&(node->sizeG),sizeof(num),1, out) == 1, FILE_WRITE_ERROR)
