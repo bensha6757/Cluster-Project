@@ -8,28 +8,38 @@ typedef struct linked_list {
 
 typedef struct linked_list Node;
 
+
+ /************ DEPRECATED ************/
+
+ /*
 void get_basis_unit_vec(vector *e_i, num i, num n){
 	*e_i=(vector)calloc(n,sizeof(double));
 	VERIFY(e_i!=NULL,MEM_ALLOC_ERROR)
 	*(*e_i+i)=1;
 }
+*/
 
-/** 
- * 	Generic get_row for spmat, independently of implementation (lists or arrays).
- * 	Utilizes A->mult with a standard vector (v[j]==1 if i=j, else v[j]==0).	 
+
+/** GENERIC FUNCTION, INDEP. OF SPMAT IMPL.
+ *  Fetch row i of spmat A, by utilizing A->mult with a standard vector (v[j]==1 if i=j, else v[j]==0)
  */
+
+/*
 void get_spmat_row_generic(const struct _spmat *A, int i, double *row){
 	vector e_i;
-	#ifdef DEBUG
+	#ifdef DEBUG_SPMAT
 	printf("BEGIN: get_spmat_row_generic=%d\n", i);
 	#endif
 	get_basis_unit_vec(&e_i, i, A->n);
 	A->mult(A,e_i,row);
 	free(e_i);
-	#ifdef DEBUG
+	#ifdef DEBUG_SPMAT
 	printf("SUCCESS: get_spmat_row_generic=%d\n", i);
 	#endif
 }
+*/
+
+/*** LINKED LIST MATRIX IMPLEMENTATION ***/
 
 void get_row_linked(const struct _spmat *A, int i, vector row){
 	Node **mat = (Node**)(A->private), *head;
@@ -91,7 +101,7 @@ spmat* create_sub_sparse_matrix_linked(spmat *A, Subgroup g, int n , int_vector 
 	spmat *sub = spmat_allocate_list(n);
 	Node **subMat = sub->private, **AMat = A->private, *AHead, *subHead, *tmp;
 	Subgroup row;
-	#ifdef DEBUG
+	#ifdef DEBUG_SPMAT
 	printf("BEGIN: create_sub_sparse_matrix_linked of size %d\n",n);
 	#endif
 	for (row = g ; row < g + n ; row++){
@@ -111,7 +121,7 @@ spmat* create_sub_sparse_matrix_linked(spmat *A, Subgroup g, int n , int_vector 
 		free(tmp);
 		*(subMat++) = subHead;
 	}
-	#ifdef DEBUG
+	#ifdef DEBUG_SPMAT
 	printf("SUCCESS: create_sub_sparse_matrix_linked of size %d\n",n);
 	#endif
 	return sub;
@@ -168,7 +178,7 @@ void mult_linked(const struct _spmat *A, const double *v, double *result){
 	Node **mat = (Node**)(A->private);
 	DATA *resPtr = result;
 	int n = A->n, i;
-	#ifdef DEBUG2
+	#ifdef DEBUG_SPMAT
 	printf("BEGIN: mult_linked of size %d\n",n);
 	#endif
 	for (i = 0; i < n ; i++){
@@ -181,7 +191,7 @@ void mult_linked(const struct _spmat *A, const double *v, double *result){
 		resPtr++;
 		mat++;
 	}
-	#ifdef DEBUG2
+	#ifdef DEBUG_SPMAT
 	printf("SUCCESS: mult_linked of size %d\n",n);
 	#endif
 }
@@ -216,13 +226,12 @@ spmat* spmat_allocate_list(int n){
 	A->free = free_linked;
 	A->mult = mult_linked;
 	A->get_row = get_row_linked;
-	/*A->get_row =  get_spmat_row_generic;*/
 	A->private =  (Node**) malloc (sizeof(Node*) * (A->n));
 	VERIFY(A->private != NULL,MEM_ALLOC_ERROR)
 	return A;
 }
 
-/*** ARRAY MATRIX IMPLEMENTATION - TO BE DELETED OR MODIFIED ***/
+/*** ARRAY MATRIX IMPLEMENTATION ***/
 
 typedef struct _arrmat
 {
@@ -260,7 +269,6 @@ void add_row_arrays(struct _spmat *A, const double *row, int i)
 	*(rp+1)=*rp+rowNNZ;
 }
 
-/* private implementation of spmat get_row based on arrays representation */
 void get_row_arrays(const struct _spmat *A, int i, double *row){
 	arraymat *imp=((arraymat*)(A->private));
 	double *p, *v=imp->values+*(imp->rowptr+i);
@@ -310,7 +318,7 @@ spmat* spmat_allocate_array(int n, int nnz)
 	spmat *ret=(spmat*)malloc(sizeof(spmat));
 	arraymat *imp=(arraymat*)malloc(sizeof(arraymat));
 	VERIFY(ret != NULL,MEM_ALLOC_ERROR)
-	VERIFY(imp == NULL,MEM_ALLOC_ERROR)
+	VERIFY(imp != NULL,MEM_ALLOC_ERROR)
 	imp->values = (scalar*)malloc(nnz*sizeof(scalar));
 	VERIFY(imp->values != NULL,MEM_ALLOC_ERROR)
 	imp->colind = (int*)malloc(nnz*sizeof(int));
@@ -326,20 +334,101 @@ spmat* spmat_allocate_array(int n, int nnz)
 	return ret;
 }
 
-num get_sub_matrix_nnz_arrays(spmat *A, Subgroup g, int sizeG){
-	arraymat *imp=((arraymat*)(A->private));
-	int *cols=imp->colind, *t;
-	Subgroup p;
-	num cnt=0;
-	for (p=g; p<g+sizeG; p++){
-		for (t=cols; t<cols+A->n; t++)
-			cnt += ((int)*p)==*t ? 1 : 0;
+num get_g_row_nnz_arrays(arraymat *orig, int i, Subgroup g, int sizeG){
+	int *r = orig->rowptr+i, *cols=orig->colind, *orig_c=cols+*r;
+	num cnt=0, row_nnz=*(r+1)-*r;
+	Subgroup p=g;
+	while (orig_c < cols + *r + row_nnz && p<g+sizeG)
+	if 		((int)*p < *orig_c)
+		p++;
+	else if ((int)*p > *orig_c)
+		orig_c++;
+	else{
+		cnt++;
+		p++;
+		orig_c++;
 	}
 	return cnt;
 }
 
+num get_g_nnz_arrays(spmat *A, Subgroup g, int sizeG, int_vector spmatSize){
+	arraymat *orig=((arraymat*)(A->private));
+	Subgroup p;
+	num cnt=0, k;
+	for (p=g; p<g+sizeG; p++){
+		k=get_g_row_nnz_arrays(orig,*p,g,sizeG);
+		spmatSize[p-g]=k;
+		cnt+=k;
+	}
+		
+	return cnt;
+} 
+
+void add_row_to_sub_arrays(arraymat *orig, int orig_i, arraymat *dest, int sub_i, Subgroup g, num sizeG){
+	num 	k=orig->rowptr[orig_i], orig_nnz=orig->rowptr[orig_i+1]-k;
+	int 	*c_orig=orig->colind+k;
+	double 	*v_orig=orig->values+k;
+	int 	*r_dest=dest->rowptr+sub_i;
+	int 	*c_dest=dest->colind, *c_p;
+	double 	*v_dest=dest->values;
+	Subgroup p=g;
+	#ifdef DEBUG_SPMAT
+	printf("BEGIN: add_row_to_sub_arrays orig %d to %d\n",orig_i,sub_i);
+	#endif
+
+	if (sub_i==0)
+		*r_dest=0;
+	else {
+		c_dest += *r_dest;
+		v_dest += *r_dest;
+	}
+	c_p=c_dest;
+	while(c_orig < orig->colind+k+orig_nnz && p < g+sizeG){
+		if ((num)*c_orig < *p){
+			c_orig++;
+			v_orig++;
+		}
+		else if ((num)*c_orig > *p){
+			p++;
+		}
+		else {
+			*(v_dest++)=*v_orig++;
+			*(c_p++)=p-g;
+			c_orig++;
+			p++;
+		}
+	}
+
+	*(r_dest+1)= *r_dest + (c_p-c_dest); 
+	#ifdef DEBUG_SPMAT
+	printf("SUCCESS: add_row_to_sub_arrays orig %d to %d\n",orig_i,sub_i);
+	#endif
+}
+
+
+spmat* create_sub_sparse_matrix_array(spmat *A, Subgroup g, int sizeG, int_vector spmatSize){
+	arraymat *orig=(arraymat*)(A->private), *imp;
+	spmat *sub;
+	Subgroup p;
+	num sub_nnz = get_g_nnz_arrays(A, g, sizeG, spmatSize);
+	#ifdef DEBUG_SPMAT
+	printf("sub_nnz = %d\n", sub_nnz);
+	#endif
+	sub=spmat_allocate_array(sizeG, sub_nnz);
+	imp=(arraymat*)(sub->private);
+	for (p=g; p<g+sizeG; p++)
+		add_row_to_sub_arrays(orig, *p, imp, p-g, g, sizeG);
+	#ifdef DEBUG_SPMAT
+	printf("SUCCESS: create_sub_sparse_matrix_array of size %d\n",sizeG);
+	#endif
+	return sub;
+}
+
+/************ DEPRECATED *************/
+
 /**
- * Can be used as a generic interface function of spmat module (for both impl.)
+ * GENERIC FUNCTION, INDEP. OF SPMAT IMPL.
+ * Fetch a reduced row i of A according to subgroup g and store it in dest.
  */
 void get_sub_row_generic(spmat *A, int i, double *dest, Subgroup g, num sizeG, int_vector spmatSize){
 	double *v, sub_ij;
@@ -354,9 +443,10 @@ void get_sub_row_generic(spmat *A, int i, double *dest, Subgroup g, num sizeG, i
 	}
 	free(v);
 }
-/* Creating a sub sparse matrix for Algorithm 2.
- * Can be used as a generic interface function of spmat module (for both impl.)
- */
+
+/** GENERIC FUNCTION, INDEP. OF SPMAT IMPL.
+ *  Create a sub sparse matrix for Algorithm 2.
+ */	
 spmat* create_sub_sparse_matrix_generic(spmat *A, Subgroup g, int n , int_vector spmatSize){
 	spmat *sub;
 	double *sub_row;
@@ -371,4 +461,3 @@ spmat* create_sub_sparse_matrix_generic(spmat *A, Subgroup g, int n , int_vector
 	free(sub_row);
 	return sub;
 }
-
