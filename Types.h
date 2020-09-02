@@ -8,10 +8,14 @@ typedef int_vector Subgroup;
 typedef int boolean;
 typedef double DATA;
 typedef double scalar;
-#define DEBUG
-#undef DEBUG
-#undef DEBUG2
 #define SHIFT 1
 #define NO_SHIFT 0
+
+
+#undef DEBUG_SPMAT
+#undef DEBUG_MODMAT
+#undef DEBUG_EIGEN
+#undef DEBUG_DIV_TWO
+#undef DEBUG
 
 #endif /* TYPES_H_ */
