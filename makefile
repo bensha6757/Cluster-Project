@@ -4,7 +4,7 @@ LIBS = -lm
 all: main.o
 	gcc main.o Divide_Into_Modularity_Groups.o IO.o Stack.o divide_into_two.o leading_eigenpair.o modMat.o spmat.o  -o cluster $(LIBS)
 clean:
-	rm -rf *.o run
+	rm -rf *.o cluster
 
 main.o: main.c Divide_Into_Modularity_Groups.o IO.o Stack.o 
 	gcc $(FLAGS) -c main.c
