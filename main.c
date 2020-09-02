@@ -26,10 +26,12 @@ int main(int argc, char* argv[]){
 	char* inputFileName=argv[1];
 	char* outputFileName=argv[2];
 	clock_t start, end;
+
 	#ifdef DEBUG
 	printf("Received file names: %s, %s\n",inputFileName,outputFileName);
 	#endif
 	VERIFY(argc - 1 == 2, MISSING_ARG_ERROR)
+	srand(time(NULL));
 	start = clock();
 	runClusterProject(inputFileName, outputFileName);
 	end = clock();
