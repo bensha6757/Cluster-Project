@@ -236,8 +236,8 @@ spmat* spmat_allocate_list(int n){
 typedef struct _arrmat
 {
 	scalar* values;
-	int* colind;
-	int* rowptr;
+	int_vector colind;
+	int_vector rowptr;
 } arraymat;
 
 void add_row_arrays(struct _spmat *A, const double *row, int i)
@@ -245,7 +245,7 @@ void add_row_arrays(struct _spmat *A, const double *row, int i)
 	arraymat *imp=((arraymat*)(A->private));
 	scalar *valOffset=imp->values;
 	const double *vecEntry;
-	int *colOffset=imp->colind, *rp=imp->rowptr+i, rowNNZ=0;
+	num *colOffset=imp->colind, *rp=imp->rowptr+i, rowNNZ=0;
 	VERIFY(i < A->n,OUT_OF_BOUNDS_ERROR)
 
 	/* Find the last position in values array that stores a valid non-zero value.
@@ -272,7 +272,7 @@ void add_row_arrays(struct _spmat *A, const double *row, int i)
 void get_row_arrays(const struct _spmat *A, int i, double *row){
 	arraymat *imp=((arraymat*)(A->private));
 	double *p, *v=imp->values+*(imp->rowptr+i);
-	int *src_col = imp->colind+*(imp->rowptr+i), dest_col;
+	num *src_col = imp->colind+*(imp->rowptr+i), dest_col;
 	for (p=row; p<row+A->n; p++){
 		dest_col=p-row;
 		if (dest_col==*src_col){
@@ -298,7 +298,7 @@ void free_arrays(struct _spmat *A)
 void mult_arrays(const struct _spmat *A, const double *v, double *result)
 {
 	arraymat *imp=((arraymat*)(A->private));
-	int *r, *j, rowNNZ;
+	num *r, *j, rowNNZ;
 	scalar sum, *u;
 	for (r=imp->rowptr; r<imp->rowptr+A->n; r++)
 	{
@@ -321,9 +321,9 @@ spmat* spmat_allocate_array(int n, int nnz)
 	VERIFY(imp != NULL,MEM_ALLOC_ERROR)
 	imp->values = (scalar*)malloc(nnz*sizeof(scalar));
 	VERIFY(imp->values != NULL,MEM_ALLOC_ERROR)
-	imp->colind = (int*)malloc(nnz*sizeof(int));
+	imp->colind = (int_vector)malloc(nnz*sizeof(num));
 	VERIFY(imp->colind != NULL,MEM_ALLOC_ERROR)
-	imp->rowptr = (int*)malloc((n+1)*sizeof(int));
+	imp->rowptr = (int_vector)malloc((n+1)*sizeof(num));
 	VERIFY(imp->rowptr != NULL,MEM_ALLOC_ERROR)
 	ret->n=n;
 	ret->get_row=get_row_arrays;
@@ -335,18 +335,18 @@ spmat* spmat_allocate_array(int n, int nnz)
 }
 
 num get_g_row_nnz_arrays(arraymat *orig, int i, Subgroup g, int sizeG){
-	int *r = orig->rowptr+i, *cols=orig->colind, *orig_c=cols+*r;
+	num *r = orig->rowptr+i, *cols=orig->colind, *orig_c=cols+*r;
 	num cnt=0, row_nnz=*(r+1)-*r;
 	Subgroup p=g;
 	while (orig_c < cols + *r + row_nnz && p<g+sizeG)
-	if 		((int)*p < *orig_c)
-		p++;
-	else if ((int)*p > *orig_c)
-		orig_c++;
-	else{
-		cnt++;
-		p++;
-		orig_c++;
+		if 		(*p < *orig_c)
+			p++;
+		else if (*p > *orig_c)
+			orig_c++;
+		else {
+			cnt++;
+			p++;
+			orig_c++;
 	}
 	return cnt;
 }
@@ -366,10 +366,10 @@ num get_g_nnz_arrays(spmat *A, Subgroup g, int sizeG, int_vector spmatSize){
 
 void add_row_to_sub_arrays(arraymat *orig, int orig_i, arraymat *dest, int sub_i, Subgroup g, num sizeG){
 	num 	k=orig->rowptr[orig_i], orig_nnz=orig->rowptr[orig_i+1]-k;
-	int 	*c_orig=orig->colind+k;
+	num 	*c_orig=orig->colind+k;
 	double 	*v_orig=orig->values+k;
-	int 	*r_dest=dest->rowptr+sub_i;
-	int 	*c_dest=dest->colind, *c_p;
+	num 	*r_dest=dest->rowptr+sub_i;
+	num		*c_dest=dest->colind, *c_p;
 	double 	*v_dest=dest->values;
 	Subgroup p=g;
 	#ifdef DEBUG_SPMAT
@@ -382,13 +382,14 @@ void add_row_to_sub_arrays(arraymat *orig, int orig_i, arraymat *dest, int sub_i
 		c_dest += *r_dest;
 		v_dest += *r_dest;
 	}
+
 	c_p=c_dest;
 	while(c_orig < orig->colind+k+orig_nnz && p < g+sizeG){
-		if ((num)*c_orig < *p){
+		if (*c_orig < *p){
 			c_orig++;
 			v_orig++;
 		}
-		else if ((num)*c_orig > *p){
+		else if (*c_orig > *p){
 			p++;
 		}
 		else {
