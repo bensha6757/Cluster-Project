@@ -11,7 +11,7 @@
 #include <math.h>
 #include "Types.h"
 
-#define USE_LINKED 1
+#define USE_SPMAT_LINKED 1
 
 
 /*
@@ -23,8 +23,7 @@ typedef struct _modmat {
 	int_vector K; 			/* Compact representation of degrees-product matrix (k_i * k_j / M) */
 	num M;					/* Total sum of degrees in the network*/
 	num currM;				/* Total sum of degrees in sub-network defined by g */
-	num gSize;	 			/* Size of subgroup g  */
-	Subgroup g; 			/* Array of relevant indices of submatrix */
+	num gSize;	 			/* Size of matrix, for any Subgroup g it is reduced to */
 	double one_norm;		/* The 1-norm of the matrix, i.e. max_i(sum_j(|B_ij|)) */ 
 
 	/*free all resources used by ModMat instance */
@@ -41,13 +40,13 @@ typedef struct _modmat {
 } modMat;
 
 /* Allocate a new, empty instance of Modularity Matrix */
-modMat *allocate_mod_mat(num n);
+modMat *allocate_mod_mat(num n, num m);
 
 /* constructor, creating a new sub matrix B_hat[g]. 
  * 
  * If impl_flag==1, uses linked-list implementation. Otherwise, use arrays impl.
  */
-modMat *create_Sub_Matrix(modMat *B, Subgroup g, num sizeG, boolean use_linked_impl);
+modMat *create_Sub_Matrix(modMat *B, Subgroup g, num sizeG);
 
 /* Computes and sets 1-norm of B, i.e. max_i(sum_j(abs(B_ij))) */
 void set_1_norm(modMat *B);
