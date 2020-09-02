@@ -5,20 +5,16 @@
 
 void runClusterProject(char* inputFileName, char* outputFileName){
 	modMat *mat=NULL;
-	Subgroup g;
+	Subgroup g, p;
 	Stack *O;
 	load_input_file(inputFileName,&mat); /* reading input */
-	#ifdef DEBUG
-	printf("SUCCESS: load_input_file\n");
-	#endif
 	g = (Subgroup)malloc(mat->gSize * sizeof(num));
 	VERIFY(g!=NULL,MEM_ALLOC_ERROR)
-	memcpy(g, mat->g, mat->gSize * sizeof(num));
+	for (p=g; p<g+mat->gSize; p++)
+		*p=p-g;
 	O = div_into_mod_groups(mat, g, mat->gSize); /* calling Algorithm 3 */
-	#ifdef DEBUG
-	printf("SUCCESS: div_into_mod g\n");
-	#endif
 	mat->free(mat);
+	/*free(g);*/
 	generate_output_file(O, outputFileName); /* writing result to file */
 	delete_Stack(O);
 	#ifdef DEBUG
@@ -33,10 +29,10 @@ int main(int argc, char* argv[]){
 	#ifdef DEBUG
 	printf("Received file names: %s, %s\n",inputFileName,outputFileName);
 	#endif
-	VERIFY(argc - 1 == 2, FILE_READ_ERROR)
+	VERIFY(argc - 1 == 2, MISSING_ARG_ERROR)
 	start = clock();
 	runClusterProject(inputFileName, outputFileName);
 	end = clock();
 	printf("Execution took %f seconds\n", ((double)(end-start) / CLOCKS_PER_SEC));
-	return 0;
+	return SUCCESS;
 }
