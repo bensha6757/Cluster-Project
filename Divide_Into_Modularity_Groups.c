@@ -18,6 +18,7 @@ void add_to_stacks(Stack* P, Stack* O, num sizeG, num sizeG1, num sizeG2, Subgro
 		else{
 			push(P, g2, sizeG2);
 		}
+		free(g);
 	}
 }
 
@@ -42,8 +43,8 @@ Stack* div_into_mod_groups(modMat* B, Subgroup g, num sizeG){
 	VERIFY(P != NULL,MEM_ALLOC_ERROR)
 	VERIFY(O != NULL,MEM_ALLOC_ERROR)
 	init(P);
-	init(O); /* initializing O to be empty */
-	push(P,g,sizeG); /* starting with a trivial division into one group */
+	init(O); 			/* initializing O to be empty */
+	push(P,g,sizeG); 	/* starting with a trivial division into one group */
 	while (!isEmpty(P)){
 		#ifdef DEBUG
 		printf("Alg 3  - NEW ITER\n");
