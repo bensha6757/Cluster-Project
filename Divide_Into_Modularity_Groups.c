@@ -3,19 +3,23 @@
 
 void add_to_stacks(Stack* P, Stack* O, num sizeG, num sizeG1, num sizeG2, Subgroup g1, Subgroup g2, Subgroup g){
 	if (sizeG1 == 0 || sizeG2 == 0){
-			push(O, g, sizeG);
+		push(O, g, sizeG);
+		if (sizeG1 > 0)
+			free(g1);
+		if (sizeG2 > 0)
+			free(g2);
 	}
-	else{
+	else {
 		if (sizeG1 == 1){
 			push(O, g1, sizeG1);
 		}
-		else{
+		else {
 			push(P, g1, sizeG1);
 		}
 		if (sizeG2 == 1){
-			push(O, g2, sizeG2);
+			push(O, g2, sizeG2);;
 		}
-		else{
+		else {
 			push(P, g2, sizeG2);
 		}
 		free(g);
