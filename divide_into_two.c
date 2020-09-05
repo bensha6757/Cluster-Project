@@ -15,38 +15,46 @@ double get_modularity_init(modMat *B, vector s, vector Bs, boolean given_Bs){
 	return Q;
 }
 
+void modify_Bs(modMat *B, vector Bs, int i, int sgn){
+	num gSize=B->gSize;
+	vector Bi, p;
+
+	Bi=(vector)malloc(gSize*sizeof(double));
+	VERIFY(Bi!=NULL,MEM_ALLOC_ERROR)
+	B->get_row(B, i, Bi);
+
+	for (p=Bs ; p < Bs + gSize ; p++, Bi++)
+		*p += (sgn * 2 * (*Bi));
+}
+
+
 /* Compute Modularity of B[g]_hat: 0.5 * s^T * B[g]_hat * s w.r.t to a moved vertex moved_v.
  * Recieves a pre-computed matrix-vector prodcut B*s, and the vector s itself.
  */
 double get_modularity_moved(modMat *B, vector s, vector Bs, num moved_v){
-	double Q, *p;
+	double Q;
 	int sgn=0;
-	vector Bi, Bs_mod, Bs_orig;
+	vector Bs_mod;
 	num gSize = B->gSize;
 	#ifdef DEBUG_DIV_TWO
 	printf("BEGIN: get_modularity_moved for %d\n", moved_v);
 	#endif
 
-	Bi=(vector)malloc(gSize*sizeof(double));
-	VERIFY(Bi!=NULL,MEM_ALLOC_ERROR)
-	B->get_row(B, moved_v, Bi);
-	
 	Bs_mod=(vector)malloc(gSize*sizeof(double));
 	VERIFY(Bs_mod!=NULL,MEM_ALLOC_ERROR)
+	memcpy(Bs_mod, Bs, gSize*sizeof(double));
 
 	s[moved_v] *= -1;
 	sgn=s[moved_v];
 
-	for (p=Bs_mod, Bs_orig = Bs ; p < Bs_mod + gSize ; p++, Bi++, Bs_orig++)
-		*p = *(Bs_orig) + (sgn * 2 * (*Bi));
+	modify_Bs(B, Bs_mod, moved_v, sgn);
 
-	Q = dot_prod(Bs_mod,s,gSize);
+	Q = dot_prod(s, Bs_mod, gSize);
 
 	/* Restore s to initial state */
 	s[moved_v] *= -1;
 
 	free(Bs_mod);
-	free(Bi-gSize);
 
 	#ifdef DEBUG_DIV_TWO
 	printf("SUCCESS: get_modularity_moved = %f for %d\n",Q, moved_v);
@@ -54,6 +62,30 @@ double get_modularity_moved(modMat *B, vector s, vector Bs, num moved_v){
 	return Q;
 }
 
+double BEN_get_modularity_moved(modMat *Bg, vector s, vector Bs, num moved_v){
+	double Q = 0;
+	int sgn = 0;
+	vector Bi, Bs_orig, s_i;
+	num gSize = Bg->gSize;
+
+	Bi=(vector)malloc(gSize*sizeof(double));
+	VERIFY(Bi!=NULL,MEM_ALLOC_ERROR)
+	Bg->get_row(Bg,moved_v,Bi);
+
+	s[moved_v] *= -1;
+	sgn = s[moved_v];
+
+	for (s_i = s, Bs_orig = Bs ; Bs_orig < Bs + gSize ; s_i++, Bi++, Bs_orig++){
+		Q += ((*Bs_orig + (sgn * 2 * (*Bi))) * (*s_i));
+	}
+
+	/* Restore s to initial state */
+	s[moved_v] *= -1;
+
+	free(Bi-gSize);
+
+	return Q;
+}
 
 /** Based on lines 2-20 in Alg. 4 pseudo-code .
  */
@@ -243,10 +275,11 @@ void optimize_division_mod(modMat *Bg, vector *s, vector Bs){
 void move_maximal_score_vertex_mod_2(modMat *Bg, vector *s, vector Bs, int_vector indices, double *maxImprove, num *maxImpInd) {
 	vector s_ptr = *s;
 	num *moved=NULL;
-	num i, j, maxi = 0, gSize = Bg->gSize;
-	double Q_0, Q_t, maxScore=0, tmpImprove=0;
+	num i, k, maxi = 0, gSize = Bg->gSize;
+	double Q_0, Q_t, maxScore = -DBL_MAX, tmpImprove=0;
+	
 	#ifdef DEBUG_DIV_TWO
-	printf("BEGIN: STEP 1 - optimize_division_original\n");
+	printf("BEGIN: STEP 1 - optimize_division_original_mod_2\n");
 	#endif
 
 	/* line 2 in Alg. 4 PsCode - a hash set of boolean values, s.t. 
@@ -259,31 +292,32 @@ void move_maximal_score_vertex_mod_2(modMat *Bg, vector *s, vector Bs, int_vecto
 		Q_0 = get_modularity_init(Bg, s_ptr, Bs, TRUE);
 		maxi=0;
 		maxScore = -DBL_MAX;
-		for (j=0; j<gSize; j++){
-			if (!getFlag(moved, gSize, j)) {
-				Q_t = get_modularity_moved(Bg, s_ptr, Bs, j) - Q_0;
+		for (k=0; k<gSize; k++){
+			if (!getFlag(moved, gSize, k)) {
+				Q_t = BEN_get_modularity_moved(Bg, s_ptr, Bs, k) - Q_0;
 				if (Q_t > maxScore){
 					maxScore = Q_t;
-					maxi = j;
+					maxi = k;
 				}
 			}
 		}
-		/* lines 12-13 in Alg. 4 PsCode */
+		/* line 12-13 in Alg. 4 PsCode */
 		s_ptr[maxi] *= -1;
 		*(indices++)  = maxi;
-		/* line 19 in Alg. 4 PsCode */
-		setFlag(moved, gSize, maxi);
-		
+		modify_Bs(Bg, Bs, maxi , s_ptr[maxi]);
+
+		/* line 14-18 in Alg. 4 PsCode */
 		tmpImprove += maxScore;
 		if (tmpImprove > *maxImprove){
 			*maxImprove = tmpImprove;
 			*maxImpInd = i;
 		}
+		/* line 19 in Alg. 4 PsCode */
+		setFlag(moved, gSize, maxi);
 	}
 	free(moved);
-	
 	#ifdef DEBUG_DIV_TWO
-	printf("SUCCESS: STEP 1 - optimize_division_original\n");
+	printf("SUCCESS: STEP 1 - optimize_division_original_mod_2\n");
 	#endif
 }
 
@@ -296,7 +330,7 @@ void optimize_division_mod_2(modMat *Bg, vector *s, vector Bs){
 	vector s_ptr = *s;
 	int_vector indices, j;
 	num maxImpInd=0, iter=0, gSize = Bg->gSize;
-	double deltaQ=0, lastDeltaQ=0, maxImprove;
+	double deltaQ=0, lastDeltaQ=0, maxImprove=-DBL_MAX;
 	
 	indices=(int_vector)malloc(gSize*sizeof(num));
 	VERIFY(indices!=NULL, MEM_ALLOC_ERROR)
@@ -314,8 +348,8 @@ void optimize_division_mod_2(modMat *Bg, vector *s, vector Bs){
 		deltaQ = (maxImpInd == gSize-1) ? 0 : maxImprove;
 
 		/* VERIFY(iter < gSize, INFINITE_LOOP_ERROR) */
-	} while (IS_POSITIVE(deltaQ) && IS_POSITIVE(fabs(deltaQ-lastDeltaQ)) && iter++ < gSize);
-	#ifndef DEBUG_DIV_TWO
+	} while (IS_POSITIVE(deltaQ) && IS_POSITIVE(fabs(deltaQ-lastDeltaQ)) && ++iter < gSize);
+	#ifdef DEBUG_DIV_TWO
 	printf("SUCCESS: optimize_division_mod for gSize=%d after %d iter with dQ=%f.\n",gSize, iter, deltaQ);
 	#endif
 	free(indices);
