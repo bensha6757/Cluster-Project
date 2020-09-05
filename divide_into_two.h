@@ -5,13 +5,15 @@
 #include "modMat.h"
 #include "leading_eigenpair.h"
 #include "Types.h"
+#include "HashSet.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <float.h>
 typedef enum div_res_t {
 	GROUP_INDIVISIBLE,
 	GROUP_DIVIDED
 } DIV_RESULT;
 
-DIV_RESULT div_into_two(modMat *B,Subgroup g, num sizeG, Subgroup *g1, Subgroup *g2, num *sizeG1, num *sizeG2);
+DIV_RESULT divide_into_two(modMat *B,Subgroup g, num sizeG, Subgroup *g1, Subgroup *g2, num *sizeG1, num *sizeG2);
 
 #endif /* DIV_INTO_TWO_H_ */
