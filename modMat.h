@@ -11,7 +11,7 @@
 #include <math.h>
 #include "Types.h"
 
-#define USE_SPMAT_LINKED 1
+#define USE_SPMAT_LINKED 0
 
 
 /*

@@ -11,18 +11,18 @@ typedef struct linked_list Node;
 
  /************ DEPRECATED ************/
 
- /*
+ 
 void get_basis_unit_vec(vector *e_i, num i, num n){
 	*e_i=(vector)calloc(n,sizeof(double));
 	VERIFY(e_i!=NULL,MEM_ALLOC_ERROR)
 	*(*e_i+i)=1;
 }
-*/
+
 
 
 /** GENERIC FUNCTION, INDEP. OF SPMAT IMPL.
  *  Fetch row i of spmat A, by utilizing A->mult with a standard vector (v[j]==1 if i=j, else v[j]==0)
- */
+*/
 
 /*
 void get_spmat_row_generic(const struct _spmat *A, int i, double *row){
