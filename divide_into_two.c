@@ -33,28 +33,25 @@ void modify_Bs(modMat *B, vector Bs, int i, int sgn){
  */
 double get_modularity_moved(modMat *B, vector s, vector Bs, num moved_v){
 	double Q;
-	int sgn=0;
-	vector Bs_mod;
+	vector Bs_copy;
 	num gSize = B->gSize;
 	#ifdef DEBUG_DIV_TWO
 	printf("BEGIN: get_modularity_moved for %d\n", moved_v);
 	#endif
 
-	Bs_mod=(vector)malloc(gSize*sizeof(double));
-	VERIFY(Bs_mod!=NULL,MEM_ALLOC_ERROR)
-	memcpy(Bs_mod, Bs, gSize*sizeof(double));
+	Bs_copy=(vector)malloc(gSize*sizeof(double));
+	VERIFY(Bs_copy!=NULL,MEM_ALLOC_ERROR)
+	memcpy(Bs_copy, Bs, gSize*sizeof(double));
 
 	s[moved_v] *= -1;
-	sgn=s[moved_v];
 
-	modify_Bs(B, Bs_mod, moved_v, sgn);
-
-	Q = dot_prod(s, Bs_mod, gSize);
+	modify_Bs(B, Bs_copy, moved_v, (int)s[moved_v]);
+	Q = dot_prod(s, Bs_copy, gSize);
 
 	/* Restore s to initial state */
 	s[moved_v] *= -1;
 
-	free(Bs_mod);
+	free(Bs_copy);
 
 	#ifdef DEBUG_DIV_TWO
 	printf("SUCCESS: get_modularity_moved = %f for %d\n",Q, moved_v);
@@ -261,7 +258,7 @@ void optimize_division_mod(modMat *Bg, vector *s, vector Bs){
 		deltaQ = (maxImpInd == gSize-1) ? 0 : maxImprove;
 
 		/* VERIFY(iter < gSize, INFINITE_LOOP_ERROR) */
-	} while (IS_POSITIVE(deltaQ) && IS_POSITIVE(fabs(deltaQ-lastDeltaQ)) && iter++ < gSize);
+	} while (IS_POSITIVE(deltaQ) && IS_POSITIVE(fabs(deltaQ-lastDeltaQ)) && ++iter < gSize);
 	#ifndef DEBUG_DIV_TWO
 	printf("SUCCESS: optimize_division_mod for gSize=%d after %d iter with dQ=%f.\n",gSize, iter, deltaQ);
 	#endif
@@ -306,7 +303,7 @@ void move_maximal_score_vertex_mod_2(modMat *Bg, vector *s, vector Bs, int_vecto
 		*(indices++)  = maxi;
 		modify_Bs(Bg, Bs, maxi , s_ptr[maxi]);
 
-		/* line 14-18 in Alg. 4 PsCode */
+		/* line 14-18, 21 in Alg. 4 PsCode */
 		tmpImprove += maxScore;
 		if (tmpImprove > *maxImprove){
 			*maxImprove = tmpImprove;
