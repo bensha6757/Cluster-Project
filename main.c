@@ -5,21 +5,27 @@
 
 void runClusterProject(char* inputFileName, char* outputFileName){
 	modMat *mat=NULL;
-	Subgroup g, p;
+	Subgroup g, g_i;
 	Stack *O;
+	num i, gSize;
 	load_input_file(inputFileName,&mat); /* reading input */
-	g = (Subgroup)malloc(mat->gSize * sizeof(num));
+	
+	gSize = mat->gSize;	
+	g = (Subgroup)malloc(gSize * sizeof(num)); /* generating trivial division into one group */
 	VERIFY(g!=NULL,MEM_ALLOC_ERROR)
-	for (p=g; p<g+mat->gSize; p++)
-		*p=p-g;
-	O = div_into_mod_groups(mat, g, mat->gSize); /* calling Algorithm 3 */
-	mat->free(mat);
+	for (g_i = g , i = 0 ; i < gSize ; g_i++, i++){
+		*g_i = i;
+	}
+	
+	O = divide_into_mod_groups(mat, g, gSize); /* calling Algorithm 3 */
+
+	mat->free(mat); 
 	/*free(g);*/
+
 	generate_output_file(O, outputFileName); /* writing result to file */
+
 	delete_Stack(O);
-	#ifdef DEBUG
-	printf("SUCCESS: runClusterProject\n");
-	#endif
+	
 }
 
 int main(int argc, char* argv[]){
@@ -27,9 +33,6 @@ int main(int argc, char* argv[]){
 	char* outputFileName=argv[2];
 	clock_t start, end;
 
-	#ifdef DEBUG
-	printf("Received file names: %s, %s\n",inputFileName,outputFileName);
-	#endif
 	VERIFY(argc - 1 == 2, MISSING_ARG_ERROR)
 	srand(time(NULL));
 	start = clock();

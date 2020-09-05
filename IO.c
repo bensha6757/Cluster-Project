@@ -40,7 +40,7 @@ num read_network_size_from_file(FILE *input, num *deg_sum){
 
 /* Read an open input file into previously allocated modMat B */
 void load_mod_matrix_from_file(FILE *input, modMat *B){
-	int_vector K=B->K, sp=B->spmatSize, neighbours;
+	int_vector K = B->K, sp=B->spmatSize, neighbours;
 	num k_i, i;
 	vector matLine=NULL;
 	VERIFY(fread(&i,sizeof(num),1,input) == 1, FILE_READ_ERROR)  /*Assuming file rewinded, skip |V| */
@@ -54,11 +54,11 @@ void load_mod_matrix_from_file(FILE *input, modMat *B){
 		B->A->add_row(B->A,matLine,i);
 		*(K++)=k_i;
 		*(sp++)=k_i;
-		B->M+=k_i;
+		B->M += k_i;
 		free(neighbours);
 		free(matLine);
 	}
-	B->currM=B->M;
+	B->currM = B->M;
 	rewind(input);
 	set_1_norm(B);
 }
