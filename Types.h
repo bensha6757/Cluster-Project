@@ -8,9 +8,11 @@ typedef int_vector Subgroup;
 typedef int boolean;
 typedef double DATA;
 typedef double scalar;
-#define SHIFT 1
-#define NO_SHIFT 0
+#define TRUE 1
+#define FALSE 0
 
+#define SHIFT TRUE
+#define NO_SHIFT FALSE
 
 #undef DEBUG_SPMAT
 #undef DEBUG_MODMAT

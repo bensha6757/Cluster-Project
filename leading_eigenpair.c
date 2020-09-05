@@ -27,21 +27,21 @@ void set_rand_vector(vector v, num n){
  * 	using vectors computed in last power iteration, according to:
  *  beta_1 = (Ab_k * b_k) / ||b_k||^2.
  **/
-double approx_dom_eigen_val(modMat *B, vector bprev, vector bnext){
+double approx_dom_eigen_val(modMat *B, vector Ab_k, vector b_k){
 	num gSize=B->gSize;
 	double d;
-	B->mult(B, bnext, bprev, SHIFT);
-	d = l2_norm(bnext, gSize);
-	return dot_prod(bnext,bprev,gSize)/(d*d);
+	B->mult(B, b_k, Ab_k, SHIFT);
+	d = l2_norm(b_k, gSize);
+	return dot_prod(b_k,Ab_k,gSize)/(d*d);
 }
 
 boolean is_within(vector a, vector b, num d){
 	num i;
 	for (i=0; i<d; i++, a++, b++){
 		if (IS_POSITIVE(fabs(*a - *b)))
-			return 0;
+			return FALSE;
 	}
-	return 1;
+	return TRUE;
 }
 
 /*
@@ -102,6 +102,6 @@ void leading_eigenpair(modMat *Bg, vector *leadEigenVec, scalar *leadEigenVal){
 	free(bnext);
 	free(bprev);
 	#ifdef DEBUG_EIGEN
-	printf("SUCCESS: leading_eigenpair, %f\n", *leadEigenVal);
+	printf("SUCCESS: leading_eigenpair, beta_1 = %f\n", *leadEigenVal);
 	#endif
 }
