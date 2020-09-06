@@ -8,6 +8,7 @@ typedef int_vector Subgroup;
 typedef int boolean;
 typedef double DATA;
 typedef double scalar;
+typedef unsigned long long_num;
 #define TRUE 1
 #define FALSE 0
 
@@ -17,6 +18,7 @@ typedef double scalar;
 #undef DEBUG_SPMAT
 #undef DEBUG_MODMAT
 #undef DEBUG_EIGEN
+#define DEBUG_OPTIMIZE
 #undef DEBUG_DIV_TWO
 #undef DEBUG
 
