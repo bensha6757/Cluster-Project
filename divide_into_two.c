@@ -299,7 +299,7 @@ void move_maximal_score_vertex_mod_2(modMat *Bg, vector *s, vector Bs, int_vecto
 	num i, k, maxi = 0, gSize = Bg->gSize;
 	double Q_0, Q_t, maxScore = -DBL_MAX, tmpImprove=0;
 	/*clock_t start, end;*/
-	/*clock_t st_it, en_it;*/
+	clock_t st_it, en_it;
 	
 	#ifdef DEBUG_DIV_TWO
 	start = clock();
@@ -312,7 +312,7 @@ void move_maximal_score_vertex_mod_2(modMat *Bg, vector *s, vector Bs, int_vecto
 	moved = allocate_hash_set(gSize);
 
 	for (i=0; i<gSize; i++){
-		#ifdef DEBUG_DIV_TWO
+		#ifdef DEBUG_OPTIMIZE
 		st_it = clock();
 		#endif
 		/* lines 3-11 in Alg. 4 PsCode */
@@ -341,9 +341,9 @@ void move_maximal_score_vertex_mod_2(modMat *Bg, vector *s, vector Bs, int_vecto
 		}
 		/* line 19 in Alg. 4 PsCode */
 		setFlag(moved, gSize, maxi);
-		#ifdef DEBUG_DIV_TWO
+		#ifdef DEBUG_OPTIMIZE
 		en_it = clock();
-		printf("Execution took %f seconds, iter %d for size %d\n", ((double)(en_it-st_it) / CLOCKS_PER_SEC), i, gSize);
+		printf("mod_2 - Execution took %f seconds, iter %d for size %d\n", ((double)(en_it-st_it) / CLOCKS_PER_SEC), i, gSize);
 		#endif
 	}
 	free(moved);
@@ -366,7 +366,7 @@ void optimize_division_mod_2(modMat *Bg, vector *s, vector Bs){
 	num maxImpInd=0, iter=0, gSize = Bg->gSize;
 	double deltaQ=0, lastDeltaQ=0, maxImprove=-DBL_MAX;
 	 
-	#ifndef DEBUG_DIV_TWO
+	#ifdef DEBUG_DIV_TWO
 	clock_t start, end;
 	start = clock();
 	printf("BEGIN: optimize_division_mod_2\n");
@@ -388,7 +388,7 @@ void optimize_division_mod_2(modMat *Bg, vector *s, vector Bs){
 
 		/* VERIFY(iter < gSize, INFINITE_LOOP_ERROR) */
 	} while (IS_POSITIVE(deltaQ) && IS_POSITIVE(fabs(deltaQ-lastDeltaQ)) && ++iter < gSize);
-	#ifndef DEBUG_DIV_TWO
+	#ifdef DEBUG_DIV_TWO
 	printf("SUCCESS: optimize_division_mod_2\n");
 	end = clock();
 	printf("Execution took %f seconds\n", ((double)(end-start) / CLOCKS_PER_SEC));
@@ -420,7 +420,7 @@ void move_maximal_score_vertex_mod_3(modMat *Bg, vector *s, vector Bs, int_vecto
 
 	for (i=0; i<gSize; i++){
 		/* lines 3-11 in Alg. 4 PsCode */
-		#ifndef DEBUG_DIV_TWO
+		#ifdef DEBUG_OPTIMIZE
 		st_it = clock();
 		#endif
 		Q_0 = get_modularity_init(Bg, s_ptr, Bs, TRUE);
@@ -449,9 +449,9 @@ void move_maximal_score_vertex_mod_3(modMat *Bg, vector *s, vector Bs, int_vecto
 		}
 		/* line 19 in Alg. 4 PsCode */
 		resetFlag(unmoved, gSize, maxi);
-		#ifndef DEBUG_DIV_TWO
+		#ifdef DEBUG_OPTIMIZE
 		en_it = clock();
-		printf("Execution took %f seconds, iter %d for size %d\n", ((double)(en_it-st_it) / CLOCKS_PER_SEC), i, gSize);
+		printf("mod_3 - Execution took %f seconds, iter %d for size %d\n", ((double)(en_it-st_it) / CLOCKS_PER_SEC), i, gSize);
 		#endif
 	}
 	free(unmoved);
@@ -474,7 +474,7 @@ void optimize_division_mod_3(modMat *Bg, vector *s, vector Bs){
 	num maxImpInd=0, iter=0, gSize = Bg->gSize;
 	double deltaQ=0, lastDeltaQ=0, maxImprove=-DBL_MAX;
 
-	#ifndef DEBUG_DIV_TWO
+	#ifdef DEBUG_DIV_TWO
 	clock_t start, end;
 	start = clock();
 	printf("BEGIN: optimize_division_mod_3\n");
@@ -496,7 +496,7 @@ void optimize_division_mod_3(modMat *Bg, vector *s, vector Bs){
 
 		/* VERIFY(iter < gSize, INFINITE_LOOP_ERROR) */
 	} while (IS_POSITIVE(deltaQ) && IS_POSITIVE(fabs(deltaQ-lastDeltaQ)) && ++iter < gSize);
-	#ifndef DEBUG_DIV_TWO
+	#ifdef DEBUG_DIV_TWO
 	printf("SUCCESS: optimize_division_mod_3\n");
 	end = clock();
 	printf("Execution took %f seconds\n", ((double)(end-start) / CLOCKS_PER_SEC));
