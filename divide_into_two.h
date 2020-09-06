@@ -6,6 +6,7 @@
 #include "leading_eigenpair.h"
 #include "Types.h"
 #include "HashSet.h"
+#include "Linked_List.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <float.h>
