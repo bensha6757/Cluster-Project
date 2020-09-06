@@ -8,13 +8,11 @@
 double get_modularity_init(modMat *B, vector s, vector Bs, boolean given_Bs){
 	double Q;
 	num gSize=B->gSize;
-	/*clock_t start, end;*/
-
 
 	#ifdef DEBUG_DIV_TWO
-	srand(time(NULL));
+	clock_t start, end;
 	start = clock();
-	printf("BEGIN: get_modularity_init\n");
+	printf("BEGIN: get_modularity_init, size=%d\n",gSize);
 	#endif
 
 	if (!given_Bs)
@@ -51,7 +49,7 @@ double get_modularity_moved(modMat *B, vector s, vector Bs, num moved_v){
 	vector Bs_copy;
 	num gSize = B->gSize;
 	#ifdef DEBUG_DIV_TWO
-	printf("BEGIN: get_modularity_moved for %d\n", moved_v);
+	printf("BEGIN: get_modularity_moved for %d, size=$d\n", moved_v, gSize);
 	#endif
 
 	Bs_copy=(vector)malloc(gSize*sizeof(double));
@@ -79,12 +77,11 @@ double BEN_get_modularity_moved(modMat *Bg, vector s, vector Bs, num moved_v){
 	int sgn = 0;
 	vector Bi, Bs_orig, s_i;
 	num gSize = Bg->gSize;
-	/*clock_t start, end;*/
 
 	#ifdef DEBUG_DIV_TWO
-	srand(time(NULL));
+	clock_t start, end;
 	start = clock();
-	printf("BEGIN: BEN_get_modularity_moved\n");
+	printf("BEGIN: BEN_get_modularity_moved, size=%d\n",gSize);
 	#endif
 
 	Bi=(vector)malloc(gSize*sizeof(double));
@@ -273,7 +270,6 @@ void optimize_division_mod(modMat *Bg, vector *s, vector Bs){
 	indices=(int_vector)malloc(gSize*sizeof(num));
 	VERIFY(indices!=NULL, MEM_ALLOC_ERROR)
 
-
 	do {
 		lastDeltaQ=deltaQ;
 		/* lines 2-21 in Alg. 4 pseudo-code */
@@ -303,10 +299,9 @@ void move_maximal_score_vertex_mod_2(modMat *Bg, vector *s, vector Bs, int_vecto
 	num i, k, maxi = 0, gSize = Bg->gSize;
 	double Q_0, Q_t, maxScore = -DBL_MAX, tmpImprove=0;
 	/*clock_t start, end;*/
-
+	/*clock_t st_it, en_it;*/
 	
 	#ifdef DEBUG_DIV_TWO
-	srand(time(NULL));
 	start = clock();
 	printf("BEGIN: STEP 1 - move_maximal_score_vertex_mod_2\n");
 	#endif
@@ -317,6 +312,9 @@ void move_maximal_score_vertex_mod_2(modMat *Bg, vector *s, vector Bs, int_vecto
 	moved = allocate_hash_set(gSize);
 
 	for (i=0; i<gSize; i++){
+		#ifdef DEBUG_DIV_TWO
+		st_it = clock();
+		#endif
 		/* lines 3-11 in Alg. 4 PsCode */
 		Q_0 = get_modularity_init(Bg, s_ptr, Bs, TRUE);
 		maxi=0;
@@ -343,6 +341,10 @@ void move_maximal_score_vertex_mod_2(modMat *Bg, vector *s, vector Bs, int_vecto
 		}
 		/* line 19 in Alg. 4 PsCode */
 		setFlag(moved, gSize, maxi);
+		#ifdef DEBUG_DIV_TWO
+		en_it = clock();
+		printf("Execution took %f seconds, iter %d for size %d\n", ((double)(en_it-st_it) / CLOCKS_PER_SEC), i, gSize);
+		#endif
 	}
 	free(moved);
 
@@ -363,17 +365,16 @@ void optimize_division_mod_2(modMat *Bg, vector *s, vector Bs){
 	int_vector indices, j;
 	num maxImpInd=0, iter=0, gSize = Bg->gSize;
 	double deltaQ=0, lastDeltaQ=0, maxImprove=-DBL_MAX;
-	/* clock_t start, end; */
-	
+	 
+	#ifndef DEBUG_DIV_TWO
+	clock_t start, end;
+	start = clock();
+	printf("BEGIN: optimize_division_mod_2\n");
+	#endif
+
 	indices=(int_vector)malloc(gSize*sizeof(num));
 	VERIFY(indices!=NULL, MEM_ALLOC_ERROR)
 
-	
-	#ifdef DEBUG_DIV_TWO
-	srand(time(NULL));
-	start = clock();
-	printf("BEGIN: optimize_division_original_mod_2\n");
-	#endif
 	do {
 		lastDeltaQ=deltaQ;
 		/* lines 2-21 in Alg. 4 pseudo-code */
@@ -387,8 +388,8 @@ void optimize_division_mod_2(modMat *Bg, vector *s, vector Bs){
 
 		/* VERIFY(iter < gSize, INFINITE_LOOP_ERROR) */
 	} while (IS_POSITIVE(deltaQ) && IS_POSITIVE(fabs(deltaQ-lastDeltaQ)) && ++iter < gSize);
-	#ifdef DEBUG_DIV_TWO
-	printf("SUCCESS: optimize_division_original_mod_2\n");
+	#ifndef DEBUG_DIV_TWO
+	printf("SUCCESS: optimize_division_mod_2\n");
 	end = clock();
 	printf("Execution took %f seconds\n", ((double)(end-start) / CLOCKS_PER_SEC));
 	#endif
@@ -404,12 +405,12 @@ void move_maximal_score_vertex_mod_3(modMat *Bg, vector *s, vector Bs, int_vecto
 	int k=0;
 	double Q_0, Q_t, maxScore = -DBL_MAX, tmpImprove=0;
 	/*clock_t start, end;*/
+	clock_t st_it, en_it;
 
 	
 	#ifdef DEBUG_DIV_TWO
-	srand(time(NULL));
 	start = clock();
-	printf("BEGIN: STEP 1 - move_maximal_score_vertex_mod_2\n");
+	printf("BEGIN: STEP 1 - move_maximal_score_vertex_mod_3\n");
 	#endif
 
 	/* line 2 in Alg. 4 PsCode - a hash set of boolean values, s.t. 
@@ -419,12 +420,15 @@ void move_maximal_score_vertex_mod_3(modMat *Bg, vector *s, vector Bs, int_vecto
 
 	for (i=0; i<gSize; i++){
 		/* lines 3-11 in Alg. 4 PsCode */
+		#ifndef DEBUG_DIV_TWO
+		st_it = clock();
+		#endif
 		Q_0 = get_modularity_init(Bg, s_ptr, Bs, TRUE);
 		maxi=0;
 		maxScore = -DBL_MAX;
 
 		k=getNextSetFlag(unmoved,gSize,k);
-		while (k!=-1){
+		while (k != -1){
 			Q_t = BEN_get_modularity_moved(Bg, s_ptr, Bs, k) - Q_0;
 			if (Q_t > maxScore){
 				maxScore = Q_t;
@@ -445,6 +449,10 @@ void move_maximal_score_vertex_mod_3(modMat *Bg, vector *s, vector Bs, int_vecto
 		}
 		/* line 19 in Alg. 4 PsCode */
 		resetFlag(unmoved, gSize, maxi);
+		#ifndef DEBUG_DIV_TWO
+		en_it = clock();
+		printf("Execution took %f seconds, iter %d for size %d\n", ((double)(en_it-st_it) / CLOCKS_PER_SEC), i, gSize);
+		#endif
 	}
 	free(unmoved);
 
@@ -465,17 +473,16 @@ void optimize_division_mod_3(modMat *Bg, vector *s, vector Bs){
 	int_vector indices, j;
 	num maxImpInd=0, iter=0, gSize = Bg->gSize;
 	double deltaQ=0, lastDeltaQ=0, maxImprove=-DBL_MAX;
-	/* clock_t start, end; */
-	
+
+	#ifndef DEBUG_DIV_TWO
+	clock_t start, end;
+	start = clock();
+	printf("BEGIN: optimize_division_mod_3\n");
+	#endif
+
 	indices=(int_vector)malloc(gSize*sizeof(num));
 	VERIFY(indices!=NULL, MEM_ALLOC_ERROR)
 
-	
-	#ifdef DEBUG_DIV_TWO
-	srand(time(NULL));
-	start = clock();
-	printf("BEGIN: optimize_division_original_mod_3\n");
-	#endif
 	do {
 		lastDeltaQ=deltaQ;
 		/* lines 2-21 in Alg. 4 pseudo-code */
@@ -489,7 +496,7 @@ void optimize_division_mod_3(modMat *Bg, vector *s, vector Bs){
 
 		/* VERIFY(iter < gSize, INFINITE_LOOP_ERROR) */
 	} while (IS_POSITIVE(deltaQ) && IS_POSITIVE(fabs(deltaQ-lastDeltaQ)) && ++iter < gSize);
-	#ifdef DEBUG_DIV_TWO
+	#ifndef DEBUG_DIV_TWO
 	printf("SUCCESS: optimize_division_mod_3\n");
 	end = clock();
 	printf("Execution took %f seconds\n", ((double)(end-start) / CLOCKS_PER_SEC));
@@ -579,7 +586,7 @@ void optimize_division_mod_Linked(modMat *Bg, vector *s, vector Bs){
 	} while (IS_POSITIVE(deltaQ) && IS_POSITIVE(fabs(deltaQ-lastDeltaQ)) && ++iter < gSize);
 
 	#ifdef DEBUG_DIV_TWO
-	printf("SUCCESS: optimize_division_mod for gSize=%d after %d iter with dQ=%f.\n",gSize, iter, deltaQ);
+	printf("SUCCESS: optimize_division_mod_Linked for gSize=%d after %d iter with dQ=%f.\n",gSize, iter, deltaQ);
 	#endif
 
 	free(indices);
@@ -660,7 +667,6 @@ DIV_RESULT divide_into_two(modMat *B, Subgroup g, num sizeG, Subgroup *g1, Subgr
 	vector u, s;
 	modMat *Bg;
 	DIV_RESULT ret;
-	clock_t start, end;
 
 	Bg = create_Sub_Matrix(B, g, sizeG);
 
@@ -679,15 +685,8 @@ DIV_RESULT divide_into_two(modMat *B, Subgroup g, num sizeG, Subgroup *g1, Subgr
 	else
 		ret=GROUP_DIVIDED;
 	
-	srand(time(NULL));
-	start = clock();
-	printf("START: optimize_division_mod_3, on %d vertices\n", sizeG);
-
 	optimize_division_mod_3(Bg, &s, u);
 
-	end = clock();
-	printf("END: optimize_division_mod_3, on %d vertices\n", sizeG);
-	printf("Execution took %f seconds\n", ((double)(end-start) / CLOCKS_PER_SEC));
 	Bg->free(Bg);
 
 	map_s_to_groups(g, sizeG, s, g1, g2, sizeG1, sizeG2);

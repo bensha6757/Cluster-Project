@@ -5,7 +5,8 @@
 #include "Types.h"
 #include <stdlib.h>
 #include <math.h>
-#define SIZE (sizeof(long_num) * 8)
+#define BYTES_IN_CELL (sizeof(long_num))
+#define BITS_IN_CELL (BYTES_IN_CELL*8)
 
 long_num* allocate_hash_set(num size);
 long_num* allocate_hash_set_unmoved(num size);
