@@ -5,11 +5,12 @@
 #include "modMat.h"
 #include "leading_eigenpair.h"
 #include "Types.h"
-#include "HashSet.h"
+#include "FlagSet.h"
 #include "Linked_List.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <float.h>
+
 typedef enum div_res_t {
 	GROUP_INDIVISIBLE,
 	GROUP_DIVIDED

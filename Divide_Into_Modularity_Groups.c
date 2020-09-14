@@ -13,7 +13,7 @@ void add_to_stacks(Stack* P, Stack* O, num sizeG, num sizeG1, num sizeG2, Subgro
 			push(P, g1, sizeG1);
 		}
 		if (sizeG2 == 1){
-			push(O, g2, sizeG2);;
+			push(O, g2, sizeG2);
 		}
 		else {
 			push(P, g2, sizeG2);
@@ -37,9 +37,9 @@ Stack* divide_into_mod_groups(modMat* B, Subgroup g, num sizeG){
 	Stack* P = (Stack*)malloc(sizeof(Stack)), *O = (Stack*)malloc(sizeof(Stack));
 	Subgroup g1, g2;
 	num sizeG1, sizeG2;
-	
 	VERIFY(P != NULL,MEM_ALLOC_ERROR)
 	VERIFY(O != NULL,MEM_ALLOC_ERROR)
+	
 	init(P);
 	init(O); 			/* initializing O to be empty */
 	push(P,g,sizeG); 	/* starting with a trivial division into one group */

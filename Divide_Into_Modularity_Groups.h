@@ -4,7 +4,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stddef.h>
-#include <time.h>
 #include <math.h>
 #include "io_mem_errors.h"
 #include "Types.h"

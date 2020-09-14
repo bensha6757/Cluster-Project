@@ -20,7 +20,6 @@ void runClusterProject(char* inputFileName, char* outputFileName){
 	O = divide_into_mod_groups(mat, g, gSize); /* calling Algorithm 3 */
 
 	mat->free(mat); 
-	/*free(g);*/
 
 	generate_output_file(O, outputFileName); /* writing result to file */
 

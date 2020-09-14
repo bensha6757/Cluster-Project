@@ -1,6 +1,8 @@
 #ifndef TYPES_H_
 #define TYPES_H_
 
+#include <time.h>
+
 typedef double* vector;
 typedef unsigned int num;
 typedef num* int_vector;
@@ -18,7 +20,7 @@ typedef unsigned long long_num;
 #undef DEBUG_SPMAT
 #undef DEBUG_MODMAT
 #undef DEBUG_EIGEN
-#define DEBUG_OPTIMIZE
+#undef DEBUG_OPTIMIZE
 #undef DEBUG_DIV_TWO
 #undef DEBUG
 

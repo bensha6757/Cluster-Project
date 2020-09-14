@@ -2,7 +2,7 @@ FLAGS = -ansi -Wall -Wextra -Werror -pedantic-errors
 LIBS = -lm
 
 all: main.o
-	gcc main.o Divide_Into_Modularity_Groups.o IO.o Stack.o Divide_Into_Two.o HashSet.o Linked_List.o leading_eigenpair.o modMat.o spmat.o  -o cluster $(LIBS)
+	gcc main.o Divide_Into_Modularity_Groups.o IO.o Stack.o Divide_Into_Two.o FlagSet.o Linked_List.o leading_eigenpair.o modMat.o spmat.o  -o cluster $(LIBS)
 clean:
 	rm -rf *.o cluster
 
@@ -18,11 +18,11 @@ Stack.o: Stack.c Stack.h
 Divide_Into_Modularity_Groups.o: Divide_Into_Modularity_Groups.c Divide_Into_Modularity_Groups.h Divide_Into_Two.o modMat.o 
 	gcc $(FLAGS) -c Divide_Into_Modularity_Groups.c
 
-Divide_Into_Two.o: Divide_Into_Two.c Divide_Into_Two.h leading_eigenpair.o HashSet.o Linked_List.o
+Divide_Into_Two.o: Divide_Into_Two.c Divide_Into_Two.h leading_eigenpair.o FlagSet.o Linked_List.o
 	gcc $(FLAGS) -c Divide_Into_Two.c
 
-HashSet.o: HashSet.c HashSet.h
-	gcc $(FLAGS) -c HashSet.c
+FlagSet.o: FlagSet.c FlagSet.h
+	gcc $(FLAGS) -c FlagSet.c
 	
 Linked_List.o: Linked_List.c Linked_List.h
 	gcc $(FLAGS) -c Linked_List.c

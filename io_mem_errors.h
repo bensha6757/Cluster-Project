@@ -4,14 +4,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-
-#define VERIFY(expression, error)                                                           \
-    if (!(expression)){                                                                      \
-        printf("\n%s%s, %s", "Verification Failed: ", #expression, stringFromError(error));   \
-        printf("\n");                                                                          \
-        exit(error);                                                                               \
-    }                                                                \
-
 typedef enum exit_code_t {
     SUCCESS,
     MISSING_ARG_ERROR,
@@ -23,6 +15,13 @@ typedef enum exit_code_t {
     OUT_OF_BOUNDS_ERROR,
     NULL_POINTER_ERROR
 } exit_code;
+
+#define VERIFY(expression, error)                                                           \
+    if (!(expression)){                                                                      \
+        printf("\n%s%s, %s", "Verification Failed: ", #expression, stringFromError(error));   \
+        printf("\n");                                                                          \
+        exit(error);                                                                            \
+    }                                                                                            \
 
 static const char* stringFromError(exit_code e)
 {
