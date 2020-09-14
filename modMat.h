@@ -11,7 +11,7 @@
 #include <math.h>
 #include "Types.h"
 
-#define USE_SPMAT_LINKED 0
+#define USE_SPMAT_LINKED TRUE
 
 
 /*
@@ -19,7 +19,6 @@
  */
 typedef struct _modmat {
 	spmat *A; 				/* Network adjacency matrix in form of spmat */
-	int_vector spmatSize; 	/* a vector of the spmat rows sizes for internal use */
 	int_vector K; 			/* Compact representation of degrees-product matrix (k_i * k_j / M) */
 	num M;					/* Total sum of degrees in the network*/
 	num currM;				/* Total sum of degrees in sub-network defined by some Subgroup g */
@@ -36,19 +35,30 @@ typedef struct _modmat {
 	 */
 	void (*mult)(const struct _modmat *B, const double *v, double *result, boolean shift);
 
+	/** Compute Modularity of B[g]_hat: 0.5 * s^T * B[g]_hat * s.
+ 	* 	For enhanced computation, can use an optional pre-computed vector storing the product B*s.
+ 	*  @param moved_v - if -1, compute modularity. Otherwise, move vertex with index moved_v temporarily and compute.
+ 	*/
+	double (*get_modularity)(struct _modmat *B, vector s, vector Bs);
 
 } modMat;
 
-/* Allocate a new, empty instance of Modularity Matrix */
-modMat *allocate_mod_mat(num n, num m);
+/** Compute dot-product of two vectors of real numbers of size d.
+ */
+double dot_prod(vector v, vector u, num d);
 
-/* constructor, creating a new sub matrix B_hat[g]. 
- * 
- * If impl_flag==1, uses linked-list implementation. Otherwise, use arrays impl.
+/* Allocate a new, empty instance of Modularity Matrix */
+modMat* allocate_mod_mat(num n, num nnz, boolean isSub);
+
+/*modMat* allocate_sub_mod_mat(num n);*/
+
+/** Constructor, creates a new sub matrix B_hat[g], based on B.
+ *  
  */
 modMat *create_Sub_Matrix(modMat *B, Subgroup g, num sizeG);
 
 /* Computes and sets 1-norm of B, i.e. max_i(sum_j(abs(B_ij))) */
 void set_1_norm(modMat *B);
+
 
 #endif /* MODMAT_H_ */
