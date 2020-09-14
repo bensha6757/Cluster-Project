@@ -8,10 +8,11 @@
 #include <stdlib.h>
 #include <math.h>
 #include <string.h>
-#include <time.h>
 #include "Types.h"
 
-#define IS_POSITIVE(X) ((X) > 0.00001)
+#define EPSILON 0.00001
+#define IS_POSITIVE(X) ((X) > (EPSILON))
+#define LIMIT_ITER(N) ((0.5)*(N)*(N) + 10000*(N)+30000)
 
 
 /**
@@ -24,7 +25,7 @@ double dot_prod(vector v, vector u, num d);
  * @param leadEigenVec - the address in memory to store the leading eigenvector (vector) in.
  * @param leadEigenVal - the address in memory to store the leading eigenvalue (scalar) in.
  */
-void leading_eigenpair(modMat *Bg, vector *leadEigenVec, scalar *leadEigenVal);
+scalar leading_eigenpair(modMat *Bg, vector *leadEigenVec);
 
 
 #endif /* LEADING_EIGENPAIR_H_ */
