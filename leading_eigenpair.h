@@ -10,9 +10,8 @@
 #include <string.h>
 #include "Types.h"
 
-#define EPSILON 0.00001
-#define IS_POSITIVE(X) ((X) > (EPSILON))
-#define LIMIT_ITER(N) ((0.5)*(N)*(N) + 10000*(N)+30000)
+ /*There are about O(N^2) Power iterations for a matrix of size N */
+#define ITER_LIMIT(N) (0.5*(N)*(N)+10000*(N)+300000)
 
 
 /**
@@ -20,10 +19,10 @@
  */
 double dot_prod(vector v, vector u, num d);
 
-/** Compute leading eigen pair of modularity Matrix B_hat[g], and store results in referenced pointers.
+/** Compute leading eigen pair of modularity Matrix B_hat[g].
+ *  Returns the leading eigen value.
  * @param Bg - a modularity matrix.
- * @param leadEigenVec - the address in memory to store the leading eigenvector (vector) in.
- * @param leadEigenVal - the address in memory to store the leading eigenvalue (scalar) in.
+ * @param leadEigenVec - a preallocated vector pointer, at which the leading eigenvector (corresponding to the leading eigenvalue returned) will be stored.
  */
 scalar leading_eigenpair(modMat *Bg, vector *leadEigenVec);
 

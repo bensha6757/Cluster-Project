@@ -1,26 +1,5 @@
 #include "Divide_Into_Two.h"
 
-
-double get_B_modularity_score(struct _modmat *B, vector s, int moved_v){
-	double dQ;
-	num gSize=B->gSize;
-	vector B_i;
-	int sgn;
-
-	B_i = (vector)malloc(gSize*sizeof(double));
-	VERIFY(B_i!=NULL,MEM_ALLOC_ERROR)
-	B->get_row(B, moved_v, B_i);
-	s[moved_v] *= -1;
-	sgn = s[moved_v];
-	dQ = (4 * sgn * dot_prod(B_i, s, gSize)) - (4 * B_i[moved_v]);
-	/* Restore s to initial state */
-	s[moved_v] *= -1;
-	free(B_i);
-
-	return dQ;
-}
-
-
 /** Based on lines 2-20 in Alg. 4 pseudo-code .
  */
 void move_maximal_score_vertex(modMat *Bg, vector *s, int_vector indices, double *maxImprove, num *maxImpInd) {
@@ -50,7 +29,7 @@ void move_maximal_score_vertex(modMat *Bg, vector *s, int_vector indices, double
 		maxScore = -DBL_MAX;
 		k = get_next_set_flag(unmoved, gSize, 0, TRUE);
 		while (k != -1){
-			Q_t = get_B_modularity_score(Bg, s_ptr, k);
+			Q_t = Bg->get_modularity(Bg, s_ptr, k);
 			if (Q_t > maxScore){
 				maxScore = Q_t;
 				maxi = k;
@@ -144,7 +123,7 @@ void move_maximal_score_vertex_mod_Linked(modMat *Bg, vector *s, int_vector indi
 		maxScore = -DBL_MAX;
 	
 		while (head != NULL){
-			Q_t = get_B_modularity_score(Bg, s_ptr, head->ind);
+			Q_t = Bg->get_modularity(Bg, s_ptr, head->ind);
 			if (Q_t > maxScore){
 				maxScore = Q_t;
 				maxi = head->ind;
@@ -286,7 +265,7 @@ DIV_RESULT divide_into_two(modMat *B, Subgroup g, num sizeG, Subgroup *g1, Subgr
 	}
 	
 	eigen_to_s(Bg, u, &s);
-	if (!IS_POSITIVE(Bg->get_modularity(Bg, s, u)))
+	if (!IS_POSITIVE(Bg->get_modularity(Bg, s, MODULARITY_INIT)))
 		ret=GROUP_INDIVISIBLE;
 	else
 		ret=GROUP_DIVIDED;

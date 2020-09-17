@@ -63,10 +63,12 @@ void load_mod_matrix_from_file(FILE *input, modMat *B){
 
 void load_input_file(char* filename, modMat **mat){
 	num N, M=0;
-	FILE* inputFile = fopen(filename,"r");
+	FILE* inputFile;
+	inputFile = fopen(filename,"r");
 	VERIFY(inputFile != NULL, FILE_NOT_FOUND_ERROR)
 	N = read_network_size_and_nnz_from_file(inputFile, &M);
 	*mat = allocate_mod_mat(N, M, FALSE);
+	VERIFY(*mat != NULL, MEM_ALLOC_ERROR)
 	load_mod_matrix_from_file(inputFile, *mat);
 	fclose(inputFile);
 	#ifdef DEBUG

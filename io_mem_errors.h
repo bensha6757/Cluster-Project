@@ -13,7 +13,8 @@ typedef enum exit_code_t {
 	MEM_ALLOC_ERROR,
 	INFINITE_LOOP_ERROR,
     OUT_OF_BOUNDS_ERROR,
-    NULL_POINTER_ERROR
+    NULL_POINTER_ERROR,
+    DIVISION_BY_ZERO
 } exit_code;
 
 #define VERIFY(expression, error)                                                           \
@@ -35,7 +36,8 @@ static const char* stringFromError(exit_code e)
         "Memory allocation error", 
         "Infinite loop error", 
         "Out of bounds error", 
-        "Null pointer error", 
+        "Null pointer error",
+        "Division by zero error" 
     };
     return strings[e];
 }

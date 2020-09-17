@@ -38,6 +38,7 @@ void power_iteration(modMat *Bg, vector v, vector result){
 	#endif
 	Bg->mult(Bg, v, result, SHIFT);
 	nrm = l2_norm(result, n);
+	VERIFY(IS_POSITIVE(nrm), DIVISION_BY_ZERO)
 	for (p = result; p < result + n; p++)
 		*p /= nrm;
 	#ifdef DEBUG_EIGEN
@@ -47,7 +48,7 @@ void power_iteration(modMat *Bg, vector v, vector result){
 
 
 /**	Approximate dominant eigen value of matrix B, 
- * 	using vectors computed in last power iteration, according to:
+ * 	using vectors computed in last power iteration, according to equation:
  *  beta_1 = (Ab_k * b_k) / ||b_k||^2.
  **/
 double approx_dom_eigen_val(modMat *B, vector Ab_k, vector b_k){
@@ -55,16 +56,16 @@ double approx_dom_eigen_val(modMat *B, vector Ab_k, vector b_k){
 	double d;
 	B->mult(B, b_k, Ab_k, SHIFT);
 	d = dot_prod(b_k, b_k ,gSize);
+	VERIFY(IS_POSITIVE(d),DIVISION_BY_ZERO)
 	return dot_prod(b_k, Ab_k ,gSize)/d;
 }
 
 scalar leading_eigenpair(modMat *Bg, vector *leadEigenVec){
 	num iter=0, gSize = Bg->gSize;
-	num eigenpair_loops_bound = LIMIT_ITER(gSize); /*There are about O(N^2) Power iterations for a matrix of size N */
+	num eigenpair_loops_bound = ITER_LIMIT(gSize);
 	vector bprev, bnext, tmp;
 	scalar leadEigenValue;
 	scalar last_l1_dist = 0;
-	/*scalar curr_l1_dist;*/
 	
 	#ifdef DEBUG_EIGEN
 	printf("BEGIN: leading_eigenpair\n");
@@ -78,10 +79,7 @@ scalar leading_eigenpair(modMat *Bg, vector *leadEigenVec){
 	set_rand_vector(bnext, gSize);
 
 	do {
-		/*
-		if (iter>0)
-			curr_l1_dist=l1_dist(bprev, bnext, gSize);
-		*/
+
 		tmp = bnext;
 		bnext = bprev;
 		bprev = tmp;
@@ -90,11 +88,12 @@ scalar leading_eigenpair(modMat *Bg, vector *leadEigenVec){
 		last_l1_dist = l1_dist(bprev, bnext, gSize);
 		VERIFY(iter++ < eigenpair_loops_bound, INFINITE_LOOP_ERROR)
 
-	} while ( iter < eigenpair_loops_bound && IS_POSITIVE(last_l1_dist) );
-	/*while ( IS_POSITIVE(curr_l1_dist - last_l1_dist) );*/
+	} while ( IS_POSITIVE(last_l1_dist) && iter < eigenpair_loops_bound  );
+
 	#ifdef DEBUG_EIGEN
 	printf("# of power iterations: %d on size %d matrix\n", iter, gSize);
 	#endif
+
 	*leadEigenVec = bnext;
 
 	/* The leading eigenvalue is a 1-norm shifted dominant eigenvalue*/

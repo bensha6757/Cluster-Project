@@ -2,17 +2,17 @@
 #ifndef MODMAT_H_
 #define MODMAT_H_
 
-#include "spmat.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <stddef.h>
 #include <string.h>
-#include "io_mem_errors.h"
 #include <math.h>
+#include "spmat.h"
+#include "io_mem_errors.h"
 #include "Types.h"
 
 #define USE_SPMAT_LINKED TRUE
-
+#define MODULARITY_INIT -1
 
 /*
  * A struct representing Modularity Matrix B[g].
@@ -25,11 +25,8 @@ typedef struct _modmat {
 	num gSize;	 			/* Size of matrix, for any Subgroup g it is reduced to */
 	double one_norm;		/* The 1-norm of the matrix, i.e. max_i(sum_j(|B_ij|)) */ 
 
-	/*free all resources used by ModMat instance */
+	/*free all resources used by a ModMat instance */
 	void (*free)(struct _modmat *B);
-
-	/*Get row i of B*/
-	void (*get_row)(const struct _modmat *B, num i, double *row);
 
 	/* Multiply ModMat with vector v and store result.
 	 */
@@ -37,9 +34,9 @@ typedef struct _modmat {
 
 	/** Compute Modularity of B[g]_hat: 0.5 * s^T * B[g]_hat * s.
  	* 	For enhanced computation, can use an optional pre-computed vector storing the product B*s.
- 	*  @param moved_v - if -1, compute modularity. Otherwise, move vertex with index moved_v temporarily and compute.
+ 	*  @param move_vertex - if MODULARITY_INIT, compute modularity w.r.t to S. Otherwise, move vertex s[move_vertex] temporarily and compute.
  	*/
-	double (*get_modularity)(struct _modmat *B, vector s, vector Bs);
+	double (*get_modularity)(struct _modmat *B, vector s, int move_vertex);
 
 } modMat;
 
@@ -59,6 +56,5 @@ modMat *create_Sub_Matrix(modMat *B, Subgroup g, num sizeG);
 
 /* Computes and sets 1-norm of B, i.e. max_i(sum_j(abs(B_ij))) */
 void set_1_norm(modMat *B);
-
 
 #endif /* MODMAT_H_ */
