@@ -20,7 +20,7 @@ num read_network_size_and_nnz_from_file(FILE *input, num *m){
 	num n, i, k;
 	num* tmp;
 	VERIFY(fread(&n,sizeof(num),1,input) == 1,FILE_READ_ERROR)
-	tmp=(num*)malloc(n*sizeof(num));
+	tmp=(num*)calloc(n,sizeof(num));
 	VERIFY(tmp!=NULL, MEM_ALLOC_ERROR)
 	for (i=0; i<n; i++){
 		VERIFY(fread(&k,sizeof(num),1,input) == 1,FILE_READ_ERROR)
@@ -36,22 +36,23 @@ num read_network_size_and_nnz_from_file(FILE *input, num *m){
 void load_mod_matrix_from_file(FILE *input, modMat *B){
 	int_vector K = B->K, sp=B->A->spmatSize, neighbours;
 	num k_i, i, gSize = B->gSize, M = 0;
-	vector matLine = (double*)malloc(gSize * sizeof(double));
+	vector matLine;
+	matLine = (double*)malloc(gSize * sizeof(double));
 	VERIFY(matLine!=NULL, MEM_ALLOC_ERROR);
+	neighbours = (int_vector)malloc(gSize * sizeof(num));
+	VERIFY(neighbours!=NULL, MEM_ALLOC_ERROR)
 	VERIFY(fread(&i,sizeof(num),1,input) == 1, FILE_READ_ERROR) /*Assume reading the file after rewind */
 	/* Populate B with A, K matrices, and compute M */
 	for (i = 0 ; i < gSize ; i++){
 		VERIFY(fread(&k_i,sizeof(num),1,input) == 1, FILE_READ_ERROR)
-		neighbours = (int_vector)malloc(k_i*sizeof(num));
-		VERIFY(neighbours!=NULL, MEM_ALLOC_ERROR)
 		VERIFY(fread(neighbours, sizeof(num), k_i, input) == k_i, FILE_READ_ERROR)
 		convert_adj_list(neighbours, k_i, matLine, gSize);
 		B->A->add_row(B->A, matLine, i);
 		*(K++) = k_i;
 		*(sp++) = k_i;
 		M += k_i;
-		free(neighbours);
 	}
+	free(neighbours);
 	free(matLine);
 	/*rewind(input);*/
 	B->M = M;
