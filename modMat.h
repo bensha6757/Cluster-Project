@@ -11,7 +11,7 @@
 #include "io_mem_errors.h"
 #include "Types.h"
 
-#define USE_SPMAT_LINKED TRUE
+#define USE_SPMAT_LINKED FALSE
 #define MODULARITY_INIT -1
 
 /*

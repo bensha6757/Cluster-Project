@@ -21,11 +21,6 @@ void compute_K_and_currM(modMat *Bsrc, modMat *Bg, Subgroup g, num gSize){
 	Bg->currM=cnt;
 }
 
-/* Constructor, creating a new sub matrix B_hat[g]. 
- * 
- * If impl_flag==1, uses linked-list implementation. Otherwise, use arrays impl.
- */
-
 modMat* create_Sub_Matrix(modMat *B, Subgroup g, num sizeG){
     modMat *Bg=NULL;
 	spmat *Ag;
@@ -136,7 +131,7 @@ double MHMD_get_B_modularity_score(modMat *Bg, vector s, int moved_v){
 	double k_i_M = k_i / (double) Bg->M, sum = 0;
 
 	A_j = (vector)malloc(gSize*sizeof(double));
-	VERIFY(A_j!=NULL,MEM_ALLOC_ERROR)
+	VERIFY(A_j!=NULL, MEM_ALLOC_ERROR)
 	Bg->A->get_row(Bg->A, moved_v, A_j);
 	
 	s[moved_v] *= -1;
