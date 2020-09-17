@@ -2,7 +2,7 @@
 #define SPMAT_H_
 
 #include "io_mem_errors.h"
-#include <stdio.h>
+#include <string.h>
 #include <stdlib.h>
 #include <stddef.h>
 #include "Types.h"

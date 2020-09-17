@@ -164,7 +164,7 @@ void add_row_linked(spmat *A, const double *row, int i){
 	Node *head = NULL, *tail;
 	int j = 0, n = A->n;
 	const DATA *rowPtr = row;
-	while (j < n && !NON_ZERO(*rowPtr) /* *rowPtr== 0*/){ /* getting to the first non-zero value and adding it to the first node*/
+	while (j < n && !NON_ZERO(*rowPtr)){ /* getting to the first non-zero value and adding it to the first node*/
 		rowPtr++;
 		j++;
 	}
@@ -177,7 +177,7 @@ void add_row_linked(spmat *A, const double *row, int i){
 		rowPtr++;
 		j++;
 		while (j < n){ /* add to tail*/
-			while (j < n && !NON_ZERO(*rowPtr) /* *rowPtr== 0*/){
+			while (j < n && !NON_ZERO(*rowPtr)){
 				rowPtr++;
 				j++;
 			}
@@ -297,22 +297,15 @@ void add_row_arrays(struct _spmat *A, const double *row, int i)
 
 void get_row_arrays(const struct _spmat *A, int i, vector row){
 	arraymat *imp=((arraymat*)(A->private));
-	num j=*(imp->rowptr+i);
-	double *p=row, *src_val = imp->values+j;
+	num j = *(imp->rowptr+i);
+	num n=A->n, row_nnz = *(imp->rowptr+i+1)-j;
 	num *src_col = imp->colind+j;
-	num dest_col = *src_col;
-	num n=A->n;
-	for (p=row;  p < row+n; p++){
-		dest_col=p-row;
-		if (dest_col==*src_col){
-			*p=*src_val;
-			src_val++;
-			src_col++;
-		}
-		else
-			*p=0;
-	}
+	double *src_val = imp->values+j;
+	memset(row, 0, n*sizeof(double));
+	while (row_nnz-->0)
+		*(row+*src_col++)=*src_val++;
 }
+
 
 void free_arrays(struct _spmat *A)
 {
@@ -328,9 +321,10 @@ void free_arrays(struct _spmat *A)
 void mult_arrays(const struct _spmat *A, const double *v, double *result)
 {
 	arraymat *imp=((arraymat*)(A->private));
-	num *r, *j, rowNNZ, n=(num)A->n;
+	num *rows = imp->rowptr, *r;
+	num *j, rowNNZ, n=(num)A->n;
 	scalar sum, *u;
-	for (r=imp->rowptr; r<imp->rowptr+n; r++)
+	for (r = rows; r < rows+n; r++)
 	{
 		sum=0.0;
 		rowNNZ=*(r+1)-*r;
@@ -365,12 +359,9 @@ num get_g_row_nnz_arrays(arraymat *orig, int i, Subgroup g, int sizeG){
 num get_g_nnz_arrays(const struct _spmat *A, Subgroup g, int sizeG){
 	arraymat *orig=((arraymat*)(A->private));
 	Subgroup p;
-	num cnt=0, k;
-	for (p=g; p<g+sizeG; p++){
-		k=get_g_row_nnz_arrays(orig, *p, g, sizeG);
-		cnt+=k;
-	}
-		
+	num cnt=0;
+	for (p=g; p<g+sizeG; p++)
+		cnt+=get_g_row_nnz_arrays(orig, *p, g, sizeG);
 	return cnt;
 } 
 
@@ -439,41 +430,42 @@ spmat* create_sub_sparse_matrix_array(const struct _spmat  *A, Subgroup g, int s
 
 /* Allocates a new arrays sparse matrix of size n with nnz non-zero elements */
 spmat* spmat_allocate_array(int n, int nnz)
-	{
-		spmat *A;
-		arraymat *imp;
-		double *values;
-		int_vector colind, rowptr;
+{
+	spmat *A;
+	double *values;
+	int_vector colind, rowptr;
 
-		A=(spmat*)malloc(sizeof(spmat));
-		VERIFY(A != NULL, MEM_ALLOC_ERROR)
+	/*printf("spmat_allocate_array, n=%d, nnz=%d\n", n, nnz);*/
 
-		A->spmatSize=(int_vector)malloc(n*sizeof(num));
-		VERIFY(A->spmatSize!=NULL, MEM_ALLOC_ERROR)
+	A=(spmat*)malloc(sizeof(spmat));
+	VERIFY(A != NULL, MEM_ALLOC_ERROR)
 
-		values = (scalar*)malloc(nnz * sizeof(scalar));
-		VERIFY(values != NULL, MEM_ALLOC_ERROR)
-		colind = (int_vector)malloc(nnz * sizeof(num));
-		VERIFY(colind != NULL, MEM_ALLOC_ERROR)
-		rowptr = (int_vector)malloc((n+1) * sizeof(num));
-		VERIFY(rowptr != NULL, MEM_ALLOC_ERROR)
-		
-		imp=(arraymat*)malloc(sizeof(arraymat));
-		VERIFY(imp != NULL, MEM_ALLOC_ERROR)
+	A->spmatSize=(int_vector)malloc(n*sizeof(num));
+	VERIFY(A->spmatSize!=NULL, MEM_ALLOC_ERROR)
 
-		imp->values=values;
-		imp->colind=colind;
-		imp->rowptr=rowptr;
+	A->private=(arraymat*)malloc(sizeof(arraymat));
+	VERIFY(A->private != NULL, MEM_ALLOC_ERROR)
 
-		A->n=n;
-		A->get_row=get_row_arrays;
-		A->add_row=add_row_arrays;
-		A->free=free_arrays;
-		A->mult=mult_arrays;
-		A->create_sub_mat=create_sub_sparse_matrix_array;
-		A->private=(arraymat*)imp; /* void* pointer assignment */
-		return A;
-	}
+	values = (scalar*)malloc(nnz * sizeof(scalar));
+	VERIFY(values != NULL, MEM_ALLOC_ERROR)
+	colind = (int_vector)malloc(nnz * sizeof(num));
+	VERIFY(colind != NULL, MEM_ALLOC_ERROR)
+	rowptr = (int_vector)malloc((n+1) * sizeof(num));
+	VERIFY(rowptr != NULL, MEM_ALLOC_ERROR)
+	*rowptr = 0; /*First non-zero element of matrix is always indexed as values[0], colind[0] */
+
+	((arraymat*)A->private)->values = values;
+	((arraymat*)A->private)->colind = colind;
+	((arraymat*)A->private)->rowptr = rowptr;
+
+	A->n=n;
+	A->get_row=get_row_arrays;
+	A->add_row=add_row_arrays;
+	A->free=free_arrays;
+	A->mult=mult_arrays;
+	A->create_sub_mat=create_sub_sparse_matrix_array;
+	return A;
+}
 
 /************ DEPRECATED *************/
 
