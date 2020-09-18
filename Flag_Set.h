@@ -5,27 +5,44 @@
 #include "Types.h"
 #include <stdlib.h>
 #include <math.h>
-#define BYTES_IN_CELL (sizeof(long_num))
-#define BITS_IN_CELL (BYTES_IN_CELL*8)
+#define BYTES_PER_CELL (sizeof(long_num))
+#define BITS_PER_CELL (BYTES_PER_CELL*8)
 
 /************************************************************************************************************
- * a data structure storing Unmoved vertices for the Maximization algorithm                                 *
+ * a data structure storing Unmoved vertices for the Maximization algorithm.                                *
  * allowing a quick get_next_set_flag in order to get the next unmoved vertex for the algorithm's purposes  *
  ************************************************************************************************************/
 
-/* allocating a new flag set, with an amount of @param size set bits */
+/* allocates a new flag set, with an amount of @param size set bits */
 long_num* allocate_flag_set(num size);
 
-/* setting the i'th bit */
+/** Inset element i to set.
+ *  @param set - the set to be probed.
+ *  @param size - original size of set. Not to be changed after insertion/removal of element.
+ *  @param i - the elemnt to be inserted to set.
+ */
 void set_flag(long_num* set, num size, num i);
 
-/* resetting the i'th bit */
+/** Remove element i from set.
+ *  @param set - the set to be probed.
+ *  @param size - original size of set. Not to be changed after insertion/removal of element.
+ *  @param i - the elemnt to be removed from set.
+ */
 void reset_flag(long_num* set, num size, num i);
 
-/* check if the i'th bit is set */
+/** Returns if element i is in set.
+ *  @param set - the set to be probed.
+ *  @param size - original size of set. Not to be changed after insertion/removal of element.
+ *  @param i - the elemnt to be checked if is in set.
+ */
 num get_flag(long_num* set, num size, num i);
 
-/* based on the last flag location, return the next set bit */
+/** Returns an element in set, which is nearest to the last element removed from set.
+ *  @param set - the set to be probed.
+ *  @param size - original size of set. Not to be changed after insertion/removal of element.
+ *  @param lastFlag - last element removed from set.
+ *  @param first - a boolean indicating if any element was previously removed from set.
+ */
 int get_next_set_flag(long_num* set, num size, num lastFlag, boolean first);
 
 

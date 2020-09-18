@@ -8,19 +8,19 @@
 /* allocating a new flag set, with an amount of @param size set bits */
 long_num* allocate_flag_set(num size){
     long_num *set, *p;
-    num cells = size / BITS_IN_CELL;
-    num r = size % BITS_IN_CELL > 0 ? 1 : 0; 
-    set = (long_num*)malloc((cells+r) * BYTES_IN_CELL);
+    num cells = size / BITS_PER_CELL;
+    num r = size % BITS_PER_CELL > 0 ? 1 : 0; 
+    set = (long_num*)malloc((cells+r) * BYTES_PER_CELL);
     for (p = set ; p < set + cells+r ; p++){
         *p = ~(*p & 0);
     }
-    *(--p) >>= (BITS_IN_CELL - (size % BITS_IN_CELL));
+    *(--p) >>= (BITS_PER_CELL - (size % BITS_PER_CELL));
     return set;
 }
 
 /* setting the i'th bit */
 void set_flag(long_num* set, num size, num i){
-    num locate = i / BITS_IN_CELL,  r = i % BITS_IN_CELL;
+    num locate = i / BITS_PER_CELL,  r = i % BITS_PER_CELL;
     long_num mask = (long_num)1 << r;
     VERIFY(i<size, OUT_OF_BOUNDS_ERROR)
     set[locate] |= mask;
@@ -28,7 +28,7 @@ void set_flag(long_num* set, num size, num i){
 
 /* resetting the i'th bit */
 void reset_flag(long_num* set, num size, num i){
-    num locate = i / BITS_IN_CELL,  r = i % BITS_IN_CELL;
+    num locate = i / BITS_PER_CELL,  r = i % BITS_PER_CELL;
     long_num mask = ~((long_num)1 << r);
     VERIFY(i<size, OUT_OF_BOUNDS_ERROR)
     set[locate] &= mask;
@@ -36,7 +36,7 @@ void reset_flag(long_num* set, num size, num i){
 
 /* check if the i'th bit is set */
 num get_flag(long_num* set, num size, num i){
-    num locate = i/BITS_IN_CELL,  r = i % BITS_IN_CELL;
+    num locate = i/BITS_PER_CELL,  r = i % BITS_PER_CELL;
     long_num cell = set[locate];
     long_num mask =  1 << r;
     long_num masked_cell = cell & mask;
@@ -47,16 +47,16 @@ num get_flag(long_num* set, num size, num i){
 
 /* based on the last flag location, return the next set bit */
 int get_next_set_flag(long_num* set, num size, num lastFlag, boolean first){
-    num lastLoc = lastFlag / BITS_IN_CELL,  r = lastFlag % BITS_IN_CELL;
-    num cap = (size / BITS_IN_CELL) + (size % BITS_IN_CELL > 0 ? 1 : 0);
+    num lastLoc = lastFlag / BITS_PER_CELL,  r = lastFlag % BITS_PER_CELL;
+    num cap = (size / BITS_PER_CELL) + (size % BITS_PER_CELL > 0 ? 1 : 0);
     long_num *p = set + lastLoc, mask, cell = *p;
     num res;
-    if (r + 1 != BITS_IN_CELL){
+    if (r + 1 != BITS_PER_CELL){
         if (first == FALSE){
             mask = ~(cell & 0) << (r + 1); /* hiding the bits before the last flag location */
             cell &= mask;
         }
-        res = (num)(log(cell & -cell)/log(2)) + (lastLoc * BITS_IN_CELL); /* extrcating the only set bit location and adding it the number of cells before the current cell */
+        res = (num)(log(cell & -cell)/log(2)) + (lastLoc * BITS_PER_CELL); /* extrcating the only set bit location and adding it the number of cells before the current cell */
         if (res < size && cell != 0)
             return res;
         if (res >= size)
@@ -70,7 +70,7 @@ int get_next_set_flag(long_num* set, num size, num lastFlag, boolean first){
     if (p-set >= cap)
         return -1;
     cell = *p;
-    res = (num)(log(cell & -cell)/log(2)) + ((p-set) * BITS_IN_CELL);
+    res = (num)(log(cell & -cell)/log(2)) + ((p-set) * BITS_PER_CELL);
     if (res < size)
         return res;
     return -1;
