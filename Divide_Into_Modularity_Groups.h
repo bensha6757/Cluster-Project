@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <stddef.h>
 #include <math.h>
-#include "io_mem_errors.h"
+#include "IO_Mem_Errors.h"
 #include "Types.h"
 #include "Stack.h"
 #include "modMat.h"

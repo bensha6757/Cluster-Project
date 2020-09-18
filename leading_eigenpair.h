@@ -1,8 +1,8 @@
-#ifndef LEADING_EIGENPAIR_H_
-#define LEADING_EIGENPAIR_H_
+#ifndef Leading_eigenpair_H_
+#define Leading_eigenpair_H_
 
 
-#include "io_mem_errors.h"
+#include "IO_Mem_Errors.h"
 #include "modMat.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -24,7 +24,7 @@ double dot_prod(vector v, vector u, num d);
  * @param Bg - a modularity matrix.
  * @param leadEigenVec - a preallocated vector pointer, at which the leading eigenvector (corresponding to the leading eigenvalue returned) will be stored.
  */
-scalar leading_eigenpair(modMat *Bg, vector *leadEigenVec);
+scalar Leading_eigenpair(modMat *Bg, vector *leadEigenVec);
 
 
-#endif /* LEADING_EIGENPAIR_H_ */
+#endif /* Leading_eigenpair_H_ */

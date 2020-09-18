@@ -23,15 +23,6 @@ void add_to_stacks(Stack* P, Stack* O, num sizeG, num sizeG1, num sizeG2, Subgro
 }
 
 
-void printG(Subgroup g, int n){
-	Subgroup p;
-	for (p = g; p < g + n ; p++){
-		printf("%d, ", *p);
-	}
-	printf("\n");
-}
-
-
 /* Algorithm 3*/
 Stack* divide_into_mod_groups(modMat* B, Subgroup g, num sizeG){
 	Stack* P = (Stack*)malloc(sizeof(Stack)), *O = (Stack*)malloc(sizeof(Stack));

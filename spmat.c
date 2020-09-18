@@ -1,4 +1,4 @@
-#include "spmat.h"
+#include "Spmat.h"
 
 typedef struct linked_list {
 	DATA val;
@@ -9,67 +9,47 @@ typedef struct linked_list {
 typedef struct linked_list Node;
 
 
- /************ DEPRECATED ************/
-
- /*
-void get_basis_unit_vec(vector *e_i, num i, num n){
-	*e_i=(vector)calloc(n,sizeof(double));
-	VERIFY(e_i!=NULL,MEM_ALLOC_ERROR)
-	*(*e_i+i)=1;
-}
-*/
-
-/** GENERIC FUNCTION, INDEP. OF SPMAT IMPL.
- *  Fetch row i of spmat A, by utilizing A->mult with a standard vector (v[j]==1 if i=j, else v[j]==0)
-*/
-
-/*
-void get_spmat_row_generic(const struct _spmat *A, int i, double *row){
-	vector e_i;
-	#ifdef DEBUG_SPMAT
-	printf("BEGIN: get_spmat_row_generic=%d\n", i);
-	#endif
-	get_basis_unit_vec(&e_i, i, A->n);
-	A->mult(A,e_i,row);
-	free(e_i);
-	#ifdef DEBUG_SPMAT
-	printf("SUCCESS: get_spmat_row_generic=%d\n", i);
-	#endif
-}
-*/
-
 /*** LINKED LIST MATRIX IMPLEMENTATION ***/
-/*
-void BEN_get_row_linked(const struct _spmat *A, int i, int_vector K, vector row, num M){
-	Node **mat = (Node**)(A->private), *head;
-	num k_i;
-	int j, n = A->n;
-	int_vector p = K;
-	double f_i = 0;
 
-	k_i = K[i];
-	head = mat[i];
-	for (j = 0; j < n && head != NULL; row++, p++, j++){
+double get_modularity_score_linked(const struct _spmat *A, vector s, int moved_v, int_vector K, num M){
+	Node **mat = (Node**)(A->private), *head;
+	num gSize = A->n;
+	double dQ;
+	vector d_j;
+	int_vector K_j;
+	num k_i = K[moved_v];
+	int j, d_i;
+	double k_i_M = k_i / (double)M, sum = 0;
+	
+	s[moved_v] *= -1;
+	d_i = s[moved_v];
+
+	head = mat[moved_v];
+	for (d_j = s, K_j = K, j = 0; j < (int)gSize && head != NULL; d_j++, K_j++, j++){
 		if (j < head->col){
-			*row = -(k_i * ((*p) / (double)M));
+			sum += (-(*K_j * k_i_M) * (*d_j));
 		}
 		else {
-			*row = 1 - (k_i * ((*p) / (double)M));
+			sum += ((1 - (*K_j * k_i_M)) * (*d_j));
 			head = head->next;
 		}
-		f_i += *row;
 	}
 
-	while (j < n)
+	while (j < (int)gSize)
 	{
-		*(row++) = -(k_i * ((*p) / (double)M));
+		sum += (-(*K_j * k_i_M) * (*d_j));
 		j++;
-		p++;
+		d_j++;
+		K_j++;
 	}
-	*(row - n + i) -= f_i;
+
+	dQ = (4 * d_i * sum) + (4 * k_i_M * k_i);
+	/* Restore s to initial state */
+	s[moved_v] *= -1;
+
+	return dQ;
 }
 
-*/
 
 
 void get_row_linked(const struct _spmat *A, int i, vector row){
@@ -133,9 +113,7 @@ spmat* create_sub_sparse_matrix_linked(const struct _spmat  *A, Subgroup g, int 
 	Node **subMat = sub->private, **AMat = A->private, *AHead, *subHead, *tmp;
 	Subgroup row;
 	num k;
-	#ifdef DEBUG_SPMAT
-	printf("BEGIN: create_sub_sparse_matrix_linked of size %d\n",n);
-	#endif
+	
 	for (row = g ; row < g + sizeG ; row++){
 		subHead = (Node*)malloc(sizeof(Node));
 		VERIFY(subHead != NULL,MEM_ALLOC_ERROR)
@@ -153,9 +131,7 @@ spmat* create_sub_sparse_matrix_linked(const struct _spmat  *A, Subgroup g, int 
 		free(tmp);
 		*(subMat++) = subHead;
 	}
-	#ifdef DEBUG_SPMAT
-	printf("SUCCESS: create_sub_sparse_matrix_linked of size %d\n",n);
-	#endif
+	
 	return sub;
 }
 
@@ -210,9 +186,7 @@ void mult_linked(const struct _spmat *A, const double *v, double *result){
 	Node **mat = (Node**)(A->private);
 	DATA *resPtr = result;
 	int n = A->n, i;
-	#ifdef DEBUG_SPMAT
-	printf("BEGIN: mult_linked of size %d\n",n);
-	#endif
+	
 	for (i = 0; i < n ; i++){
 		if (*mat == NULL){
 			*resPtr = 0; /* if there is a row with zero values only*/
@@ -223,9 +197,6 @@ void mult_linked(const struct _spmat *A, const double *v, double *result){
 		resPtr++;
 		mat++;
 	}
-	#ifdef DEBUG_SPMAT
-	printf("SUCCESS: mult_linked of size %d\n",n);
-	#endif
 }
 
 
@@ -259,6 +230,7 @@ spmat* spmat_allocate_list(int n){
 	A->free = free_linked;
 	A->mult = mult_linked;
 	A->get_row = get_row_linked;
+	A->get_modularity_score = get_modularity_score_linked;
 	A->create_sub_mat=create_sub_sparse_matrix_linked;
 	A->spmatSize=(int_vector)malloc(n*sizeof(num));
 	VERIFY(A->spmatSize!=NULL, MEM_ALLOC_ERROR)
@@ -373,10 +345,7 @@ num add_row_to_sub_arrays(arraymat *orig, int orig_i, arraymat *dest, int sub_i,
 	double 	*v_orig=orig->values+k;
 	double 	*v_dest=dest->values;
 	Subgroup p=g;
-	#ifdef DEBUG_SPMAT
-	printf("BEGIN: add_row_to_sub_arrays orig %d to %d\n",orig_i,sub_i);
-	#endif
-
+	
 	if (sub_i==0)
 		*r_dest=0;
 	else {
@@ -402,9 +371,6 @@ num add_row_to_sub_arrays(arraymat *orig, int orig_i, arraymat *dest, int sub_i,
 	}
 
 	*(r_dest+1)= *r_dest + (c_dest_p-c_dest); 
-	#ifdef DEBUG_SPMAT
-	printf("SUCCESS: add_row_to_sub_arrays orig %d to %d\n",orig_i,sub_i);
-	#endif
 	return (c_dest_p-c_dest); 
 }
 
@@ -414,17 +380,44 @@ spmat* create_sub_sparse_matrix_array(const struct _spmat  *A, Subgroup g, int s
 	spmat *sub;
 	Subgroup p;
 	num sub_nnz = get_g_nnz_arrays(A, g, sizeG);
-	#ifdef DEBUG_SPMAT
-	printf("sub_nnz = %d\n", sub_nnz);
-	#endif
+	
 	sub=spmat_allocate_array(sizeG, sub_nnz);
 	imp=(arraymat*)(sub->private);
 	for (p=g; p<g+sizeG; p++)
 		sub->spmatSize[p-g] = add_row_to_sub_arrays(orig, *p, imp, p-g, g, sizeG);
-	#ifdef DEBUG_SPMAT
-	printf("SUCCESS: create_sub_sparse_matrix_array of size %d\n",sizeG);
-	#endif
+	
 	return sub;
+}
+
+double get_modularity_score_array(const struct _spmat *A, vector s, int moved_v, int_vector K, num M){
+	arraymat *mat = (arraymat*)(A->private);
+	num gSize = A->n;
+	double dQ;
+	vector d_j;
+	int_vector K_j;
+	num k_i = K[moved_v];
+	num j = mat->rowptr[moved_v], A_ij;
+	num row_nnz = mat->rowptr[moved_v+1]-j;
+	int_vector colind = mat->colind+j;
+	int d_i;
+	double k_i_M = k_i / (double)M, sum = 0;
+	
+	s[moved_v] *= -1;
+	d_i = s[moved_v];
+
+	
+	for (d_j = s, K_j = K; K_j < K + gSize; d_j++, K_j++){
+		A_ij = (K_j-K == *colind ? 1 : 0);
+		row_nnz -= A_ij;
+		sum += ((A_ij-(*K_j * k_i_M)) * (*d_j));
+		colind += A_ij && row_nnz>0 ? 1 : 0;
+	}
+
+	dQ = (4 * d_i * sum) + (4 * k_i_M * k_i);
+	/* Restore s to initial state */
+	s[moved_v] *= -1;
+
+	return dQ;
 }
 
 
@@ -434,8 +427,6 @@ spmat* spmat_allocate_array(int n, int nnz)
 	spmat *A;
 	double *values;
 	int_vector colind, rowptr;
-
-	/*printf("spmat_allocate_array, n=%d, nnz=%d\n", n, nnz);*/
 
 	A=(spmat*)malloc(sizeof(spmat));
 	VERIFY(A != NULL, MEM_ALLOC_ERROR)
@@ -463,49 +454,7 @@ spmat* spmat_allocate_array(int n, int nnz)
 	A->add_row=add_row_arrays;
 	A->free=free_arrays;
 	A->mult=mult_arrays;
+	A->get_modularity_score = get_modularity_score_array;
 	A->create_sub_mat=create_sub_sparse_matrix_array;
 	return A;
 }
-
-/************ DEPRECATED *************/
-
-/**
- * GENERIC FUNCTION, INDEP. OF SPMAT IMPL.
- * Fetch a reduced row i of A according to subgroup g and store it in dest.
- */
-/*
-num get_sub_row_generic(spmat *A, int i, double *dest, Subgroup g, num sizeG){
-	num cnt=0;
-	double *v, sub_ij;
-	Subgroup q;
-	v=(double*)malloc(A->n*sizeof(double));
-	VERIFY(v!=NULL, MEM_ALLOC_ERROR)
-	A->get_row(A,i,v);
-	for (q=g; q<g+sizeG; q++){
-		sub_ij=*(v+*q);
-		*(dest++)=sub_ij;
-		cnt += sub_ij;
-	}
-	free(v);
-	return cnt;
-}
-*/
-/** GENERIC FUNCTION, INDEP. OF SPMAT IMPL.
- *  Create a sub sparse matrix for Algorithm 2.
- */	
-/*
-spmat* create_sub_sparse_matrix_generic(spmat *A, Subgroup g, int sizeG){
-	spmat *sub;
-	double *sub_row;
-	Subgroup p;
-	sub = spmat_allocate_list(sizeG);
-	sub_row=(double*)malloc(sizeG*sizeof(double));
-	VERIFY(sub_row!=NULL, MEM_ALLOC_ERROR)
-	for (p=g; p<g+sizeG; p++){
-		sub->spmatSize = get_sub_row_generic(A,*p,sub_row,g,sizeG);
-		sub->add_row(sub,sub_row,p-g);
-	}
-	free(sub_row);
-	return sub;
-}
-*/

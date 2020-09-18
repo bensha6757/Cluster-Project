@@ -1,5 +1,5 @@
-#ifndef IO_MEM_ERRORS_H_
-#define IO_MEM_ERRORS_H_
+#ifndef IO_Mem_Errors_H_
+#define IO_Mem_Errors_H_
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -42,4 +42,4 @@ static const char* stringFromError(exit_code e)
     return strings[e];
 }
 
-#endif /* IO_MEM_ERRORS_H_ */
+#endif /* IO_Mem_Errors_H_ */

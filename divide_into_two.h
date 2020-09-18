@@ -1,11 +1,11 @@
 #ifndef DIVIDE_INTO_TWO_H_
 #define DIVIDE_INTO_TWO_H_
 
-#include "io_mem_errors.h"
+#include "IO_Mem_Errors.h"
 #include "modMat.h"
-#include "leading_eigenpair.h"
+#include "Leading_eigenpair.h"
 #include "Types.h"
-#include "FlagSet.h"
+#include "Flag_Set.h"
 #include "Linked_List.h"
 #include <stdio.h>
 #include <stdlib.h>

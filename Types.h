@@ -21,11 +21,4 @@ typedef unsigned long long_num;
 #define SHIFT TRUE
 #define NO_SHIFT FALSE
 
-#undef DEBUG_SPMAT
-#undef DEBUG_MODMAT
-#undef DEBUG_EIGEN
-#undef DEBUG_OPTIMIZE
-#undef DEBUG_DIV_TWO
-#undef DEBUG
-
 #endif /* TYPES_H_ */

@@ -3,9 +3,9 @@
 
 #include <stdio.h>
 #include "Stack.h"
-#include "io_mem_errors.h"
+#include "IO_Mem_Errors.h"
 #include "modMat.h"
-#include "spmat.h"
+#include "Spmat.h"
 #include "Types.h"
 
 /** Loads an input file into a modmat struct in memory.

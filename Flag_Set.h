@@ -1,7 +1,7 @@
-#ifndef FLAGSET_H_
-#define FLAGSET_H_
+#ifndef Flag_Set_H_
+#define Flag_Set_H_
 
-#include "io_mem_errors.h"
+#include "IO_Mem_Errors.h"
 #include "Types.h"
 #include <stdlib.h>
 #include <math.h>
@@ -19,4 +19,4 @@ num get_flag(long_num* set, num size, num i);
 int get_next_set_flag(long_num* set, num size, num lastFlag, boolean first);
 
 
-#endif /* FLAGSET_H_ */
+#endif /* Flag_Set_H_ */

@@ -2,7 +2,7 @@ FLAGS = -ansi -Wall -Wextra -Werror -pedantic-errors
 LIBS = -lm
 
 all: main.o
-	gcc main.o Divide_Into_Modularity_Groups.o IO.o Stack.o Divide_Into_Two.o FlagSet.o Linked_List.o leading_eigenpair.o modMat.o spmat.o  -o cluster $(LIBS)
+	gcc main.o Divide_Into_Modularity_Groups.o IO.o Stack.o Divide_Into_Two.o Flag_Set.o Linked_List.o Leading_eigenpair.o modMat.o Spmat.o  -o cluster $(LIBS)
 clean:
 	rm -rf *.o cluster
 
@@ -18,23 +18,23 @@ Stack.o: Stack.c Stack.h
 Divide_Into_Modularity_Groups.o: Divide_Into_Modularity_Groups.c Divide_Into_Modularity_Groups.h Divide_Into_Two.o modMat.o 
 	gcc $(FLAGS) -c Divide_Into_Modularity_Groups.c
 
-Divide_Into_Two.o: Divide_Into_Two.c Divide_Into_Two.h leading_eigenpair.o FlagSet.o Linked_List.o
+Divide_Into_Two.o: Divide_Into_Two.c Divide_Into_Two.h Leading_eigenpair.o Flag_Set.o Linked_List.o
 	gcc $(FLAGS) -c Divide_Into_Two.c
 
-FlagSet.o: FlagSet.c FlagSet.h
-	gcc $(FLAGS) -c FlagSet.c
+Flag_Set.o: Flag_Set.c Flag_Set.h
+	gcc $(FLAGS) -c Flag_Set.c
 	
 Linked_List.o: Linked_List.c Linked_List.h
 	gcc $(FLAGS) -c Linked_List.c
 
-leading_eigenpair.o: leading_eigenpair.c leading_eigenpair.h modMat.o 
-	gcc $(FLAGS) -c leading_eigenpair.c
+Leading_eigenpair.o: Leading_eigenpair.c Leading_eigenpair.h modMat.o 
+	gcc $(FLAGS) -c Leading_eigenpair.c
 
-modMat.o: modMat.c modMat.h spmat.o
+modMat.o: modMat.c modMat.h Spmat.o
 	gcc $(FLAGS) -c modMat.c
 	
-spmat.o: spmat.c spmat.h
-	gcc $(FLAGS) -c spmat.c
+Spmat.o: Spmat.c Spmat.h
+	gcc $(FLAGS) -c Spmat.c
 
 print_bin: print_bin.o
 	gcc print_bin.o -o print_bin $(LIBS)

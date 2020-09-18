@@ -1,4 +1,4 @@
-#include "leading_eigenpair.h"
+#include "Leading_eigenpair.h"
 
 double l2_norm(vector v, num d){
 	return sqrt(dot_prod(v,v,d));
@@ -8,10 +8,6 @@ void set_rand_vector(vector v, num n){
 	vector p;
 	for (p=v; p<v+n; p++)
 		*p = (double)rand();
-
-	#ifdef DEBUG_EIGEN
-	printf("SUCCESS: set_rand_vector\n");
-	#endif
 }
 
 double l1_dist(vector a, vector b, num len){
@@ -33,17 +29,11 @@ void power_iteration(modMat *Bg, vector v, vector result){
 	vector p;
 	double nrm;
 	num n=Bg->gSize;
-	#ifdef DEBUG_EIGEN
-	printf("BEGIN: power_iteration\n");
-	#endif
 	Bg->mult(Bg, v, result, SHIFT);
 	nrm = l2_norm(result, n);
 	VERIFY(IS_POSITIVE(nrm), DIVISION_BY_ZERO)
 	for (p = result; p < result + n; p++)
 		*p /= nrm;
-	#ifdef DEBUG_EIGEN
-	printf("SUCCESS: power_iteration\n");
-	#endif
 }
 
 
@@ -60,17 +50,13 @@ double approx_dom_eigen_val(modMat *B, vector Ab_k, vector b_k){
 	return dot_prod(b_k, Ab_k ,gSize)/d;
 }
 
-scalar leading_eigenpair(modMat *Bg, vector *leadEigenVec){
+scalar Leading_eigenpair(modMat *Bg, vector *leadEigenVec){
 	num iter=0, gSize = Bg->gSize;
 	num eigenpair_loops_bound = ITER_LIMIT(gSize);
 	vector bprev, bnext, tmp;
 	scalar leadEigenValue;
 	scalar last_l1_dist = 0;
 	
-	#ifdef DEBUG_EIGEN
-	printf("BEGIN: leading_eigenpair\n");
-	#endif
-
 	bprev = (vector)malloc(gSize * sizeof(scalar));
 	VERIFY(bprev!=NULL,MEM_ALLOC_ERROR)
 	bnext = (vector)malloc(gSize * sizeof(scalar));
@@ -90,18 +76,11 @@ scalar leading_eigenpair(modMat *Bg, vector *leadEigenVec){
 
 	} while ( IS_POSITIVE(last_l1_dist) && iter < eigenpair_loops_bound  );
 
-	#ifdef DEBUG_EIGEN
-	printf("# of power iterations: %d on size %d matrix\n", iter, gSize);
-	#endif
-
 	*leadEigenVec = bnext;
 
 	/* The leading eigenvalue is a 1-norm shifted dominant eigenvalue*/
 	leadEigenValue = approx_dom_eigen_val(Bg,bprev,bnext) - (Bg->one_norm);
 	
 	free(bprev);
-	#ifdef DEBUG_EIGEN
-	printf("SUCCESS: leading_eigenpair, beta_1 = %f\n", *leadEigenVal);
-	#endif
 	return leadEigenValue;
 }

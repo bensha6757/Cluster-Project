@@ -72,9 +72,6 @@ void load_input_file(char* filename, modMat **mat){
 	VERIFY(*mat != NULL, MEM_ALLOC_ERROR)
 	load_mod_matrix_from_file(inputFile, *mat);
 	fclose(inputFile);
-	#ifdef DEBUG
-	printf("SUCCESS: load_input_file\n");
-	#endif
 }
 
 void generate_output_file(Stack *O, char *outputPath){

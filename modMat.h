@@ -7,8 +7,8 @@
 #include <stddef.h>
 #include <string.h>
 #include <math.h>
-#include "spmat.h"
-#include "io_mem_errors.h"
+#include "Spmat.h"
+#include "IO_Mem_Errors.h"
 #include "Types.h"
 
 #define USE_SPMAT_LINKED FALSE

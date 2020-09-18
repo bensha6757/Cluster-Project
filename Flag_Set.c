@@ -1,4 +1,4 @@
-#include "FlagSet.h"
+#include "Flag_Set.h"
 
 long_num* allocate_flag_set(num size){
     long_num *set, *p;

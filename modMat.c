@@ -122,7 +122,7 @@ void set_1_norm(modMat *B){
 }
 
 
-double MHMD_get_B_modularity_score(modMat *Bg, vector s, int moved_v){
+double get_B_modularity_score(modMat *Bg, vector s, int moved_v){
 	double dQ;
 	vector A_j, d_j;
 	int_vector K = Bg->K, K_j;
@@ -162,7 +162,7 @@ double get_B_modularity(struct _modmat *B, vector s, int move_vertex){
 		free(Bs);
 	}
 	else
-		dQ = MHMD_get_B_modularity_score(B, s, move_vertex);
+		dQ = B->A->get_modularity_score(B->A, s, move_vertex, B->K, B->M);
 	return dQ;
 }
 

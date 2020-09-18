@@ -1,7 +1,7 @@
 #ifndef SPMAT_H_
 #define SPMAT_H_
 
-#include "io_mem_errors.h"
+#include "IO_Mem_Errors.h"
 #include <string.h>
 #include <stdlib.h>
 #include <stddef.h>
@@ -27,7 +27,11 @@ typedef struct _spmat {
 	/* Multiplies matrix A by vector v, into result (result is pre-allocated) */
 	void (*mult)(const struct _spmat *A, const double *v, double *result);
 
+	/* Creates a submatrix of A of n == sizeG, which consists only of rows and columns whose index in Subgroup g */
 	struct _spmat* (*create_sub_mat)(const struct _spmat  *A, Subgroup g, int sizeG);
+	
+	double (*get_modularity_score)(const struct _spmat *A, vector s, int moved_v, int_vector K, num M);
+
 	/* Private field for inner implementation.
 	 * Should not be read or modified externally */
 	void *private;
@@ -36,7 +40,6 @@ typedef struct _spmat {
 
 /* Allocates a new linked-lists sparse matrix of size n */
 spmat* spmat_allocate_list(int n);
-
 /* Allocates a new arrays sparse matrix of size n with nnz non-zero elements */
 spmat* spmat_allocate_array(int n, int nnz);
 

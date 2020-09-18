@@ -9,14 +9,7 @@ void move_maximal_score_vertex(modMat *Bg, vector *s, int_vector indices, double
 	int k=0;
 	double Q_t, maxScore = -DBL_MAX, tmpImprove=0, maxImprovement = -DBL_MAX;
 	num maxImprovementInd = 0;
-	/*clock_t start, end;*/
-	/*clock_t st_it, en_it;*/
-
 	
-	#ifdef DEBUG_DIV_TWO
-	start = clock();
-	printf("BEGIN: STEP 1 - move_maximal_score_vertex_mod_3\n");
-	#endif
 
 	/* line 2 in Alg. 4 PsCode - a flag set of boolean values, s.t. 
 	 * unmoved[v]==1 iff vertex v hasn't moved to the opposite group.
@@ -53,11 +46,6 @@ void move_maximal_score_vertex(modMat *Bg, vector *s, int_vector indices, double
 	*maxImprove = maxImprovement;
 	*maxImpInd = maxImprovementInd;
 	
-	#ifdef DEBUG_DIV_TWO
-	printf("SUCCESS: STEP 1 - move_maximal_score_vertex_mod_2\n");
-	end = clock();
-	printf("Execution took %f seconds\n", ((double)(end-start) / CLOCKS_PER_SEC));
-	#endif
 }
 
 
@@ -70,12 +58,6 @@ void optimize_division(modMat *Bg, vector *s){
 	num maxImpInd=0, iter=0, gSize = Bg->gSize;
 	num maximize_loop_limit = gSize;
 	double deltaQ=0, lastDeltaQ=0, maxImprove=-DBL_MAX;
-
-	#ifdef DEBUG_DIV_TWO
-	clock_t start, end;
-	start = clock();
-	printf("BEGIN: optimize_division_mod_3\n");
-	#endif
 
 	indices = (int_vector)malloc(gSize*sizeof(num));
 	VERIFY(indices!=NULL, MEM_ALLOC_ERROR)
@@ -93,11 +75,7 @@ void optimize_division(modMat *Bg, vector *s){
 
 		VERIFY(iter++ < maximize_loop_limit, INFINITE_LOOP_ERROR)
 	} while (IS_POSITIVE(deltaQ) && IS_POSITIVE(fabs(deltaQ-lastDeltaQ)));
-	#ifdef DEBUG_DIV_TWO
-	printf("SUCCESS: optimize_division_mod_3\n");
-	end = clock();
-	printf("Execution took %f seconds\n", ((double)(end-start) / CLOCKS_PER_SEC));
-	#endif
+	
 	free(indices);
 }
 
@@ -184,10 +162,6 @@ void optimize_division_mod_Linked(modMat *Bg, vector *s){
 		VERIFY(iter++ < maximize_loop_limit, INFINITE_LOOP_ERROR)
 	} while (IS_POSITIVE(deltaQ) && IS_POSITIVE(fabs(deltaQ-lastDeltaQ)));
 
-	#ifdef DEBUG_DIV_TWO
-	printf("SUCCESS: optimize_division_mod_Linked for gSize=%d after %d iter with dQ=%f.\n",gSize, iter, deltaQ);
-	#endif
-
 	free(indices);
 }
 
@@ -253,7 +227,7 @@ DIV_RESULT divide_into_two(modMat *B, Subgroup g, num sizeG, Subgroup *g1, Subgr
 
 	Bg = create_Sub_Matrix(B, g, sizeG);
 
-	beta = leading_eigenpair(Bg, &u);
+	beta = Leading_eigenpair(Bg, &u);
 
 	if (!IS_POSITIVE(beta)){
 		/*printf("no optimize for size %d\n", sizeG);*/
