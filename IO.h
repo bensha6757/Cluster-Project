@@ -8,12 +8,16 @@
 #include "Spmat.h"
 #include "Types.h"
 
-/** Loads an input file into a modmat struct in memory.
+/** Loads an input file into a modularity matrix struct in memory.
  * @param filename - a string, path of the input file.
  * @param mat - an address for the modmat struct to be stored at. 
  * */ 
 void load_input_file(char* filename, modMat **mat);
 
+/** Unloads a stack of subgroups (communities) into a file.
+ * @param O - A stack containing disjoint communities of a network.
+ * @param outputPath - a string, path of the output file.
+ * */ 
 void generate_output_file(Stack *O, char *outputPath);
 
 #endif /* IO_H_ */

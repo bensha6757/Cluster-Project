@@ -5,10 +5,9 @@
  *********************************/
 
 
-/*	Converts node indices (like input file format) to a {0,1} vector of length n
+/**	Converts node indices (like input file format) to a {0,1} vector of length n
  * 	that can be added to a spmat via add_row. 
  */
-
 void convert_adj_list(int_vector adj, num adj_len, vector line, num n){
 	int_vector k;
 	memset(line, 0, n*sizeof(double));
@@ -16,6 +15,11 @@ void convert_adj_list(int_vector adj, num adj_len, vector line, num n){
 		*(line+*k)=1;
 }
 
+/** Returns the number of nodes in network (i.e. n == |V|) represented as a formatted file.
+ * 	Additionaly, computes sum the of degrees of the network (i.e. 2*|E|).
+ *  @param input - a previosly open input file, formatted as a network's adjecancy list.
+ * 	@param m - an address of non-negative integer to store sum of network's degrees. 
+ */
 num read_network_size_and_nnz_from_file(FILE *input, num *m){
 	num n, i, k;
 	num* tmp;
@@ -32,7 +36,11 @@ num read_network_size_and_nnz_from_file(FILE *input, num *m){
 	return n;
 }
 
-/* Read an open input file into previously allocated modMat B */
+/** Reads an input file into a modularity matrix in memory.
+ * 	Assumes file will no longer be used afterwards.
+ *  @param input - a previosly open input file, formatted as a network's adjecancy list.
+ * 	@param B - a previously allocated modularity matrix B object.
+ */
 void load_mod_matrix_from_file(FILE *input, modMat *B){
 	int_vector K = B->K, sp=B->A->spmatSize, neighbours;
 	num k_i, i, gSize = B->gSize, M = 0;
@@ -54,13 +62,13 @@ void load_mod_matrix_from_file(FILE *input, modMat *B){
 	}
 	free(neighbours);
 	free(matLine);
-	/*rewind(input);*/
 	B->M = M;
 	B->currM = M;
 	set_1_norm(B);
 }
 
 /*** INTERFACE FOR MAIN PROGRAM ***/
+
 
 void load_input_file(char* filename, modMat **mat){
 	num N, M=0;

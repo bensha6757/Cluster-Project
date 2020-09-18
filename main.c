@@ -10,8 +10,9 @@ void runClusterProject(char* inputFileName, char* outputFileName){
 	num i, gSize;
 	load_input_file(inputFileName,&mat); /* reading input */
 	
+	/* generating trivial division into one group */
 	gSize = mat->gSize;	
-	g = (Subgroup)malloc(gSize * sizeof(num)); /* generating trivial division into one group */
+	g = (Subgroup)malloc(gSize * sizeof(num)); 
 	VERIFY(g!=NULL,MEM_ALLOC_ERROR)
 	for (g_i = g , i = 0 ; i < gSize ; g_i++, i++){
 		*g_i = i;

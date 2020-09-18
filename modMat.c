@@ -1,5 +1,6 @@
 #include "modMat.h"
 
+/* multiply v*u */
 double dot_prod(vector v, vector u, num d){
 	num i;
 	double acc=0;
@@ -10,7 +11,7 @@ double dot_prod(vector v, vector u, num d){
 }
 
 
-/* helping function, populating Bg->K, Bg->currM according to the subgroup g*/
+/* helping function, populating Bg->K, Bg->currM corresponding to the subgroup g*/
 void compute_K_and_currM(modMat *Bsrc, modMat *Bg, Subgroup g, num gSize){
 	int_vector g_i, K_i=Bsrc->K,  Kg_i=Bg->K;
     num cnt = 0;
@@ -21,22 +22,22 @@ void compute_K_and_currM(modMat *Bsrc, modMat *Bg, Subgroup g, num gSize){
 	Bg->currM=cnt;
 }
 
+/* Constructor, creates a new sub matrix B_hat[g], corresponds to B and g */
 modMat* create_Sub_Matrix(modMat *B, Subgroup g, num sizeG){
     modMat *Bg=NULL;
-	spmat *Ag;
 	Bg = allocate_mod_mat(sizeG, 0, TRUE);
 	VERIFY(Bg != NULL, MEM_ALLOC_ERROR)
-	Ag = B->A->create_sub_mat(B->A, g, sizeG);
-	VERIFY(Ag != NULL, MEM_ALLOC_ERROR)
+	Bg->A = B->A->create_sub_mat(B->A, g, sizeG); /* create a sub spmat */
+	VERIFY(Bg->A != NULL, MEM_ALLOC_ERROR)
 	compute_K_and_currM(B, Bg, g, sizeG);
-	Bg->A = Ag;
 	Bg->M = B->M; /* For any submatrix created, keep the original M of the network */
 	Bg->one_norm = B->one_norm; /* Use the greatest 1-norm for all matrices of any size less than B->gSize */
     return Bg;
 }
 
 /** part of the modularity matrix multiplication for power iteration, 
- * multiplying the degrees matrix (k_i * k_j / M) minus (f_i - ||C||) * I
+ * multiplying the degrees matrix (k_i * k_j / M) minus (f_i - ||C||) * I (while ||C|| is the one norm of Bg, in case a shift is needed),
+ * all multiplications at one loop
  * */
 void mult_K_F_and_C(const modMat *Bg, const double *v, double *res, boolean shift){
     int_vector K = Bg->K, spmatSize = Bg->A->spmatSize;
@@ -56,14 +57,14 @@ void mult_K_F_and_C(const modMat *Bg, const double *v, double *res, boolean shif
 	shiftNorm = shift ? Bg->one_norm : 0;
 
     for (ki = K ; ki < sizeG + K ; ki++, v++, res++, spmatSize++){
-		KFC = 0;
+		KFC = 0; /* KFC stores the multiplication of the degrees matrix (k_i * k_j / M) minus (f_i - ||C||) * I */
 		if (*ki != 0){ /* an integer value non-zero check */
 			KFC = (*ki) * dot * (1 / origM);
 			fi = (*spmatSize) - ((currM * (*ki)) / origM);
 			KFC += (fi * (*v));
 		}
 		KFC -= (shiftNorm * (*v));
-		*res -= KFC;
+		*res -= KFC; /* res currently stores Av, so the overall result = (Av - (K + f_i - ||C||)*v) */
     }
 	
 }
@@ -121,36 +122,10 @@ void set_1_norm(modMat *B){
 	B->one_norm = max;
 }
 
-
-double get_B_modularity_score(modMat *Bg, vector s, int moved_v){
-	double dQ;
-	vector A_j, d_j;
-	int_vector K = Bg->K, K_j;
-	num gSize=Bg->gSize, k_i = K[moved_v];
-	int d_i;
-	double k_i_M = k_i / (double) Bg->M, sum = 0;
-
-	A_j = (vector)malloc(gSize*sizeof(double));
-	VERIFY(A_j!=NULL, MEM_ALLOC_ERROR)
-	Bg->A->get_row(Bg->A, moved_v, A_j);
-	
-	s[moved_v] *= -1;
-	d_i = s[moved_v];
-
-	for(d_j = s, K_j = K; d_j < gSize + s ; d_j++, K_j++, A_j++){
-		sum += ((*A_j - (*K_j * k_i_M)) * (*d_j));
-	}
-
-	dQ = (4 * d_i * sum) + (4 * k_i_M * k_i);
-	/* Restore s to initial state */
-	s[moved_v] *= -1;
-
-	A_j -= gSize;
-	free(A_j);
-	
-	return dQ;
-}
-
+/** Compute Modularity of B[g]_hat: 0.5 * s^T * B[g]_hat * s.
+** the functions can be called from the Maximization algorithm, where only one entry of s is being changed, so the spmat module can calculate it smartly and quickly.
+** @param move_vertex - if MODULARITY_INIT, compute modularity w.r.t to S. Otherwise, move vertex s[move_vertex] temporarily and compute.
+*/
 double get_B_modularity(struct _modmat *B, vector s, int move_vertex){
 	double dQ;
 	vector Bs;
@@ -166,14 +141,14 @@ double get_B_modularity(struct _modmat *B, vector s, int move_vertex){
 	return dQ;
 }
 
-
+/* free B's allocated fields and B itselft */
 void free_mod_mat(modMat *B){
 	B->A->free(B->A);
 	free(B->K);
 	free(B);
 }
 
-
+/* allocation function, can allocate both sub modMat and full size modMat */
 modMat* allocate_mod_mat(num n, num nnz, boolean isSub){
 	modMat *rep = (modMat*)malloc(sizeof(modMat));
 	VERIFY(rep!=NULL, MEM_ALLOC_ERROR)

@@ -1,15 +1,18 @@
 #include "Leading_eigenpair.h"
 
+/** Computes l2 (euclidian) norm of a vector of dimension d */
 double l2_norm(vector v, num d){
 	return sqrt(dot_prod(v,v,d));
 }
 
-void set_rand_vector(vector v, num n){
+/** Sets v, a preallocated vector of dimension d, to random values at each entry */ 
+void set_rand_vector(vector v, num d){
 	vector p;
-	for (p=v; p<v+n; p++)
+	for (p=v; p<v+d; p++)
 		*p = (double)rand();
 }
 
+/** Computes a's distance from b by checking the largest distance between 2 respective entries in a and b */
 double l1_dist(vector a, vector b, num len){
 	double maxDiff=0, diff;
 	vector p;
@@ -21,9 +24,12 @@ double l1_dist(vector a, vector b, num len){
 	return maxDiff;
 }
 
-/*
- * Apply a single iteration to a matrix B and a vector v according to the power method.
- * Store result in result vector.
+/**
+ * Performes a single iteration to a matrix B and a vector v according to the power method.
+ * Stores result in result vector.
+ * @param Bg - a modularity matrix.
+ * @param v - input vector, of dimension == dim(Bg).
+ * @param result - output vector, of dimension == dim(Bg).
  */
 void power_iteration(modMat *Bg, vector v, vector result){
 	vector p;
@@ -37,7 +43,7 @@ void power_iteration(modMat *Bg, vector v, vector result){
 }
 
 
-/**	Approximate dominant eigen value of matrix B, 
+/**	Approximates dominant eigen value of matrix B, 
  * 	using vectors computed in last power iteration, according to equation:
  *  beta_1 = (Ab_k * b_k) / ||b_k||^2.
  **/

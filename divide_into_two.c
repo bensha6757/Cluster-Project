@@ -49,9 +49,12 @@ void move_maximal_score_vertex(modMat *Bg, vector *s, int_vector indices, double
 }
 
 
-/** Optimize a division encoded by {-1,1} vector s by moving a vertex to other group and ascending modularity Q.
- * Based on lines 2-20 in Alg. 4 pseudo-code .
- * */
+/** Optimizes a 2-division by moving vertices in one group to the opposite group and attempting to ascend modularity Q of Bg.
+ * 	The function will modify vector s, if an optimized division is found.
+ * 	Based on lines 2-20 in Alg. 4 pseudo-code.
+ * 	@param Bg - The modularity matrix of a network.
+ * 	@param s - a {-1,1} vector encoding a 2-division.
+ **/
 void optimize_division(modMat *Bg, vector *s){
 	vector s_ptr = *s;
 	int_vector indices, j;
@@ -82,8 +85,6 @@ void optimize_division(modMat *Bg, vector *s){
 
 /** Based on lines 2-20 in Alg. 4 pseudo-code .
  */
-
-
 void move_maximal_score_vertex_mod_Linked(modMat *Bg, vector *s, int_vector indices, double *maxImprove, num *maxImpInd) {
 	vector s_ptr = *s;
 	Linked_list_moved *unmoved = NULL;
@@ -183,9 +184,9 @@ void eigen_to_s(modMat *Bg, vector eigenVec, vector *s){
 	
 }
 
-/** Maps a {-1,1} vector s of B's dim. to a partition g1,g2 of g,
- *  where g is some subset of 0,1,...,n, s.t. n=|V| of the original network.
- * */  
+/** Maps a {-1,1} vector s s.t. dim(s)==dim(B) to a partition g1, g2 of g,
+ *  where g is a subset of 0,1,...,n, s.t. n=|V| of the original network.
+ **/  
 void map_s_to_groups(Subgroup g, num sizeG, vector s, Subgroup *g1, Subgroup *g2,  num *sizeG1, num *sizeG2){
 	vector s_i;
 	num v = 0;

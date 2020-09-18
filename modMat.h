@@ -11,7 +11,7 @@
 #include "IO_Mem_Errors.h"
 #include "Types.h"
 
-#define USE_SPMAT_LINKED FALSE
+#define USE_SPMAT_LINKED TRUE
 #define MODULARITY_INIT -1
 
 /*
@@ -33,9 +33,9 @@ typedef struct _modmat {
 	void (*mult)(const struct _modmat *B, const double *v, double *result, boolean shift);
 
 	/** Compute Modularity of B[g]_hat: 0.5 * s^T * B[g]_hat * s.
- 	* 	For enhanced computation, can use an optional pre-computed vector storing the product B*s.
- 	*  @param move_vertex - if MODULARITY_INIT, compute modularity w.r.t to S. Otherwise, move vertex s[move_vertex] temporarily and compute.
- 	*/
+	*	the functions can be called from the Maximization algorithm, where only one entry of s is being changed, so the spmat module can calculate it smartly and quickly.
+	* 	@param move_vertex - if MODULARITY_INIT, compute modularity w.r.t to s. Otherwise, move vertex s[move_vertex] temporarily and compute.
+	*/
 	double (*get_modularity)(struct _modmat *B, vector s, int move_vertex);
 
 } modMat;
@@ -47,11 +47,7 @@ double dot_prod(vector v, vector u, num d);
 /* Allocate a new, empty instance of Modularity Matrix */
 modMat* allocate_mod_mat(num n, num nnz, boolean isSub);
 
-/*modMat* allocate_sub_mod_mat(num n);*/
-
-/** Constructor, creates a new sub matrix B_hat[g], based on B.
- *  
- */
+/* Constructor, creates a new sub matrix B_hat[g], based on B and g */
 modMat *create_Sub_Matrix(modMat *B, Subgroup g, num sizeG);
 
 /* Computes and sets 1-norm of B, i.e. max_i(sum_j(abs(B_ij))) */

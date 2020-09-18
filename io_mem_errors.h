@@ -17,6 +17,7 @@ typedef enum exit_code_t {
     DIVISION_BY_ZERO
 } exit_code;
 
+/* assertion check */
 #define VERIFY(expression, error)                                                           \
     if (!(expression)){                                                                      \
         printf("\n%s%s, %s", "Verification Failed: ", #expression, stringFromError(error));   \
@@ -24,6 +25,7 @@ typedef enum exit_code_t {
         exit(error);                                                                            \
     }                                                                                            \
 
+/* print the relevent error message */
 static const char* stringFromError(exit_code e)
 {
     static const char *strings[] = 

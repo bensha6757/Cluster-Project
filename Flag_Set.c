@@ -1,5 +1,11 @@
 #include "Flag_Set.h"
 
+/************************************************************************************************************
+ * a data structure storing Unmoved vertices for the Maximization algorithm                                 *
+ * allowing a quick get_next_set_flag in order to get the next unmoved vertex for the algorithm's purposes  *
+ ************************************************************************************************************/
+
+/* allocating a new flag set, with an amount of @param size set bits */
 long_num* allocate_flag_set(num size){
     long_num *set, *p;
     num cells = size / BITS_IN_CELL;
@@ -12,6 +18,7 @@ long_num* allocate_flag_set(num size){
     return set;
 }
 
+/* setting the i'th bit */
 void set_flag(long_num* set, num size, num i){
     num locate = i / BITS_IN_CELL,  r = i % BITS_IN_CELL;
     long_num mask = (long_num)1 << r;
@@ -19,6 +26,7 @@ void set_flag(long_num* set, num size, num i){
     set[locate] |= mask;
 }
 
+/* resetting the i'th bit */
 void reset_flag(long_num* set, num size, num i){
     num locate = i / BITS_IN_CELL,  r = i % BITS_IN_CELL;
     long_num mask = ~((long_num)1 << r);
@@ -26,6 +34,7 @@ void reset_flag(long_num* set, num size, num i){
     set[locate] &= mask;
 }
 
+/* check if the i'th bit is set */
 num get_flag(long_num* set, num size, num i){
     num locate = i/BITS_IN_CELL,  r = i % BITS_IN_CELL;
     long_num cell = set[locate];
@@ -36,6 +45,7 @@ num get_flag(long_num* set, num size, num i){
     return (num) (i_bit % 2);
 }
 
+/* based on the last flag location, return the next set bit */
 int get_next_set_flag(long_num* set, num size, num lastFlag, boolean first){
     num lastLoc = lastFlag / BITS_IN_CELL,  r = lastFlag % BITS_IN_CELL;
     num cap = (size / BITS_IN_CELL) + (size % BITS_IN_CELL > 0 ? 1 : 0);
@@ -43,10 +53,10 @@ int get_next_set_flag(long_num* set, num size, num lastFlag, boolean first){
     num res;
     if (r + 1 != BITS_IN_CELL){
         if (first == FALSE){
-            mask = ~(cell & 0) << (r + 1);
+            mask = ~(cell & 0) << (r + 1); /* hiding the bits before the last flag location */
             cell &= mask;
         }
-        res = (num)(log(cell & -cell)/log(2)) + (lastLoc * BITS_IN_CELL);
+        res = (num)(log(cell & -cell)/log(2)) + (lastLoc * BITS_IN_CELL); /* extrcating the only set bit location and adding it the number of cells before the current cell */
         if (res < size && cell != 0)
             return res;
         if (res >= size)
@@ -54,7 +64,7 @@ int get_next_set_flag(long_num* set, num size, num lastFlag, boolean first){
     }
     
     p++;
-    while (p-set < cap && *p == 0){
+    while (p-set < cap && *p == 0){ /* skipping cells where all vertices are moved */
         p++;
     }
     if (p-set >= cap)

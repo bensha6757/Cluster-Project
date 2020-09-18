@@ -11,6 +11,10 @@ typedef struct linked_list Node;
 
 /*** LINKED LIST MATRIX IMPLEMENTATION ***/
 
+/* a function that is ment to be called from Maximization algorithm in order to populate score[i]
+** utilizing lists implementation for spmat and smartly calculating the B's modularity after only one entry of s has been changed.
+** the calculation is based on algebric simplification.
+ */
 double get_modularity_score_linked(const struct _spmat *A, vector s, int moved_v, int_vector K, num M){
 	Node **mat = (Node**)(A->private), *head;
 	num gSize = A->n;
@@ -51,7 +55,7 @@ double get_modularity_score_linked(const struct _spmat *A, vector s, int moved_v
 }
 
 
-
+/* extracting a vector of 0's and 1's corresponds to the i'th row of A */
 void get_row_linked(const struct _spmat *A, int i, vector row){
 	Node **mat = (Node**)(A->private), *head;
 	int n = A->n, j;
@@ -327,7 +331,7 @@ num get_g_row_nnz_arrays(arraymat *orig, int i, Subgroup g, int sizeG){
 	}
 	return cnt;
 }
-
+/** Returns number of non-zero elements of a submatrix A[g] of dimension sizeG */
 num get_g_nnz_arrays(const struct _spmat *A, Subgroup g, int sizeG){
 	arraymat *orig=((arraymat*)(A->private));
 	Subgroup p;
