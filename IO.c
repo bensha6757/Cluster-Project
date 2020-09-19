@@ -5,8 +5,8 @@
  *********************************/
 
 
-/**	Converts node indices (like input file format) to a {0,1} vector of length n
- * 	that can be added to a spmat via add_row. 
+/**	Converts adj array of length adj_len, consisting of node indices (like in input file format) 
+ *  to a preallocated {0,1} vector of length n that can be added to an instance of spmat via add_row. 
  */
 void convert_adj_list(int_vector adj, num adj_len, vector line, num n){
 	int_vector k;
