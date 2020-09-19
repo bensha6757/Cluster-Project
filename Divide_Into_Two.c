@@ -1,7 +1,6 @@
 #include "Divide_Into_Two.h"
 
-/** Based on lines 2-20 in Alg. 4 pseudo-code .
- */
+/* first part of Alg. 4 - find improvement of the partition defined by s */
 void move_maximal_score_vertex(modMat *Bg, vector *s, int_vector indices, double *maxImprove, num *maxImpInd) {
 	vector s_ptr = *s;
 	long_num *unmoved=NULL;
@@ -11,36 +10,32 @@ void move_maximal_score_vertex(modMat *Bg, vector *s, int_vector indices, double
 	num maxImprovementInd = 0;
 	
 
-	/* line 2 in Alg. 4 PsCode - a flag set of boolean values, s.t. 
+	/* initializing a flag set of boolean values, s.t. 
 	 * unmoved[v]==1 iff vertex v hasn't moved to the opposite group.
 	 */
 	unmoved = allocate_flag_set(gSize);
 
 	for (i = 0 ; i < gSize ; i++){
-		/* lines 3-11 in Alg. 4 PsCode */
 		maxi=0;
 		maxScore = -DBL_MAX;
 		k = get_next_set_flag(unmoved, gSize, 0, TRUE);
 		while (k != -1){
 			Q_t = Bg->get_modularity(Bg, s_ptr, k);
-			if (Q_t > maxScore){
+			if (Q_t > maxScore){ /* saving the maximum score achieved and the index j' caused it */
 				maxScore = Q_t;
 				maxi = k;
 			}
 			k = get_next_set_flag(unmoved, gSize, k, FALSE);
 		}
-		/* line 12-13 in Alg. 4 PsCode */
 		s_ptr[maxi] *= -1;
 		*(indices++)  = maxi;
 
-		/* line 14-18, 21 in Alg. 4 PsCode */
-		tmpImprove += maxScore;
-		if (tmpImprove > maxImprovement){
+		tmpImprove += maxScore; /* updating improve[i] with score[j'] */
+		if (tmpImprove > maxImprovement){ /* saving the maximum improvement */
 			maxImprovement = tmpImprove;
 			maxImprovementInd = i;
 		}
-		/* line 19 in Alg. 4 PsCode */
-		reset_flag(unmoved, gSize, maxi);
+		reset_flag(unmoved, gSize, maxi); /* Unmoved = Unmoved \ {j'} */
 	}
 	free(unmoved);
 	*maxImprove = maxImprovement;
@@ -51,7 +46,7 @@ void move_maximal_score_vertex(modMat *Bg, vector *s, int_vector indices, double
 
 /** Optimizes a 2-division by moving vertices in one group to the opposite group and attempting to ascend modularity Q of Bg.
  * 	The function will modify vector s, if an optimized division is found.
- * 	Based on lines 2-20 in Alg. 4 pseudo-code.
+ * 	Based on Alg. 4 pseudo-code.
  * 	@param Bg - The modularity matrix of a network.
  * 	@param s - a {-1,1} vector encoding a 2-division.
  **/
@@ -67,13 +62,11 @@ void optimize_division(modMat *Bg, vector *s){
 
 	do {
 		lastDeltaQ = deltaQ;
-		/* lines 2-21 in Alg. 4 pseudo-code */
+		/* find improvement of the partition defined by s */
 		move_maximal_score_vertex(Bg, s, indices, &maxImprove, &maxImpInd);
-
-		/* lines 22-25 in Alg. 4 pseudo-code */
+		/* find the maximum improvement of s and update s accordingly */
 		for (j= indices + gSize - 1; j > indices + maxImpInd; j--)
 			s_ptr[*j] *= -1;
-		/* lines 26-30 in Alg. 4 pseudo-code */
 		deltaQ = (maxImpInd == gSize-1) ? 0 : maxImprove;
 
 		VERIFY(iter++ < maximize_loop_limit, INFINITE_LOOP_ERROR)
@@ -83,8 +76,7 @@ void optimize_division(modMat *Bg, vector *s){
 }
 
 
-/** Based on lines 2-20 in Alg. 4 pseudo-code .
- */
+/*
 void move_maximal_score_vertex_mod_Linked(modMat *Bg, vector *s, int_vector indices, double *maxImprove, num *maxImpInd) {
 	vector s_ptr = *s;
 	Linked_list_moved *unmoved = NULL;
@@ -97,7 +89,6 @@ void move_maximal_score_vertex_mod_Linked(modMat *Bg, vector *s, int_vector indi
 	head = unmoved->head;
 
 	for (i=0; i<gSize; i++){
-		/* lines 3-11 in Alg. 4 PsCode */
 		maxi=0;
 		maxScore = -DBL_MAX;
 	
@@ -112,17 +103,14 @@ void move_maximal_score_vertex_mod_Linked(modMat *Bg, vector *s, int_vector indi
 			prev = head;
 			head = head->next;
 		}
-		/* line 12-13 in Alg. 4 PsCode */
 		s_ptr[maxi] *= -1;
 		*(indices++)  = maxi;
 
-		/* line 14-18, 21 in Alg. 4 PsCode */
 		tmpImprove += maxScore;
 		if (tmpImprove > maxImprovement){
 			maxImprovement = tmpImprove;
 			maxImprovementInd = i;
 		}
-		/* line 19 in Alg. 4 PsCode */
 		delete_node(unmoved, delprev, delhead);
 
 		head = unmoved->head;
@@ -133,13 +121,10 @@ void move_maximal_score_vertex_mod_Linked(modMat *Bg, vector *s, int_vector indi
 	*maxImpInd = maxImprovementInd;
 
 }
+*/
 
 
-
-/** Optimize a division encoded by {-1,1} vector s by moving a vertex to other group and ascending modularity Q.
- * Based on lines 2-20 in Alg. 4 pseudo-code .
- * */
-
+/*
 void optimize_division_mod_Linked(modMat *Bg, vector *s){
 	vector s_ptr = *s;
 	int_vector indices, j;
@@ -152,12 +137,9 @@ void optimize_division_mod_Linked(modMat *Bg, vector *s){
 
 	do {
 		lastDeltaQ = deltaQ;
-		/* lines 2-21 in Alg. 4 pseudo-code */
 		move_maximal_score_vertex_mod_Linked(Bg, s, indices, &maxImprove, &maxImpInd);
-		/* lines 22-25 in Alg. 4 pseudo-code */
 		for (j= indices + gSize - 1; j > indices + maxImpInd; j--)
 			s_ptr[*j] *= -1;
-		/* lines 26-30 in Alg. 4 pseudo-code */
 		deltaQ = (maxImpInd == gSize-1) ? 0 : maxImprove;
 
 		VERIFY(iter++ < maximize_loop_limit, INFINITE_LOOP_ERROR)
@@ -165,7 +147,7 @@ void optimize_division_mod_Linked(modMat *Bg, vector *s){
 
 	free(indices);
 }
-
+*/
 
 
 /*
@@ -219,35 +201,39 @@ void map_s_to_groups(Subgroup g, num sizeG, vector s, Subgroup *g1, Subgroup *g2
 	
 }
 
-
+/* Algorithm 2 */
 DIV_RESULT divide_into_two(modMat *B, Subgroup g, num sizeG, Subgroup *g1, Subgroup *g2, num *sizeG1, num *sizeG2){
 	scalar beta;
 	vector u, s;
 	modMat *Bg;
 	DIV_RESULT ret;
 
+	/* creating a sub matrix B_hat[g] */
 	Bg = create_Sub_Matrix(B, g, sizeG);
 
+	/* computing leading eigenpair u1 and B1 of the modularity matrix B_hat[g] */
 	beta = Leading_eigenpair(Bg, &u);
 
 	if (!IS_POSITIVE(beta)){
-		/*printf("no optimize for size %d\n", sizeG);*/
 		Bg->free(Bg);
 		free(u);
 		*sizeG1 = sizeG;
 		*sizeG2 = 0;
 		return GROUP_INDIVISIBLE;
 	}
-	
+	/* computing s according to u1 */
 	eigen_to_s(Bg, u, &s);
+
 	if (!IS_POSITIVE(Bg->get_modularity(Bg, s, MODULARITY_INIT)))
 		ret=GROUP_INDIVISIBLE;
 	else
 		ret=GROUP_DIVIDED;
 	optimize_division(Bg, &s);
 
+	/* B_hat[g] is no longer in use */
 	Bg->free(Bg);
 
+	/* updating g1 and g2 for algorithm 3 */
 	map_s_to_groups(g, sizeG, s, g1, g2, sizeG1, sizeG2);
 
 	free(u);

@@ -57,14 +57,14 @@ void mult_K_F_and_C(const modMat *Bg, const double *v, double *res, boolean shif
 	shiftNorm = shift ? Bg->one_norm : 0;
 
     for (ki = K ; ki < sizeG + K ; ki++, v++, res++, spmatSize++){
-		KFC = 0; /* KFC stores the multiplication of the degrees matrix (k_i * k_j / M) minus (f_i - ||C||) * I */
+		KFC = 0; /* KFC stores the multiplication of the degrees matrix (k_i * k_j / M) minus (f_i - ||C||) * I --- i.e. (K + f_i - ||C||)*v*/
 		if (*ki != 0){ /* an integer value non-zero check */
 			KFC = (*ki) * dot * (1 / origM);
 			fi = (*spmatSize) - ((currM * (*ki)) / origM);
 			KFC += (fi * (*v));
 		}
 		KFC -= (shiftNorm * (*v));
-		*res -= KFC; /* res currently stores Av, so the overall result = (Av - (K + f_i - ||C||)*v) */
+		*res -= KFC; /* res currently stores Av, so the overall result will be = (Av - (K + f_i - ||C||)*v) */
     }
 	
 }
@@ -132,8 +132,10 @@ double get_B_modularity(struct _modmat *B, vector s, int move_vertex){
 	if (move_vertex == MODULARITY_INIT){
 		Bs = (vector)malloc(B->gSize*sizeof(double));
 		VERIFY(Bs!=NULL, MEM_ALLOC_ERROR)
+
 		B->mult(B, s, Bs, NO_SHIFT);
 		dQ = dot_prod(s, Bs, B->gSize);
+		
 		free(Bs);
 	}
 	else

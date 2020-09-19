@@ -32,8 +32,8 @@ Stack* divide_into_mod_groups(modMat* B, Subgroup g, num sizeG){
 	VERIFY(O != NULL,MEM_ALLOC_ERROR)
 	
 	init(P);
-	init(O); 			/* initializing O to be empty */
-	push(P,g,sizeG); 	/* starting with a trivial division into one group */
+	init(O); /* initializing O to be empty */
+	push(P,g,sizeG); /* starting with a trivial division into one group */
 	while (!isEmpty(P)){
 		g = pop(P, &sizeG); /* g would be g1 or g2 from some previous iteration */
 		divide_into_two(B, g, sizeG, &g1, &g2, &sizeG1, &sizeG2); /* calling Algorithm 2, (g1,g2,sizeG1,sizeG2) will be populate inside the function with the result of the division */

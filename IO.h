@@ -8,6 +8,11 @@
 #include "Spmat.h"
 #include "Types.h"
 
+/**************************************************************************************
+ * a module in charge of reading the input binary file and writing the final results, *
+ *  containing the modularity division to groups                                      *
+ * ************************************************************************************/
+
 /** Loads an input file into a modularity matrix struct in memory.
  * @param filename - a string, path of the input file.
  * @param mat - an address for the modmat struct to be stored at. 

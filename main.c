@@ -3,7 +3,11 @@
 #include "Stack.h"
 #include "Types.h"
 
-void runClusterProject(char* inputFileName, char* outputFileName){
+/******************************************
+ * the main module to run Cluster project *
+ * ****************************************/
+
+void run_cluster_project(char* inputFileName, char* outputFileName){
 	modMat *mat=NULL;
 	Subgroup g, g_i;
 	Stack *O;
@@ -36,7 +40,7 @@ int main(int argc, char* argv[]){
 	VERIFY(argc - 1 == 2, MISSING_ARG_ERROR)
 	srand(time(NULL));
 	start = clock();
-	runClusterProject(inputFileName, outputFileName);
+	run_cluster_project(inputFileName, outputFileName);
 	end = clock();
 	printf("Execution took %f seconds\n", ((double)(end-start) / CLOCKS_PER_SEC));
 	return SUCCESS;

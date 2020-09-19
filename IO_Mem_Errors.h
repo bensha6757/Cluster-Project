@@ -4,6 +4,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+/******************************************************************
+ * a module in charge of exiting the program in case of an error, *
+ * and supplying a message explaining the reason                  *
+ * ****************************************************************/ 
+
 typedef enum exit_code_t {
     SUCCESS,
     MISSING_ARG_ERROR,

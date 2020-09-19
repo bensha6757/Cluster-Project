@@ -10,6 +10,10 @@
 #include <string.h>
 #include "Types.h"
 
+/**********************************************************************************
+ * a module in charge of supplying the leading eigenpair for algorithm 2 purposes *
+ * ********************************************************************************/
+
  /*There are about O(N^2) Power iterations for a matrix of size N */
 #define ITER_LIMIT(N) (0.5*(N)*(N)+10000*(N)+300000)
 
