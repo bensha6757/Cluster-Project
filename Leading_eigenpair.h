@@ -15,7 +15,7 @@
  * ********************************************************************************/
 
  /*There are about O(N^2) Power iterations for a matrix of size N */
-#define ITER_LIMIT(N) (0.5*(N)*(N)+2*(N)+50000)
+#define ITER_LIMIT(N) (0.5*(N)*(N)+2000*(N)+50000)
 
 
 /**
