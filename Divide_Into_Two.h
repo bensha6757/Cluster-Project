@@ -6,14 +6,13 @@
 #include "Leading_eigenpair.h"
 #include "Types.h"
 #include "Flag_Set.h"
-#include "Linked_List.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <float.h>
 
 /**********************************************************************************
  * A module in charge of dividing a network into two sub-networks. 				  *
- * ********************************************************************************/
+ **********************************************************************************/
 
 typedef enum div_res_t {
 	GROUP_INDIVISIBLE,
