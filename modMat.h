@@ -11,12 +11,14 @@
 #include "IO_Mem_Errors.h"
 #include "Types.h"
 
-#define USE_SPMAT_LINKED TRUE
-#define MODULARITY_INIT -1
+/*A choice of implementation for spmat module. Can be changed */
+#define USE_SPMAT_LINKED (TRUE)
 
-/*
- * A struct representing Modularity Matrix B[g].
- */
+#define MODULARITY_INIT (-1)
+#define SHIFT (TRUE)
+#define NO_SHIFT (FALSE)
+
+/** A struct representing Modularity Matrix B. */
 typedef struct _modmat {
 	spmat *A; 				/* Network adjacency matrix in form of spmat */
 	int_vector K; 			/* Compact representation of degrees-product matrix (k_i * k_j / M) */
@@ -25,10 +27,11 @@ typedef struct _modmat {
 	num gSize;	 			/* Size of matrix, for any Subgroup g it is reduced to */
 	double one_norm;		/* The 1-norm of the matrix, i.e. max_i(sum_j(|B_ij|)) */ 
 
-	/*free all resources used by a ModMat instance */
+	/** Free all resources used by a ModMat instance. */
 	void (*free)(struct _modmat *B);
 
-	/* Multiply ModMat with vector v and store result.
+	/** Multiply ModMat with vector v and store output in result.
+	 *  @param shift - a flag that can be assigned SHIFT or NO_SHIFT. If SHIFT - The modMat instance multiplied will be shifted by one_norm value.
 	 */
 	void (*mult)(const struct _modmat *B, const double *v, double *result, boolean shift);
 
@@ -40,17 +43,22 @@ typedef struct _modmat {
 
 } modMat;
 
-/** Compute dot-product of two vectors of real numbers of size d.
+/** Compute dot-product of two vectors of real numbers of dimension d.
  */
 double dot_prod(vector v, vector u, num d);
 
-/* Allocate a new, empty instance of Modularity Matrix */
+/** Allocate a new, empty instance of Modularity Matrix.
+ *  @param n - the dimension of the modularity matrix to be allocated (size n by n).
+ * 	@param nnz - the number of non-zero elements in the mod. matrix. Optional if isSub == TRUE.
+ *  @param isSub - a boolean. If TRUE, a the field spmat A is assumed to be allocated and assigned externally.
+ */
 modMat* allocate_mod_mat(num n, num nnz, boolean isSub);
 
-/* Constructor, creates a new sub matrix B_hat[g], based on B and g */
+/** Constructor, creates a new sub matrix B[g], based on B and g, 
+ *  a subgroup of indices in increasing order, of size sizeG. */
 modMat *create_Sub_Matrix(modMat *B, Subgroup g, num sizeG);
 
-/* Computes and sets 1-norm of B, i.e. max_i(sum_j(abs(B_ij))) */
+/** Computes and sets 1-norm of B, i.e. max_i(sum_j(abs(B_ij))) */
 void set_1_norm(modMat *B);
 
 #endif /* MODMAT_H_ */

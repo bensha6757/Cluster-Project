@@ -56,7 +56,7 @@ double approx_dom_eigen_val(modMat *B, vector Ab_k, vector b_k){
 	return dot_prod(b_k, Ab_k ,gSize)/d;
 }
 
-/* computing leading eigenpair u1 and B1 of the modularity matrix B_hat[g] */
+/** Computes leading eigenpair u1 and B1 of the modularity matrix B_hat[g] */
 scalar Leading_eigenpair(modMat *Bg, vector *leadEigenVec){
 	num iter=0, gSize = Bg->gSize;
 	num eigenpair_loops_bound = ITER_LIMIT(gSize);

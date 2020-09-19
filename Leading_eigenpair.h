@@ -11,15 +11,15 @@
 #include "Types.h"
 
 /**********************************************************************************
- * a module in charge of supplying the leading eigenpair for algorithm 2 purposes *
+ * A module in charge of supplying the leading eigenpair for Algorithm 2 purposes.*
  * ********************************************************************************/
 
  /*There are about O(N^2) Power iterations for a matrix of size N */
-#define ITER_LIMIT(N) (0.5*(N)*(N)+10000*(N)+300000)
+#define ITER_LIMIT(N) (0.5*(N)*(N)+2*(N)+50000)
 
 
 /**
- * Compute dot product of two vectors of length d.
+ * Returns a dot product (scalar) of two vectors of dimension d.
  */
 double dot_prod(vector v, vector u, num d);
 

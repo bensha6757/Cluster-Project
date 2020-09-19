@@ -18,7 +18,4 @@ typedef unsigned long long_num;
 #define IS_POSITIVE(X) ((X) > (EPSILON))
 #define NON_ZERO(X) (IS_POSITIVE(X) || ((X) < (-(EPSILON))))
 
-#define SHIFT TRUE
-#define NO_SHIFT FALSE
-
 #endif /* TYPES_H_ */

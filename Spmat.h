@@ -36,9 +36,13 @@ typedef struct _spmat {
 	/** Creates a submatrix of A of dim == sizeG, which consists only of rows and columns whose index in Subgroup g */
 	struct _spmat* (*create_sub_mat)(const struct _spmat  *A, Subgroup g, int sizeG);
 	
-	/** Computes the score (modularity difference) of a sub-network w.r.t to a 2-division vector s and a temporarily moved vertex.
+	/** Returns the score (modularity difference) of a sub-network w.r.t to a 2-division vector s and a temporarily moved vertex.
 	 * 	Leverages spmat internal representation for fast computation.
 	 * 	Assumes all non-zero elements of spmat are 1's.
+	 * 	Assumes A represents some sub-network of a parent network whose characteristics are given as K,M.
+	 * 	@param A - A sparse matrix whose elements are {0,1}, representing some sub-network of a parent network.
+	 * 	@param s - A {1,-1} vector of length A->n representing a division of the sub-network into two groups.
+	 * 	@param moved_v - a temporarily moved vertex in range 0 to A->n-1.
 	 * 	@param K - The parent network's degrees array.
 	 * 	@param M - The parent network's sum of degrees.
 	 */ 

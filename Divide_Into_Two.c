@@ -1,6 +1,6 @@
 #include "Divide_Into_Two.h"
 
-/* first part of Alg. 4 - find improvement of the partition defined by s */
+/** First part of Alg. 4 - find improvement of the partition defined by s */
 void move_maximal_score_vertex(modMat *Bg, vector *s, int_vector indices, double *maxImprove, num *maxImpInd) {
 	vector s_ptr = *s;
 	long_num *unmoved=NULL;
@@ -76,83 +76,7 @@ void optimize_division(modMat *Bg, vector *s){
 }
 
 
-/*
-void move_maximal_score_vertex_mod_Linked(modMat *Bg, vector *s, int_vector indices, double *maxImprove, num *maxImpInd) {
-	vector s_ptr = *s;
-	Linked_list_moved *unmoved = NULL;
-	num i, maxi = 0, gSize = Bg->gSize;
-	mNode *head, *prev = NULL, *delhead, *delprev = NULL;
-	double Q_t, maxScore = -DBL_MAX, tmpImprove=0, maxImprovement = -DBL_MAX;
-	num maxImprovementInd = 0;
-
-	unmoved = create_unmoved(gSize);
-	head = unmoved->head;
-
-	for (i=0; i<gSize; i++){
-		maxi=0;
-		maxScore = -DBL_MAX;
-	
-		while (head != NULL){
-			Q_t = Bg->get_modularity(Bg, s_ptr, head->ind);
-			if (Q_t > maxScore){
-				maxScore = Q_t;
-				maxi = head->ind;
-				delhead = head;
-				delprev = prev;
-			}
-			prev = head;
-			head = head->next;
-		}
-		s_ptr[maxi] *= -1;
-		*(indices++)  = maxi;
-
-		tmpImprove += maxScore;
-		if (tmpImprove > maxImprovement){
-			maxImprovement = tmpImprove;
-			maxImprovementInd = i;
-		}
-		delete_node(unmoved, delprev, delhead);
-
-		head = unmoved->head;
-		prev = NULL;
-	}
-	delete_unmoved(unmoved);
-	*maxImprove = maxImprovement;
-	*maxImpInd = maxImprovementInd;
-
-}
-*/
-
-
-/*
-void optimize_division_mod_Linked(modMat *Bg, vector *s){
-	vector s_ptr = *s;
-	int_vector indices, j;
-	num maxImpInd=0, iter=0, gSize = Bg->gSize;
-	num maximize_loop_limit = gSize;
-	double deltaQ=0, lastDeltaQ=0, maxImprove=-DBL_MAX;
-
-	indices = (int_vector)malloc(gSize*sizeof(num));
-	VERIFY(indices!=NULL, MEM_ALLOC_ERROR)
-
-	do {
-		lastDeltaQ = deltaQ;
-		move_maximal_score_vertex_mod_Linked(Bg, s, indices, &maxImprove, &maxImpInd);
-		for (j= indices + gSize - 1; j > indices + maxImpInd; j--)
-			s_ptr[*j] *= -1;
-		deltaQ = (maxImpInd == gSize-1) ? 0 : maxImprove;
-
-		VERIFY(iter++ < maximize_loop_limit, INFINITE_LOOP_ERROR)
-	} while (IS_POSITIVE(deltaQ) && IS_POSITIVE(fabs(deltaQ-lastDeltaQ)));
-
-	free(indices);
-}
-*/
-
-
-/*
- * Map a real vector to a pre-allocated vector of {-1,1} elements.
- */
+/** Maps a real vector to a pre-allocated vector of {-1,1} elements. */
 void eigen_to_s(modMat *Bg, vector eigenVec, vector *s){
 	vector e = eigenVec, s_i;
 	num gSize = Bg->gSize;

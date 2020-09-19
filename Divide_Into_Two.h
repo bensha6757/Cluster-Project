@@ -11,6 +11,10 @@
 #include <stdlib.h>
 #include <float.h>
 
+/**********************************************************************************
+ * A module in charge of dividing a network into two sub-networks. 				  *
+ * ********************************************************************************/
+
 typedef enum div_res_t {
 	GROUP_INDIVISIBLE,
 	GROUP_DIVIDED
@@ -23,6 +27,8 @@ typedef enum div_res_t {
  * 	
  *	Either sizeG1 or sizeG2 might be zero at the end of the function. resulting effctively in:
  * 	g1.isEqual(g) ^ g2.isEqual(g)
+ * 
+ * 	Implements Algorithm 2 of the project.
  * 
  * 	The function also returns an enum indicating whether a spectral division is feasable.
  * 

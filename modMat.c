@@ -143,14 +143,14 @@ double get_B_modularity(struct _modmat *B, vector s, int move_vertex){
 	return dQ;
 }
 
-/* free B's allocated fields and B itselft */
+/* Frees B's allocated fields and B itself */
 void free_mod_mat(modMat *B){
 	B->A->free(B->A);
 	free(B->K);
 	free(B);
 }
 
-/* allocation function, can allocate both sub modMat and full size modMat */
+/* Allocation function, can allocate both sub modMat and full size modMat */
 modMat* allocate_mod_mat(num n, num nnz, boolean isSub){
 	modMat *rep = (modMat*)malloc(sizeof(modMat));
 	VERIFY(rep!=NULL, MEM_ALLOC_ERROR)
